@@ -1,0 +1,336 @@
+{
+  "version": "2.0",
+  "lastUpdated": "2026-02-12",
+  "strategy": "Buffett-Dalio Quality Moat Investing",
+  "description": "Advanced screening based on competitive advantage, financial physics, moat analysis, management quality, and risk resilience",
+  "screening": {
+    "industry": "All",
+    "sector": "All",
+    "description": "Screen all industries for companies with durable competitive advantages",
+    "filters": {
+      "I_FINANCIAL_PHYSICS": {
+        "description": "Does the machine work efficiently regardless of what it produces?",
+        "roe": {
+          "min": 15,
+          "consistency": "last_10_years",
+          "unit": "percent",
+          "description": "Buffett: Consistent ROE > 15% over last 10 years. Proves efficient capital allocation."
+        },
+        "grossMargin": {
+          "min": 40,
+          "stability": "required",
+          "trend": "stable_or_expanding",
+          "period": "last_10_years",
+          "unit": "percent",
+          "description": "Buffett: Gross margin >40% (excellent) and stable over 10 years. Volatile margins = no pricing power."
+        },
+        "freeCashFlow": {
+          "positive": true,
+          "consistency": "every_year",
+          "period": "last_5_years",
+          "description": "Buffett: Positive Owner's Earnings every year. Cash is fact, accounting profit is opinion."
+        },
+        "oneDollarTest": {
+          "enabled": true,
+          "period": "last_5_years",
+          "minReturn": 1.0,
+          "description": "Buffett: For every $1 retained earnings, company must create ≥$1 market value over 5 years."
+        },
+        "maintenanceCapEx": {
+          "maxAsPercentOfRevenue": 5,
+          "description": "Buffett: Low maintenance CapEx (<5% of revenue). Avoid 'hamster wheel' businesses."
+        },
+        "operatingMargin": {
+          "min": 15,
+          "trend": "stable_or_expanding",
+          "unit": "percent",
+          "description": "Operating margin >15% and stable. High SG&A or R&D costs erode advantage."
+        },
+        "depreciation": {
+          "maxAsPercentOfGrossProfit": 10,
+          "description": "Good companies have depreciation <10% of gross profit. It's a real cost."
+        }
+      },
+      "II_THE_MOAT": {
+        "description": "Is the business protected from competition and commoditization?",
+        "pricingPower": {
+          "enabled": true,
+          "test": "price_increases_above_inflation",
+          "period": "last_5_years",
+          "description": "Buffett: Must raise prices above inflation without losing market share. No 'prayer meetings' before price hikes."
+        },
+        "notCommodity": {
+          "enabled": true,
+          "test": "brand_or_lowest_cost",
+          "description": "Buffett: If product is commodity, must be lowest-cost producer. Otherwise, must have brand power."
+        },
+        "uncopyableAdvantage": {
+          "enabled": true,
+          "type": [
+            "network_effect",
+            "complex_system",
+            "ecosystem",
+            "regulatory"
+          ],
+          "description": "Dalio: Edge must rely on complex system/network, not single patent competitors can copy in 6 months."
+        },
+        "switchingCosts": {
+          "enabled": true,
+          "level": "high",
+          "description": "Buffett: Must be painful/expensive/risky for customers to switch. Ecosystem lock-in preferred."
+        },
+        "understandability": {
+          "enabled": true,
+          "test": "explain_in_one_sentence",
+          "description": "Buffett: Must explain how company makes money in one sentence. If black box, filter out."
+        }
+      },
+      "III_MANAGEMENT_CULTURE": {
+        "description": "Is the leadership rational, honest, and evolutionary?",
+        "candorInFailure": {
+          "enabled": true,
+          "test": "admits_mistakes_in_annual_reports",
+          "period": "last_3_years",
+          "description": "Dalio/Buffett: CEO must admit mistakes in annual reports. Filter out if always blames 'macro headwinds'."
+        },
+        "resistsInstitutionalImperative": {
+          "enabled": true,
+          "test": "no_hype_driven_pivots",
+          "description": "Buffett: Filter out companies making acquisitions/pivots because 'everyone else is' (e.g., AI hype)."
+        },
+        "skinInGame": {
+          "enabled": true,
+          "minInsiderOwnership": 5,
+          "unit": "percent",
+          "description": "Buffett: Management must own significant stock (>5%). Think like owners, not employees."
+        },
+        "systemizedEvolution": {
+          "enabled": true,
+          "test": "evolves_before_crisis",
+          "description": "Dalio: Must show history of evolving BEFORE forced to. Filter out reactive companies."
+        },
+        "rationalCapitalAllocation": {
+          "enabled": true,
+          "test": "buybacks_when_cheap_only",
+          "description": "Buffett: Must buy back shares when cheap, issue when expensive. Filter out if buying at all-time highs."
+        }
+      },
+      "IV_RISK_RESILIENCE": {
+        "description": "Can the company survive bad seasons and uncertainty?",
+        "interestCoverage": {
+          "min": 5,
+          "description": "Buffett: Must pay interest expenses ≥5x with operating income. High debt kills great businesses."
+        },
+        "recessionResilience": {
+          "enabled": true,
+          "test": "profitable_during_2008_and_2020",
+          "description": "Dalio: Must remain profitable during last major downturns (2008, 2020). Machine must work in storms."
+        },
+        "uncorrelatedRevenue": {
+          "enabled": true,
+          "maxSingleClientPercent": 50,
+          "maxSingleGeographyPercent": 50,
+          "description": "Dalio: No single client or geography >50% revenue. Diversification protects against localized shocks."
+        },
+        "riskOfRuinZero": {
+          "enabled": true,
+          "minCashReserves": "12_months_revenue",
+          "description": "Dalio: Must hold enough cash to survive 12 months with zero revenue. Black swan protection."
+        },
+        "debtPayoffAbility": {
+          "enabled": true,
+          "maxYears": 4,
+          "description": "Buffett: Must generate enough earnings to pay off long-term debt in max 3-4 years."
+        },
+        "debtToEquity": {
+          "max": 0.5,
+          "adjustForBuybacks": true,
+          "description": "Low debt preferred (<0.5 D/E). Adjust for buybacks as they can make ratio deceptive."
+        }
+      },
+      "INCOME_STATEMENT_ANALYSIS": {
+        "description": "Deep analysis of earnings quality and cost structure",
+        "cogsAnalysis": {
+          "enabled": true,
+          "test": "consistent_low_cogs_as_percent_revenue",
+          "description": "Companies with advantage have consistently low COGS/Revenue ratio."
+        },
+        "sgaConsistency": {
+          "enabled": true,
+          "test": "stable_sga_as_percent_revenue",
+          "description": "Wild variation in SG&A costs means no competitive advantage. Must be stable."
+        },
+        "rdCosts": {
+          "enabled": true,
+          "test": "low_or_consistent_rd",
+          "description": "High R&D costs can erode advantage unless company has pricing power to pass costs."
+        },
+        "interestExpense": {
+          "enabled": true,
+          "test": "low_interest_as_percent_operating_income",
+          "maxPercent": 20,
+          "description": "High interest payout indicates competitive market or leveraged buyout. Filter if >20% of operating income."
+        },
+        "netProfitTrend": {
+          "enabled": true,
+          "test": "higher_than_competitors",
+          "description": "Durable business always reports higher profit/revenue % than competitors. Exception: banks (indicates risk)."
+        },
+        "epsVsNetProfit": {
+          "enabled": true,
+          "test": "track_both_for_buyback_effects",
+          "description": "EPS can increase via buybacks. Always consider net profit trends, not just EPS."
+        }
+      },
+      "BALANCE_SHEET_ANALYSIS": {
+        "description": "Asset quality, liability structure, and shareholder equity analysis",
+        "cashGeneration": {
+          "enabled": true,
+          "test": "excess_cash_from_operations",
+          "sources": [
+            "operations_not_debt_or_asset_sales"
+          ],
+          "description": "Excess cash must come from operations, not selling bonds/equity/assets."
+        },
+        "cashAndSecurities": {
+          "enabled": true,
+          "test": "lots_of_cash_little_debt",
+          "period": "last_7_years",
+          "description": "Good sign: Lots of cash/securities with little/no debt over last 7 years."
+        },
+        "inventoryRisk": {
+          "enabled": true,
+          "test": "products_never_obsolete",
+          "description": "Durable companies sell products that never go out of style. Low inventory obsolescence risk."
+        },
+        "inventoryVsEarnings": {
+          "enabled": true,
+          "test": "both_increase_together",
+          "description": "For manufacturing: Look for both inventory AND net earnings increasing together."
+        },
+        "netReceivables": {
+          "enabled": true,
+          "test": "declining_as_percent_gross_sales",
+          "description": "Consistent decline in Net Receivables/Gross Sales % indicates competitive advantage."
+        },
+        "currentRatio": {
+          "min": 1.0,
+          "note": "useless_for_consistent_earners",
+          "description": "Current ratio >1 generally good, but useless for companies with consistent earnings."
+        },
+        "plantUpdateRequirement": {
+          "enabled": true,
+          "test": "low_need_for_constant_updates",
+          "description": "Durable companies don't need to constantly update plants. Low CapEx for maintenance."
+        },
+        "longTermDebt": {
+          "enabled": true,
+          "test": "little_or_none",
+          "maxAsMultipleOfEarnings": 4,
+          "description": "Little/no long-term debt. If present, must be payable in <4 years of earnings."
+        },
+        "debtMaturityProfile": {
+          "enabled": true,
+          "test": "not_concentrated_at_single_point",
+          "description": "Too much debt due at once can spook investors. Must be spread out."
+        },
+        "retainedEarnings": {
+          "enabled": true,
+          "test": "consistently_growing",
+          "description": "Retained Earnings = after-tax profit - dividends - buybacks. Must grow consistently."
+        },
+        "preferredStock": {
+          "enabled": true,
+          "test": "none_preferred",
+          "description": "Good companies prefer not to have Preferred stock (very expensive)."
+        },
+        "treasuryStock": {
+          "enabled": true,
+          "note": "india_cancels_in_7_days",
+          "description": "In India, buyback shares cancelled in 7 days. Increases returns, so be careful in analysis."
+        }
+      },
+      "VALUATION": {
+        "description": "Margin of safety and intrinsic value",
+        "marginOfSafety": {
+          "enabled": true,
+          "minDiscount": 25,
+          "unit": "percent",
+          "description": "Buffett: Stock must trade at ≥25% discount to intrinsic value. Great company at wrong price = bad investment."
+        },
+        "peRatio": {
+          "min": 5,
+          "max": 25,
+          "description": "Reasonable P/E for quality companies. Avoid overpaying."
+        },
+        "pbRatio": {
+          "max": 5,
+          "description": "Price-to-Book <5 for quality companies."
+        }
+      }
+    },
+    "scoring": {
+      "weights": {
+        "financial_physics": 25,
+        "moat": 30,
+        "management_culture": 20,
+        "risk_resilience": 15,
+        "valuation": 10
+      },
+      "description": "Scoring based on Buffett-Dalio framework. Moat and Financial Physics weighted highest."
+    }
+  },
+  "output": {
+    "format": "markdown",
+    "topStocks": 15,
+    "includeDetailedAnalysis": true,
+    "includeCompetitiveAdvantageScore": true,
+    "includeManagementQuality": true,
+    "includeRiskAssessment": true,
+    "delivery": {
+      "telegram": {
+        "enabled": false,
+        "chatId": "YOUR_CHAT_ID"
+      },
+      "discord": {
+        "enabled": false,
+        "channelId": "YOUR_CHANNEL_ID"
+      },
+      "file": {
+        "enabled": true,
+        "path": "c:\\\\Users\\\\HP\\\\OpenClaw\\\\Stock Research\\\\Market Research\\\\reports\\\\buffett_dalio_screening_{date}.md"
+      }
+    }
+  },
+  "schedule": {
+    "timezone": "Asia/Kolkata",
+    "runTime": "09:00",
+    "runDays": [
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday"
+    ],
+    "description": "Run at 9 AM IST on weekdays"
+  },
+  "dataSource": {
+    "primary": "finviz",
+    "fallback": [
+      "yahoo_finance",
+      "marketwatch",
+      "seeking_alpha"
+    ],
+    "requireHistoricalData": true,
+    "historicalYears": 10,
+    "cacheExpiry": 12,
+    "cacheExpiryUnit": "hours"
+  },
+  "notes": [
+    "This configuration implements Buffett-Dalio quality investing principles.",
+    "Focus: Durable competitive advantages, not just cheap stocks.",
+    "The system will filter aggressively - expect few companies to pass all criteria.",
+    "Those that pass are likely to be exceptional businesses worth deep research.",
+    "Adjust industry/sector filters as needed, or leave as 'All' to find best across markets."
+  ]
+}

@@ -1,0 +1,38 @@
+# ── Secrets & credentials (NEVER commit these) ───────────────────────────────
+.streamlit/secrets.toml
+.env
+*.env
+openclaw.json
+
+# ── Python cache ──────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# ── Virtual environments ──────────────────────────────────────────────────────
+venv/
+.venv/
+env/
+ENV/
+
+# ── SQLite databases (local cache, rebuilt at runtime) ────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+logs/
+*.log
+screening_output.log
+
+# ── Generated reports (large, user-specific) ─────────────────────────────────
+reports/
+
+# ── IDE / OS ──────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
+desktop.ini
