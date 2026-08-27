@@ -42,15 +42,15 @@ st.set_page_config(
 st.markdown("""
 <style>
   /* ── Google Fonts: Figtree & JetBrains Mono ── */
-  @import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
   /* ── Global Reset & Typography ── */
-  html, body, [class*="css"], [data-testid="stSidebar"], .stMarkdown, .stButton, input, select, textarea, [data-testid="stMetricValue"], [data-testid="stMetricLabel"] {
+  html, body, [class*="css"], [class*="st-"], [data-testid="stSidebar"], .stMarkdown, .stButton, input, select, textarea, p, h1, h2, h3, h4, h5, h6, span, div, label, li {
       font-family: 'Figtree', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
       letter-spacing: -0.01em;
   }
 
-  code, pre, .stCodeBlock {
+  code, pre, .stCodeBlock, .stCodeBlock code {
       font-family: 'JetBrains Mono', monospace !important;
   }
 
@@ -65,11 +65,16 @@ st.markdown("""
 
   /* ── Main Container Padding ── */
   .block-container {
-      padding-top: 1.5rem !important;
-      padding-bottom: 3.5rem !important;
-      padding-left: clamp(1rem, 3.5vw, 3rem) !important;
-      padding-right: clamp(1rem, 3.5vw, 3rem) !important;
+      padding-top: 2rem !important;
+      padding-bottom: 3rem !important;
+      padding-left: clamp(1.5rem, 4vw, 4rem) !important;
+      padding-right: clamp(1.5rem, 4vw, 4rem) !important;
       max-width: 1440px !important;
+  }
+
+  /* Compact the top header space */
+  header[data-testid="stHeader"] {
+      height: 2.5rem !important;
   }
 
   /* ── Animations ── */
