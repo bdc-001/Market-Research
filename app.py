@@ -38,581 +38,446 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── ElevenLabs-Grade Editorial Design System ──────────────────────────────────
+# ── QuanTum Product Design System (36-Point Style Guide) ──────────────────────
 st.markdown("""
 <style>
   /* ── Google Fonts: Inter & JetBrains Mono ── */
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-  /* ── ElevenLabs Design Tokens ── */
+  /* ── QuanTum Design Tokens ──
+     Purple = brand/action identity
+     Slate  = neutral system
+     Green/Red = financial semantics only
+     Ratio: 70% neutral · 20% semantic · 10% purple
+  ── */
   :root {
-      --canvas: #FAFAFA;
-      --surface: #FFFFFF;
-      --surface-subtle: #F4F4F5;
-      --surface-muted: #ECECEE;
-      
-      --border: #E4E4E7;
-      --border-subtle: #F4F4F5;
-      --border-strong: #D4D4D8;
-      
-      --text-main: #18181B;
-      --text-secondary: #52525B;
-      --text-muted: #71717A;
-      --text-dim: #A1A1AA;
-      
-      --primary: #18181B;
-      --primary-hover: #27272A;
-      --primary-active: #09090B;
-      
-      --brand-purple: #7C3AED;
-      --brand-purple-light: #F5F3FF;
-      --brand-purple-border: #DDD6FE;
-      
+      /* Purple brand palette */
+      --purple-600: #7C3AED;
+      --purple-500: #8B5CF6;
+      --purple-400: #A78BFA;
+      --purple-300: #C4B5FD;
+      --purple-100: #EDE9FE;
+      --purple-50:  #F5F3FF;
+
+      /* Slate neutral system */
+      --bg-app:       #F8FAFC;
+      --bg-surface:   #FFFFFF;
+      --bg-secondary: #F1F5F9;
+      --border:       #E2E8F0;
+      --text-primary:   #0F172A;
+      --text-secondary: #475569;
+      --text-muted:     #94A3B8;
+      --neutral:        #64748B;
+
+      /* Semantic — financial meaning only */
       --positive: #16A34A;
-      --positive-bg: #F0FDF4;
-      --positive-border: #BBF7D0;
-      
       --negative: #DC2626;
-      --negative-bg: #FEF2F2;
-      --negative-border: #FECACA;
-      
-      --warning: #D97706;
-      --warning-bg: #FFFBEB;
-      --warning-border: #FDE68A;
-      
-      --radius-sm: 6px;
-      --radius-md: 8px;
-      --radius-lg: 12px;
+      --warning:  #D97706;
+
+      /* Radius (restrained / institutional) */
+      --r-btn:   8px;
+      --r-input: 8px;
+      --r-card:  10px;
+      --r-panel: 12px;
+      --r-pill:  999px;
   }
 
-  /* ── Global Typography & Reset ── */
-  html, body, [class*="css"], [class*="st-"], [data-testid="stSidebar"], .stMarkdown, .stButton, input, select, textarea, p, h1, h2, h3, h4, h5, h6, span, div, label, li {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  /* ── §5 Typography ── */
+  html, body, [class*="css"], [class*="st-"], [data-testid="stSidebar"],
+  .stMarkdown, .stButton, input, select, textarea,
+  p, h1, h2, h3, h4, h5, h6, span, div, label, li {
+      font-family: 'Inter', ui-sans-serif, system-ui, sans-serif !important;
       letter-spacing: -0.01em;
   }
-
   code, pre, .stCodeBlock, .stCodeBlock code {
       font-family: 'JetBrains Mono', monospace !important;
   }
 
-  /* ── App Canvas ── */
+  /* ── §4 Background System (Light Mode) ── */
   .stApp {
-      background-color: var(--canvas);
-      color: var(--text-main);
+      background-color: var(--bg-app);
+      color: var(--text-primary);
       min-height: 100vh;
   }
 
-  /* ── Main Container Spacing ── */
+  /* ── §7 Spacing — page container ── */
   .block-container {
       padding-top: 1.5rem !important;
-      padding-bottom: 3rem !important;
-      padding-left: clamp(1.5rem, 4vw, 3.5rem) !important;
-      padding-right: clamp(1.5rem, 4vw, 3.5rem) !important;
-      max-width: 1360px !important;
+      padding-bottom: 2.5rem !important;
+      padding-left: clamp(1.5rem, 4vw, 2rem) !important;
+      padding-right: clamp(1.5rem, 4vw, 2rem) !important;
+      max-width: 1400px !important;
   }
-
   header[data-testid="stHeader"] {
       background: transparent !important;
       height: 2.5rem !important;
   }
 
-  /* ── Pulse Animation ── */
-  @keyframes livePulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4); transform: scale(1); }
-      50% { box-shadow: 0 0 0 4px rgba(22, 163, 74, 0); transform: scale(1.05); }
+  /* ── §29 Motion — agent pulse ── */
+  @keyframes agentPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.35); }
+      50%      { box-shadow: 0 0 0 4px rgba(124, 58, 237, 0); }
+  }
+  @keyframes statusPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4); }
+      50%      { box-shadow: 0 0 0 4px rgba(22, 163, 74, 0); }
   }
 
-  /* ── Left Sidebar (ElevenLabs Style) ── */
+  /* ═══════════════════════════════════════════════════════
+     §10 NAVIGATION — sidebar
+     ═══════════════════════════════════════════════════════ */
   [data-testid="stSidebar"] {
-      background-color: var(--surface) !important;
+      background-color: var(--bg-surface) !important;
       border-right: 1px solid var(--border) !important;
       padding: 1.25rem 0.75rem !important;
   }
-
   [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h1,
   [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h2,
   [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h3 {
-      color: var(--text-main) !important;
+      color: var(--text-primary) !important;
   }
 
-  /* Brand Container */
+  /* Brand header */
   .sidebar-brand-container {
       padding: 0.25rem 0.5rem 1rem 0.5rem;
       border-bottom: 1px solid var(--border);
       margin-bottom: 1rem;
   }
-
   .sidebar-brand-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      display: flex; align-items: center; gap: 10px;
   }
-
   .brand-icon-box {
-      width: 32px;
-      height: 32px;
-      border-radius: var(--radius-sm);
-      background: var(--text-main);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1rem;
-      color: #FFFFFF;
-      font-weight: 700;
+      width: 32px; height: 32px;
+      border-radius: var(--r-btn);
+      background: var(--purple-600);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.875rem; color: #fff; font-weight: 700;
   }
-
   .brand-text-title {
-      font-size: 0.9375rem;
-      font-weight: 600;
-      color: var(--text-main);
-      letter-spacing: -0.02em;
-      line-height: 1.2;
+      font-size: 0.9375rem; font-weight: 600;
+      color: var(--text-primary); letter-spacing: -0.02em; line-height: 1.2;
   }
-
   .brand-text-sub {
-      font-size: 0.6875rem;
-      font-weight: 500;
+      font-size: 0.6875rem; font-weight: 500;
       color: var(--text-muted);
   }
-
   .brand-tag {
-      display: inline-block;
-      margin-top: 8px;
-      font-size: 0.625rem;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: var(--surface-subtle);
-      color: var(--text-secondary);
-      border: 1px solid var(--border);
+      display: inline-block; margin-top: 8px;
+      font-size: 0.625rem; font-weight: 600;
+      letter-spacing: 0.04em; text-transform: uppercase;
+      padding: 2px 8px; border-radius: var(--r-pill);
+      background: var(--purple-50); color: var(--purple-600);
+      border: 1px solid var(--purple-100);
   }
 
-  /* ── Sidebar Navigation (Zero Radio Circles) ── */
+  /* Sidebar radio group label */
   [data-testid="stSidebar"] .stRadio > label {
-      font-size: 0.6875rem !important;
-      font-weight: 600 !important;
-      color: var(--text-dim) !important;
-      text-transform: uppercase !important;
-      letter-spacing: 0.06em !important;
-      padding-left: 8px !important;
-      margin-bottom: 6px !important;
+      font-size: 0.6875rem !important; font-weight: 600 !important;
+      color: var(--text-muted) !important;
+      text-transform: uppercase !important; letter-spacing: 0.06em !important;
+      padding-left: 8px !important; margin-bottom: 6px !important;
   }
+  [data-testid="stSidebar"] .stRadio > div { gap: 2px !important; }
 
-  [data-testid="stSidebar"] .stRadio > div {
-      gap: 2px !important;
-  }
-
-  /* Hide raw radio circles completely */
+  /* Hide radio circles */
   [data-testid="stSidebar"] .stRadio [role="radiogroup"] label > div:first-child,
   [data-testid="stSidebar"] .stRadio [data-baseweb="radio"] > div:first-child,
   [data-testid="stSidebar"] .stRadio input[type="radio"] + div {
       display: none !important;
   }
 
-  /* Sidebar Navigation Item */
+  /* Nav item base */
   [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"] {
       background: transparent !important;
       border: 1px solid transparent !important;
-      border-radius: var(--radius-sm) !important;
-      padding: 7px 10px !important;
-      margin: 1px 0 !important;
-      transition: all 0.12s ease !important;
-      cursor: pointer !important;
-      width: 100% !important;
+      border-radius: var(--r-btn) !important;
+      padding: 8px 12px !important; margin: 1px 0 !important;
+      transition: all 0.15s ease !important;
+      cursor: pointer !important; width: 100% !important;
   }
-
   [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"]:hover {
-      background: var(--surface-subtle) !important;
+      background: var(--bg-secondary) !important;
   }
-
   [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"] div[data-testid="stMarkdownContainer"] p {
       color: var(--text-secondary) !important;
-      font-weight: 500 !important;
-      font-size: 0.84rem !important;
-      margin: 0 !important;
+      font-weight: 500 !important; font-size: 0.875rem !important; margin: 0 !important;
   }
 
-  /* Active Sidebar Item */
-  [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"]:has(input[type="radio"]:checked) {
-      background: var(--surface-subtle) !important;
-      border-left: 2px solid var(--text-main) !important;
-      border-radius: 0 var(--radius-sm) var(--radius-sm) 0 !important;
+  /* §10 Active item — purple-tinted background + purple text */
+  [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"]:has(input:checked) {
+      background: var(--purple-50) !important;
+      border-color: var(--purple-100) !important;
   }
-
-  [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"] input[type="radio"]:checked + div + div p,
-  [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"]:has(input[type="radio"]:checked) div[data-testid="stMarkdownContainer"] p {
-      color: var(--text-main) !important;
+  [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"] input:checked + div + div p,
+  [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"]:has(input:checked) div[data-testid="stMarkdownContainer"] p {
+      color: var(--purple-600) !important;
       font-weight: 600 !important;
   }
 
-  /* ── Sidebar System Status Footer ── */
+  /* Sidebar status footer */
   .sidebar-status-card {
       background: transparent;
       border-top: 1px solid var(--border);
-      padding: 12px 4px 0 4px;
-      margin-top: 1.25rem;
+      padding: 12px 4px 0 4px; margin-top: 1.25rem;
   }
-
   .status-header-text {
-      font-size: 0.6875rem;
-      font-weight: 600;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: 8px;
+      font-size: 0.6875rem; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;
   }
-
   .status-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 4px 0;
-      font-size: 0.75rem;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 4px 0; font-size: 0.75rem;
   }
-
   .status-left {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--text-secondary);
-      font-weight: 500;
+      display: flex; align-items: center; gap: 6px;
+      color: var(--text-secondary); font-weight: 500;
   }
-
   .status-val-pill {
-      font-size: 0.6875rem;
-      font-weight: 500;
-      padding: 1px 6px;
-      border-radius: 4px;
-      background: var(--surface-subtle);
-      color: var(--text-secondary);
-      border: 1px solid var(--border);
+      font-size: 0.6875rem; font-weight: 500; padding: 1px 6px;
+      border-radius: var(--r-pill);
+      background: rgba(22,163,74,0.08); color: var(--positive);
+      border: 1px solid rgba(22,163,74,0.15);
   }
-
   .live-pulse-dot {
-      width: 6px;
-      height: 6px;
-      background-color: var(--positive);
-      border-radius: 50%;
+      width: 6px; height: 6px;
+      background-color: var(--positive); border-radius: 50%;
       display: inline-block;
-      animation: livePulse 2s infinite cubic-bezier(0.45, 0, 0.55, 1);
+      animation: statusPulse 2s infinite cubic-bezier(0.45,0,0.55,1);
   }
 
-  /* ── ElevenLabs Page Header ── */
-  .eleven-header {
+  /* ═══════════════════════════════════════════════════════
+     PAGE HEADER
+     ═══════════════════════════════════════════════════════ */
+  .qt-header {
       padding: 0.5rem 0 1.25rem 0;
-      margin-bottom: 1.75rem;
+      margin-bottom: 2rem;
       border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: flex-end;
+  }
+  .qt-header-top {
+      display: flex; align-items: flex-end;
       justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 16px;
+      flex-wrap: wrap; gap: 16px;
   }
-
-  .eleven-breadcrumb {
-      font-size: 0.6875rem;
-      font-weight: 600;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: 4px;
+  .qt-breadcrumb {
+      font-size: 0.75rem; font-weight: 500; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px;
   }
-
-  .eleven-title {
-      font-size: clamp(1.25rem, 2.5vw, 1.5rem);
-      font-weight: 600;
-      color: var(--text-main);
-      letter-spacing: -0.025em;
-      line-height: 1.2;
-      margin: 0;
+  .qt-page-title {
+      font-size: clamp(1.4rem, 3vw, 1.75rem);
+      font-weight: 600; color: var(--text-primary);
+      letter-spacing: -0.02em; line-height: 1.2; margin: 0;
   }
-
-  .eleven-subtitle {
-      font-size: 0.84rem;
-      color: var(--text-secondary);
-      margin-top: 4px;
-      font-weight: 400;
+  .qt-page-sub {
+      font-size: 0.875rem; color: var(--text-secondary);
+      margin-top: 4px; font-weight: 400;
   }
-
-  .eleven-chips {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-  }
-
-  .eleven-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 3px 9px;
-      border-radius: 9999px;
-      font-size: 0.6875rem;
-      font-weight: 500;
-      background: var(--surface);
-      border: 1px solid var(--border);
+  .qt-chips { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .qt-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: var(--r-pill);
+      font-size: 0.6875rem; font-weight: 500;
+      background: var(--bg-surface); border: 1px solid var(--border);
       color: var(--text-secondary);
   }
+  .qt-chip-ai {
+      background: var(--purple-50); color: var(--purple-600);
+      border-color: var(--purple-100);
+  }
 
-  /* ── Form Controls & Action Row Alignment ── */
+  /* ═══════════════════════════════════════════════════════
+     §23 BUTTONS — Purple primary, neutral secondary
+     ═══════════════════════════════════════════════════════ */
+  .stButton > button {
+      width: 100%;
+      min-height: 40px !important; padding: 0 16px !important;
+      font-size: 0.875rem !important; font-weight: 500 !important;
+      border-radius: var(--r-btn) !important;
+      border: 1px solid var(--border) !important;
+      background: var(--bg-surface) !important;
+      color: var(--text-secondary) !important;
+      transition: all 0.15s ease !important;
+  }
+  .stButton > button:hover {
+      background: var(--bg-secondary) !important;
+      border-color: #CBD5E1 !important;
+      color: var(--text-primary) !important;
+  }
+  /* Primary = Purple CTA */
+  .stButton > button[kind="primary"] {
+      background: var(--purple-600) !important;
+      color: #FFFFFF !important;
+      border: 1px solid var(--purple-600) !important;
+      box-shadow: 0 1px 3px rgba(124,58,237,0.2) !important;
+  }
+  .stButton > button[kind="primary"]:hover {
+      background: var(--purple-500) !important;
+      border-color: var(--purple-500) !important;
+      box-shadow: 0 4px 14px rgba(124,58,237,0.25) !important;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     §24 INPUTS — quiet, professional, purple focus
+     ═══════════════════════════════════════════════════════ */
+  /* Column alignment fix */
   [data-testid="column"] {
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
+      display: flex; flex-direction: column; justify-content: flex-end;
   }
-
-  /* Input Fields & Textareas */
   .stTextInput > div > div > input,
   .stSelectbox > div > div,
   .stTextArea > div > div > textarea {
-      background: var(--surface) !important;
+      background: var(--bg-surface) !important;
       border: 1px solid var(--border) !important;
-      border-radius: var(--radius-sm) !important;
-      color: var(--text-main) !important;
-      font-size: 0.84rem !important;
-      font-weight: 400 !important;
-      padding: 8px 12px !important;
-      min-height: 38px !important;
-      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
-      transition: all 0.12s ease !important;
+      border-radius: var(--r-input) !important;
+      color: var(--text-primary) !important;
+      font-size: 0.875rem !important; font-weight: 400 !important;
+      padding: 8px 12px !important; min-height: 40px !important;
+      transition: all 0.15s ease !important;
   }
-
   .stTextInput > div > div > input:focus,
   .stSelectbox > div > div:focus-within,
   .stTextArea > div > div > textarea:focus {
-      border-color: var(--text-main) !important;
-      box-shadow: 0 0 0 1px var(--text-main) !important;
+      border-color: var(--purple-500) !important;
+      box-shadow: 0 0 0 3px rgba(124,58,237,0.12) !important;
   }
-
   .stSelectbox [data-baseweb="select"] > div {
-      background: var(--surface) !important;
+      background: var(--bg-surface) !important;
       border-color: var(--border) !important;
-      border-radius: var(--radius-sm) !important;
-      min-height: 38px !important;
+      border-radius: var(--r-input) !important;
+      min-height: 40px !important;
   }
-
-  .stSelectbox [data-baseweb="select"] * { color: var(--text-main) !important; font-weight: 400; font-size: 0.84rem; }
+  .stSelectbox [data-baseweb="select"] * { color: var(--text-primary) !important; font-weight: 400; }
   .stSelectbox svg { fill: var(--text-muted) !important; }
-
-  /* Input Labels */
   .stTextInput label, .stSelectbox label, .stTextArea label {
-      font-size: 0.78rem !important;
-      font-weight: 500 !important;
-      color: var(--text-secondary) !important;
-      margin-bottom: 4px !important;
+      font-size: 0.8125rem !important; font-weight: 500 !important;
+      color: var(--text-secondary) !important; margin-bottom: 4px !important;
   }
 
-  /* ── Buttons (ElevenLabs Style: Ink Primary & Crisp Secondary) ── */
-  .stButton > button {
-      width: 100%;
-      min-height: 38px !important;
-      padding: 0 14px !important;
-      font-size: 0.84rem !important;
-      font-weight: 500 !important;
-      border-radius: var(--radius-sm) !important;
-      border: 1px solid var(--border) !important;
-      background: var(--surface) !important;
-      color: var(--text-main) !important;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
-      transition: all 0.12s ease !important;
-  }
-
-  .stButton > button:hover {
-      background: var(--surface-subtle) !important;
-      border-color: var(--border-strong) !important;
-      color: var(--text-main) !important;
-  }
-
-  .stButton > button[kind="primary"] {
-      background: var(--primary) !important;
-      color: #FFFFFF !important;
-      border: 1px solid var(--primary) !important;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
-  }
-
-  .stButton > button[kind="primary"]:hover {
-      background: var(--primary-hover) !important;
-      border-color: var(--primary-hover) !important;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12) !important;
-  }
-
-  .stButton > button[kind="primary"]:active {
-      background: var(--primary-active) !important;
-  }
-
-  /* ── Metric Cards ── */
+  /* ═══════════════════════════════════════════════════════
+     §6 FINANCIAL NUMBERS — Metric Cards
+     ═══════════════════════════════════════════════════════ */
   [data-testid="metric-container"] {
-      background: var(--surface) !important;
+      background: var(--bg-surface) !important;
       border: 1px solid var(--border) !important;
-      border-radius: var(--radius-md) !important;
-      padding: 14px 16px !important;
-      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02) !important;
-      transition: border-color 0.12s ease !important;
+      border-radius: var(--r-card) !important;
+      padding: 16px 20px !important;
   }
-
   [data-testid="metric-container"]:hover {
-      border-color: var(--border-strong) !important;
+      border-color: var(--purple-300) !important;
   }
-
   [data-testid="metric-container"] label {
-      color: var(--text-muted) !important;
-      font-size: 0.6875rem !important;
-      font-weight: 500 !important;
-      text-transform: uppercase !important;
-      letter-spacing: 0.04em !important;
+      color: var(--text-secondary) !important;
+      font-size: 0.75rem !important; font-weight: 500 !important;
+      text-transform: uppercase !important; letter-spacing: 0.04em !important;
   }
-
   [data-testid="metric-container"] [data-testid="metric-value"] {
-      color: var(--text-main) !important;
-      font-size: clamp(1.15rem, 2.5vw, 1.4rem) !important;
-      font-weight: 600 !important;
-      font-variant-numeric: tabular-nums;
+      color: var(--text-primary) !important;
+      font-size: clamp(1.25rem, 3vw, 1.625rem) !important;
+      font-weight: 700 !important; font-variant-numeric: tabular-nums;
   }
 
-  /* ── Expanders ── */
+  /* ═══════════════════════════════════════════════════════
+     EXPANDERS / STATUS / TABS
+     ═══════════════════════════════════════════════════════ */
   .streamlit-expanderHeader {
-      background: var(--surface) !important;
+      background: var(--bg-surface) !important;
       border: 1px solid var(--border) !important;
-      border-radius: var(--radius-sm) !important;
-      color: var(--text-main) !important;
-      font-weight: 500 !important;
-      font-size: 0.84rem !important;
-      padding: 10px 14px !important;
-      min-height: 38px !important;
-      transition: all 0.12s ease !important;
+      border-radius: var(--r-btn) !important;
+      color: var(--text-primary) !important;
+      font-weight: 500 !important; font-size: 0.875rem !important;
+      padding: 10px 14px !important; min-height: 40px !important;
   }
-
   .streamlit-expanderHeader:hover {
-      background: var(--surface-subtle) !important;
-      border-color: var(--border-strong) !important;
+      background: var(--bg-secondary) !important;
   }
-
   .streamlit-expanderContent {
-      background: var(--surface) !important;
-      border-radius: 0 0 var(--radius-sm) var(--radius-sm) !important;
+      background: var(--bg-surface) !important;
+      border-radius: 0 0 var(--r-btn) var(--r-btn) !important;
       border: 1px solid var(--border) !important;
-      border-top: none !important;
-      padding: 14px 16px !important;
+      border-top: none !important; padding: 16px 20px !important;
   }
 
-  /* ── Status Widget ── */
   [data-testid="stStatus"] {
-      background: var(--surface) !important;
+      background: var(--bg-surface) !important;
       border: 1px solid var(--border) !important;
-      border-radius: var(--radius-md) !important;
-      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
+      border-radius: var(--r-card) !important;
   }
-  [data-testid="stStatus"] * { color: var(--text-main) !important; }
+  [data-testid="stStatus"] * { color: var(--text-primary) !important; }
 
-  /* ── Tables & DataFrames ── */
   .stDataFrame {
-      border-radius: var(--radius-md) !important;
+      border-radius: var(--r-card) !important;
       overflow: hidden !important;
       border: 1px solid var(--border) !important;
-      background: var(--surface) !important;
   }
-
   .stDataFrame th {
-      background: var(--surface-subtle) !important;
+      background: var(--bg-secondary) !important;
       color: var(--text-secondary) !important;
-      font-weight: 500 !important;
-      font-size: 0.78rem !important;
+      font-weight: 600 !important; font-size: 0.8125rem !important;
       letter-spacing: 0.02em !important;
       border-bottom: 1px solid var(--border) !important;
   }
-
   .stDataFrame td {
-      color: var(--text-main) !important;
-      border-color: var(--surface-subtle) !important;
-      font-size: 0.8125rem !important;
+      color: var(--text-primary) !important;
+      border-color: var(--bg-secondary) !important;
+      font-variant-numeric: tabular-nums;
   }
 
-  /* ── Segmented Tabs (ElevenLabs Style) ── */
+  /* Segmented tab bar */
   .stTabs [data-baseweb="tab-list"] {
-      gap: 2px;
-      background: var(--surface-subtle);
-      border-radius: var(--radius-md);
-      padding: 3px;
+      gap: 4px; background: var(--bg-secondary);
+      border-radius: var(--r-btn); padding: 4px;
       border: 1px solid var(--border);
   }
-
   .stTabs [data-baseweb="tab"] {
-      font-size: 0.8125rem;
-      font-weight: 500;
-      padding: 5px 12px;
-      border-radius: var(--radius-sm);
-      color: var(--text-secondary);
-      background: transparent;
-      border: none;
-      transition: all 0.12s ease;
+      font-size: 0.8125rem; font-weight: 500; padding: 6px 14px;
+      border-radius: 6px; color: var(--text-secondary);
+      background: transparent; border: none; transition: all 0.15s ease;
   }
-
-  .stTabs [data-baseweb="tab"]:hover {
-      color: var(--text-main);
-  }
-
+  .stTabs [data-baseweb="tab"]:hover { color: var(--text-primary); }
   .stTabs [aria-selected="true"] {
-      background: var(--surface) !important;
-      color: var(--text-main) !important;
-      font-weight: 600 !important;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+      background: var(--bg-surface) !important;
+      color: var(--text-primary) !important; font-weight: 600 !important;
+      box-shadow: 0 1px 3px rgba(15,23,42,0.08);
   }
 
-  /* ── Alerts & Notifications ── */
+  /* Alerts */
   .stAlert {
-      border-radius: var(--radius-sm) !important;
-      padding: 10px 14px !important;
-      font-weight: 400 !important;
-      font-size: 0.84rem !important;
+      border-radius: var(--r-btn) !important;
+      padding: 12px 16px !important; font-weight: 500 !important;
   }
-  .stSuccess { background: var(--positive-bg) !important; border: 1px solid var(--positive-border) !important; color: var(--positive) !important; }
-  .stInfo    { background: var(--surface-subtle) !important; border: 1px solid var(--border) !important; color: var(--text-main) !important; }
-  .stWarning { background: var(--warning-bg) !important; border: 1px solid var(--warning-border) !important; color: var(--warning) !important; }
-  .stError   { background: var(--negative-bg) !important; border: 1px solid var(--negative-border) !important; color: var(--negative) !important; }
+  .stSuccess { background: rgba(22,163,74,0.08) !important; border: 1px solid rgba(22,163,74,0.15) !important; color: var(--positive) !important; }
+  .stInfo    { background: var(--bg-secondary) !important; border: 1px solid var(--border) !important; color: var(--text-primary) !important; }
+  .stWarning { background: rgba(217,119,6,0.08) !important; border: 1px solid rgba(217,119,6,0.15) !important; color: var(--warning) !important; }
+  .stError   { background: rgba(220,38,38,0.08) !important; border: 1px solid rgba(220,38,38,0.15) !important; color: var(--negative) !important; }
 
-  /* ── Download Button ── */
+  /* Download — ghost style */
   .stDownloadButton > button {
-      background: var(--surface) !important;
+      background: var(--bg-surface) !important;
       border: 1px solid var(--border) !important;
-      color: var(--text-main) !important;
-      font-weight: 500 !important;
-      border-radius: var(--radius-sm) !important;
-      font-size: 0.84rem !important;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+      color: var(--text-secondary) !important;
+      font-weight: 500 !important; border-radius: var(--r-btn) !important;
   }
-
   .stDownloadButton > button:hover {
-      background: var(--surface-subtle) !important;
-      border-color: var(--border-strong) !important;
+      background: var(--bg-secondary) !important;
+      color: var(--text-primary) !important;
   }
 
-  /* ── General Text Colors ── */
-  p, li, span, div {
-      color: var(--text-secondary);
-  }
+  /* ═══════════════════════════════════════════════════════
+     GENERAL TEXT
+     ═══════════════════════════════════════════════════════ */
+  p, li, span, div { color: var(--text-primary); }
   h1, h2, h3, h4, h5 {
-      color: var(--text-main);
-      font-weight: 600;
+      color: var(--text-primary); font-weight: 600;
       letter-spacing: -0.02em;
   }
   .stCaption, caption {
-      color: var(--text-muted) !important;
-      font-size: 0.78rem;
+      color: var(--text-muted) !important; font-size: 0.8125rem;
   }
+  hr { border-color: var(--border) !important; margin: 1.5rem 0; }
 
-  hr { border-color: var(--border) !important; margin: 1.25rem 0; }
-
-  /* ── Mobile Responsiveness ── */
+  /* Mobile */
   @media (max-width: 768px) {
-      .block-container {
-          padding-left: 1rem !important;
-          padding-right: 1rem !important;
-      }
-      .eleven-header {
-          padding: 0.5rem 0 1rem 0;
-      }
+      .block-container { padding-left: 1rem !important; padding-right: 1rem !important; }
+      .qt-header { padding: 0.5rem 0 1rem 0; }
   }
 </style>
 """, unsafe_allow_html=True)
@@ -626,13 +491,13 @@ st.components.v1.html("""
   const style = document.createElement('style');
   style.id = id;
   style.textContent = `
-    [data-baseweb="popover"] { background: #FFFFFF !important; border-radius: 8px !important; border: 1px solid #E4E4E7 !important; box-shadow: 0 4px 16px rgba(0,0,0,0.08) !important; overflow: hidden !important; }
+    [data-baseweb="popover"] { background: #FFFFFF !important; border-radius: 8px !important; border: 1px solid #E2E8F0 !important; box-shadow: 0 4px 16px rgba(15,23,42,0.08) !important; overflow: hidden !important; }
     [data-baseweb="menu"], ul[data-baseweb="menu"] { background: #FFFFFF !important; border-radius: 8px !important; padding: 4px !important; }
-    [role="option"] { background: transparent !important; color: #52525B !important; border-radius: 6px !important; margin: 1px 4px !important; padding: 8px 12px !important; font-family: 'Inter', sans-serif !important; font-size: 0.84rem !important; }
-    [role="option"]:hover { background: #F4F4F5 !important; color: #18181B !important; }
-    [role="option"][aria-selected="true"] { background: #ECECEE !important; color: #18181B !important; font-weight: 600 !important; }
-    [data-baseweb="select"] input { color: #18181B !important; }
-    [data-baseweb="tooltip"] { background: #18181B !important; color: #FFFFFF !important; border-radius: 6px !important; font-family: 'Inter', sans-serif !important; font-size: 0.75rem !important; }
+    [role="option"] { background: transparent !important; color: #475569 !important; border-radius: 6px !important; margin: 1px 4px !important; padding: 8px 12px !important; font-family: 'Inter', sans-serif !important; font-size: 0.875rem !important; }
+    [role="option"]:hover { background: #F1F5F9 !important; color: #0F172A !important; }
+    [role="option"][aria-selected="true"] { background: #F5F3FF !important; color: #7C3AED !important; font-weight: 600 !important; }
+    [data-baseweb="select"] input { color: #0F172A !important; }
+    [data-baseweb="tooltip"] { background: #0F172A !important; color: #FFFFFF !important; border-radius: 6px !important; font-family: 'Inter', sans-serif !important; font-size: 0.75rem !important; }
   `;
   try { window.parent.document.head.appendChild(style.cloneNode(true)); } catch(e) {}
   document.head.appendChild(style);
@@ -739,7 +604,7 @@ def main():
                 <span class="status-val-pill">CONNECTED</span>
             </div>
             <hr style="margin:10px 0;border-color:var(--border);">
-            <div style="display:flex;justify-content:space-between;font-size:0.6875rem;color:var(--text-dim);font-weight:500;">
+            <div style="display:flex;justify-content:space-between;font-size:0.6875rem;color:var(--text-muted);font-weight:500;">
                 <span>Coverage: NSE & Global</span>
                 <span>Pro Suite</span>
             </div>
@@ -760,16 +625,18 @@ def main():
     current_title, current_desc = section_meta.get(selected_section, ("Financial Intelligence", "Enterprise Market Analytics"))
 
     st.markdown(f"""
-    <div class="eleven-header">
-        <div>
-            <div class="eleven-breadcrumb">WORKSPACE / {selected_section.upper()}</div>
-            <h1 class="eleven-title">{current_title}</h1>
-            <div class="eleven-subtitle">{current_desc}</div>
-        </div>
-        <div class="eleven-chips">
-            <div class="eleven-chip"><span class="live-pulse-dot"></span><span>Real-Time Engine</span></div>
-            <div class="eleven-chip"><span>Multi-Factor AI</span></div>
-            <div class="eleven-chip"><span>Enterprise Security</span></div>
+    <div class="qt-header">
+        <div class="qt-header-top">
+            <div>
+                <div class="qt-breadcrumb">WORKSPACE / {selected_section.upper()}</div>
+                <h1 class="qt-page-title">{current_title}</h1>
+                <div class="qt-page-sub">{current_desc}</div>
+            </div>
+            <div class="qt-chips">
+                <div class="qt-chip"><span class="live-pulse-dot"></span><span>Real-Time Engine</span></div>
+                <div class="qt-chip qt-chip-ai"><span>Multi-Factor AI</span></div>
+                <div class="qt-chip"><span>Enterprise Security</span></div>
+            </div>
         </div>
     </div>
     """, unsafe_allow_html=True)
