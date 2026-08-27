@@ -358,37 +358,45 @@ st.markdown("""
   }
 
   /* ═══════════════════════════════════════════
-     SENSE TOP TOOLBAR & CONTROLS
+     SENSE FIXED TOPBAR — IN THE TOPBAR DIRECTLY
      ═══════════════════════════════════════════ */
-  .sense-topbar {
+  .sense-topbar-fixed {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3.25rem;
+      z-index: 99999;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 0 1rem 0;
-      margin-top: -0.25rem;
-      margin-bottom: 1.25rem;
-      border-bottom: 1px solid var(--border);
+      pointer-events: none;
+      padding: 0 1.25rem;
   }
   .sense-title-group {
+      pointer-events: auto;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+      margin-left: 3.75rem; /* room for sidebar collapse button */
   }
   .sense-title {
-      font-size: 1.5rem;
+      font-size: 1.1875rem;
       font-weight: 800;
       color: var(--ink);
       letter-spacing: -0.025em;
       margin: 0;
   }
   .sense-user-actions {
+      pointer-events: auto;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+      margin-right: 6.5rem; /* room for Streamlit right icons */
   }
   .sense-avatar-btn {
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
       background: var(--brand);
       color: #FFF;
@@ -396,19 +404,19 @@ st.markdown("""
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 0.75rem;
+      font-size: 0.6875rem;
       box-shadow: 0 2px 6px rgba(124,58,237,0.25);
   }
   .sense-icon-btn {
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
       background: var(--bg-subtle);
       border: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.875rem;
+      font-size: 0.8125rem;
       color: var(--ink-muted);
   }
 
@@ -418,7 +426,8 @@ st.markdown("""
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      margin-bottom: 1.75rem;
+      margin-top: 0.5rem;
+      margin-bottom: 1.5rem;
       flex-wrap: wrap;
   }
   .sense-filters-left {
@@ -1091,9 +1100,9 @@ def main():
     )
 
     st.markdown(f"""
-    <div class="sense-topbar">
+    <div class="sense-topbar-fixed">
         <div class="sense-title-group">
-            <h1 class="sense-title">{current_title}</h1>
+            <h1 class="sense-title">{current_icon} {current_title}</h1>
         </div>
         <div class="sense-user-actions">
             <div class="sense-icon-btn" title="Dark mode toggle">🌙</div>
