@@ -38,39 +38,56 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── Enterprise White & Purple CSS (Figtree Font) ─────────────────────────────
+# ── ElevenLabs-Grade Editorial Design System ──────────────────────────────────
 st.markdown("""
 <style>
   /* ── Google Fonts: Inter & JetBrains Mono ── */
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-  /* ── CSS Variables (QuanTum Style Guide) ── */
+  /* ── ElevenLabs Design Tokens ── */
   :root {
-      --primary-600: #7C3AED;
-      --primary-500: #8B5CF6;
-      --primary-400: #A78BFA;
-      --primary-300: #C4B5FD;
-      --primary-100: #EDE9FE;
-      --primary-50:  #F5F3FF;
+      --canvas: #FAFAFA;
+      --surface: #FFFFFF;
+      --surface-subtle: #F4F4F5;
+      --surface-muted: #ECECEE;
       
-      --surface-app: #F8FAFC;
-      --surface-primary: #FFFFFF;
-      --surface-secondary: #F1F5F9;
+      --border: #E4E4E7;
+      --border-subtle: #F4F4F5;
+      --border-strong: #D4D4D8;
       
-      --border: #E2E8F0;
+      --text-main: #18181B;
+      --text-secondary: #52525B;
+      --text-muted: #71717A;
+      --text-dim: #A1A1AA;
       
-      --text-primary: #0F172A;
-      --text-secondary: #475569;
-      --text-muted: #94A3B8;
+      --primary: #18181B;
+      --primary-hover: #27272A;
+      --primary-active: #09090B;
+      
+      --brand-purple: #7C3AED;
+      --brand-purple-light: #F5F3FF;
+      --brand-purple-border: #DDD6FE;
       
       --positive: #16A34A;
+      --positive-bg: #F0FDF4;
+      --positive-border: #BBF7D0;
+      
       --negative: #DC2626;
+      --negative-bg: #FEF2F2;
+      --negative-border: #FECACA;
+      
       --warning: #D97706;
+      --warning-bg: #FFFBEB;
+      --warning-border: #FDE68A;
+      
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
   }
 
-  /* ── Global Reset & Typography ── */
+  /* ── Global Typography & Reset ── */
   html, body, [class*="css"], [class*="st-"], [data-testid="stSidebar"], .stMarkdown, .stButton, input, select, textarea, p, h1, h2, h3, h4, h5, h6, span, div, label, li {
-      font-family: 'Inter', ui-sans-serif, system-ui, sans-serif !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
       letter-spacing: -0.01em;
   }
 
@@ -78,62 +95,51 @@ st.markdown("""
       font-family: 'JetBrains Mono', monospace !important;
   }
 
-  /* ── App Canvas Background ── */
+  /* ── App Canvas ── */
   .stApp {
-      background-color: var(--surface-app);
-      color: var(--text-primary);
+      background-color: var(--canvas);
+      color: var(--text-main);
       min-height: 100vh;
   }
 
-  /* ── Main Container Padding ── */
+  /* ── Main Container Spacing ── */
   .block-container {
-      padding-top: 2rem !important;
+      padding-top: 1.5rem !important;
       padding-bottom: 3rem !important;
-      padding-left: clamp(1.5rem, 4vw, 4rem) !important;
-      padding-right: clamp(1.5rem, 4vw, 4rem) !important;
-      max-width: 1440px !important;
+      padding-left: clamp(1.5rem, 4vw, 3.5rem) !important;
+      padding-right: clamp(1.5rem, 4vw, 3.5rem) !important;
+      max-width: 1360px !important;
   }
 
-  /* Compact the top header space */
   header[data-testid="stHeader"] {
+      background: transparent !important;
       height: 2.5rem !important;
   }
 
-  /* ── Animations ── */
-  @keyframes pulseLive {
-      0%, 100% {
-          box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6);
-          transform: scale(1);
-      }
-      50% {
-          box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
-          transform: scale(1.08);
-      }
+  /* ── Pulse Animation ── */
+  @keyframes livePulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4); transform: scale(1); }
+      50% { box-shadow: 0 0 0 4px rgba(22, 163, 74, 0); transform: scale(1.05); }
   }
 
-  @keyframes purpleGlow {
-      0%, 100% { box-shadow: 0 4px 14px rgba(124, 58, 237, 0.25); }
-      50% { box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4); }
-  }
-
-  /* ── Left Sidebar Enterprise Navigation ── */
+  /* ── Left Sidebar (ElevenLabs Style) ── */
   [data-testid="stSidebar"] {
-      background-color: var(--surface-primary) !important;
+      background-color: var(--surface) !important;
       border-right: 1px solid var(--border) !important;
-      padding: 1rem 0.5rem !important;
+      padding: 1.25rem 0.75rem !important;
   }
 
   [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h1,
   [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h2,
   [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h3 {
-      color: var(--text-primary) !important;
+      color: var(--text-main) !important;
   }
 
-  /* Brand Header Container */
+  /* Brand Container */
   .sidebar-brand-container {
-      padding: 0.75rem 0.75rem 1.25rem 0.75rem;
+      padding: 0.25rem 0.5rem 1rem 0.5rem;
       border-bottom: 1px solid var(--border);
-      margin-bottom: 1.25rem;
+      margin-bottom: 1rem;
   }
 
   .sidebar-brand-header {
@@ -143,109 +149,118 @@ st.markdown("""
   }
 
   .brand-icon-box {
-      width: 40px;
-      height: 40px;
-      border-radius: 8px;
-      background: var(--primary-600);
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      background: var(--text-main);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.25rem;
-      color: #ffffff;
+      font-size: 1rem;
+      color: #FFFFFF;
+      font-weight: 700;
   }
 
   .brand-text-title {
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      line-height: 1.15;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
   }
 
   .brand-text-sub {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--text-secondary);
+      font-size: 0.6875rem;
+      font-weight: 500;
+      color: var(--text-muted);
   }
 
   .brand-tag {
       display: inline-block;
       margin-top: 8px;
-      font-size: 0.65rem;
+      font-size: 0.625rem;
       font-weight: 600;
       letter-spacing: 0.04em;
       text-transform: uppercase;
-      padding: 3px 8px;
-      border-radius: 999px;
-      background: var(--primary-50);
-      color: var(--primary-600);
-      border: 1px solid var(--primary-100);
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--surface-subtle);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
   }
 
-  /* ── Sidebar Radio Navigation Items ── */
+  /* ── Sidebar Navigation (Zero Radio Circles) ── */
   [data-testid="stSidebar"] .stRadio > label {
-      font-size: 0.75rem !important;
+      font-size: 0.6875rem !important;
       font-weight: 600 !important;
-      color: var(--text-muted) !important;
+      color: var(--text-dim) !important;
       text-transform: uppercase !important;
-      letter-spacing: 0.04em !important;
-      padding-left: 6px !important;
-      margin-bottom: 8px !important;
+      letter-spacing: 0.06em !important;
+      padding-left: 8px !important;
+      margin-bottom: 6px !important;
   }
 
   [data-testid="stSidebar"] .stRadio > div {
-      gap: 4px !important;
+      gap: 2px !important;
   }
 
+  /* Hide raw radio circles completely */
+  [data-testid="stSidebar"] .stRadio [role="radiogroup"] label > div:first-child,
+  [data-testid="stSidebar"] .stRadio [data-baseweb="radio"] > div:first-child,
+  [data-testid="stSidebar"] .stRadio input[type="radio"] + div {
+      display: none !important;
+  }
+
+  /* Sidebar Navigation Item */
   [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"] {
       background: transparent !important;
       border: 1px solid transparent !important;
-      border-radius: 8px !important;
-      padding: 8px 12px !important;
+      border-radius: var(--radius-sm) !important;
+      padding: 7px 10px !important;
       margin: 1px 0 !important;
-      transition: all 0.15s ease !important;
+      transition: all 0.12s ease !important;
       cursor: pointer !important;
       width: 100% !important;
   }
 
   [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"]:hover {
-      background: var(--surface-secondary) !important;
+      background: var(--surface-subtle) !important;
   }
 
   [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"] div[data-testid="stMarkdownContainer"] p {
       color: var(--text-secondary) !important;
       font-weight: 500 !important;
-      font-size: 0.88rem !important;
+      font-size: 0.84rem !important;
+      margin: 0 !important;
   }
 
-  /* Active Sidebar State */
-  [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"] input[type="radio"]:checked + div + div p {
-      color: var(--primary-600) !important;
+  /* Active Sidebar Item */
+  [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"]:has(input[type="radio"]:checked) {
+      background: var(--surface-subtle) !important;
+      border-left: 2px solid var(--text-main) !important;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0 !important;
+  }
+
+  [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"] input[type="radio"]:checked + div + div p,
+  [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"]:has(input[type="radio"]:checked) div[data-testid="stMarkdownContainer"] p {
+      color: var(--text-main) !important;
       font-weight: 600 !important;
   }
-  [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"]:has(input[type="radio"]:checked) {
-      background: var(--primary-50) !important;
-  }
 
-  /* Hide raw radio circles */
-  [data-testid="stSidebar"] .stRadio [role="radio"] > div:first-child,
-  [data-testid="stSidebar"] .stRadio [data-baseweb="radio"] > div:first-child {
-      display: none !important;
-  }
-
-  /* ── Sidebar Status Card ── */
+  /* ── Sidebar System Status Footer ── */
   .sidebar-status-card {
       background: transparent;
       border-top: 1px solid var(--border);
-      padding: 16px 0;
-      margin-top: 1rem;
+      padding: 12px 4px 0 4px;
+      margin-top: 1.25rem;
   }
 
   .status-header-text {
-      font-size: 0.72rem;
+      font-size: 0.6875rem;
       font-weight: 600;
-      color: var(--text-muted);
+      color: var(--text-dim);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
       margin-bottom: 8px;
   }
 
@@ -253,329 +268,350 @@ st.markdown("""
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 5px 0;
-      font-size: 0.78rem;
+      padding: 4px 0;
+      font-size: 0.75rem;
   }
 
   .status-left {
       display: flex;
       align-items: center;
-      gap: 7px;
-      color: var(--text-primary);
+      gap: 6px;
+      color: var(--text-secondary);
       font-weight: 500;
   }
 
   .status-val-pill {
-      font-size: 0.7rem;
-      font-weight: 600;
-      padding: 2px 7px;
-      border-radius: 9999px;
-      background: rgba(22, 163, 74, 0.1);
-      color: var(--positive);
-      border: 1px solid rgba(22, 163, 74, 0.2);
+      font-size: 0.6875rem;
+      font-weight: 500;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: var(--surface-subtle);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
   }
 
   .live-pulse-dot {
-      width: 7px;
-      height: 7px;
+      width: 6px;
+      height: 6px;
       background-color: var(--positive);
       border-radius: 50%;
       display: inline-block;
-      animation: pulseLive 2s infinite cubic-bezier(0.45, 0, 0.55, 1);
+      animation: livePulse 2s infinite cubic-bezier(0.45, 0, 0.55, 1);
   }
 
-  /* ── Main View Header ── */
-  .enterprise-hero-header {
-      background: transparent;
+  /* ── ElevenLabs Page Header ── */
+  .eleven-header {
+      padding: 0.5rem 0 1.25rem 0;
+      margin-bottom: 1.75rem;
       border-bottom: 1px solid var(--border);
-      padding: 1rem 0 1.5rem 0;
-      margin-bottom: 2rem;
       display: flex;
-      align-items: center;
+      align-items: flex-end;
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 16px;
   }
 
-  .main-title-text {
-      font-size: clamp(1.4rem, 3vw, 1.75rem);
+  .eleven-breadcrumb {
+      font-size: 0.6875rem;
       font-weight: 600;
-      color: var(--text-primary);
-      letter-spacing: -0.03em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+  }
+
+  .eleven-title {
+      font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+      font-weight: 600;
+      color: var(--text-main);
+      letter-spacing: -0.025em;
       line-height: 1.2;
       margin: 0;
   }
 
-  .main-subtitle-text {
-      font-size: 0.88rem;
+  .eleven-subtitle {
+      font-size: 0.84rem;
       color: var(--text-secondary);
-      margin-top: 6px;
+      margin-top: 4px;
       font-weight: 400;
   }
 
-  .badge-chip-group {
+  .eleven-chips {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       flex-wrap: wrap;
   }
 
-  .badge-chip {
+  .eleven-chip {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 0.72rem;
+      gap: 5px;
+      padding: 3px 9px;
+      border-radius: 9999px;
+      font-size: 0.6875rem;
       font-weight: 500;
-      background: transparent;
+      background: var(--surface);
       border: 1px solid var(--border);
       color: var(--text-secondary);
   }
 
-  /* ── Enterprise Cards & Panels ── */
-  .enterprise-panel {
-      background: var(--surface-primary);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
+  /* ── Form Controls & Action Row Alignment ── */
+  [data-testid="column"] {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
   }
 
-  /* ── Buttons (Purple Theme) ── */
-  .stButton > button {
-      width: 100%;
-      min-height: 40px !important;
-      padding: 0 16px !important;
-      font-size: 0.88rem;
-      font-weight: 500;
-      border-radius: 8px;
-      border: 1px solid transparent !important;
-      background: var(--surface-primary);
-      color: var(--text-primary);
-      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
-      transition: all 0.15s ease;
-  }
-
-  .stButton > button:hover {
-      background: var(--surface-secondary);
-      border-color: var(--border) !important;
-      color: var(--text-primary) !important;
-  }
-
-  .stButton > button[kind="primary"] {
-      background: var(--primary-600) !important;
-      color: #ffffff !important;
-      border: none !important;
-  }
-
-  .stButton > button[kind="primary"]:hover {
-      background: var(--primary-500) !important;
-  }
-
-  .stButton > button[kind="secondary"] {
-      background: var(--surface-primary) !important;
-      border: 1px solid var(--border) !important;
-      color: var(--text-secondary) !important;
-  }
-
-  .stButton > button[kind="secondary"]:hover {
-      background: var(--surface-secondary) !important;
-      color: var(--text-primary) !important;
-  }
-
-  /* ── Input Fields & Selectboxes ── */
+  /* Input Fields & Textareas */
   .stTextInput > div > div > input,
   .stSelectbox > div > div,
   .stTextArea > div > div > textarea {
-      background: var(--surface-primary) !important;
+      background: var(--surface) !important;
       border: 1px solid var(--border) !important;
-      border-radius: 8px !important;
-      color: var(--text-primary) !important;
-      font-size: 0.88rem !important;
+      border-radius: var(--radius-sm) !important;
+      color: var(--text-main) !important;
+      font-size: 0.84rem !important;
       font-weight: 400 !important;
-      padding: 10px 12px !important;
-      min-height: 40px !important;
-      transition: all 0.15s ease !important;
+      padding: 8px 12px !important;
+      min-height: 38px !important;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
+      transition: all 0.12s ease !important;
   }
 
   .stTextInput > div > div > input:focus,
   .stSelectbox > div > div:focus-within,
   .stTextArea > div > div > textarea:focus {
-      border-color: var(--primary-500) !important;
-      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15) !important;
+      border-color: var(--text-main) !important;
+      box-shadow: 0 0 0 1px var(--text-main) !important;
   }
 
-  /* ── Selectbox Dropdown Container ── */
   .stSelectbox [data-baseweb="select"] > div {
-      background: var(--surface-primary) !important;
+      background: var(--surface) !important;
       border-color: var(--border) !important;
-      border-radius: 8px !important;
-      min-height: 40px !important;
+      border-radius: var(--radius-sm) !important;
+      min-height: 38px !important;
   }
-  .stSelectbox [data-baseweb="select"] * { color: var(--text-primary) !important; font-weight: 400; }
+
+  .stSelectbox [data-baseweb="select"] * { color: var(--text-main) !important; font-weight: 400; font-size: 0.84rem; }
   .stSelectbox svg { fill: var(--text-muted) !important; }
+
+  /* Input Labels */
+  .stTextInput label, .stSelectbox label, .stTextArea label {
+      font-size: 0.78rem !important;
+      font-weight: 500 !important;
+      color: var(--text-secondary) !important;
+      margin-bottom: 4px !important;
+  }
+
+  /* ── Buttons (ElevenLabs Style: Ink Primary & Crisp Secondary) ── */
+  .stButton > button {
+      width: 100%;
+      min-height: 38px !important;
+      padding: 0 14px !important;
+      font-size: 0.84rem !important;
+      font-weight: 500 !important;
+      border-radius: var(--radius-sm) !important;
+      border: 1px solid var(--border) !important;
+      background: var(--surface) !important;
+      color: var(--text-main) !important;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+      transition: all 0.12s ease !important;
+  }
+
+  .stButton > button:hover {
+      background: var(--surface-subtle) !important;
+      border-color: var(--border-strong) !important;
+      color: var(--text-main) !important;
+  }
+
+  .stButton > button[kind="primary"] {
+      background: var(--primary) !important;
+      color: #FFFFFF !important;
+      border: 1px solid var(--primary) !important;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  .stButton > button[kind="primary"]:hover {
+      background: var(--primary-hover) !important;
+      border-color: var(--primary-hover) !important;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12) !important;
+  }
+
+  .stButton > button[kind="primary"]:active {
+      background: var(--primary-active) !important;
+  }
 
   /* ── Metric Cards ── */
   [data-testid="metric-container"] {
-      background: var(--surface-primary) !important;
+      background: var(--surface) !important;
       border: 1px solid var(--border) !important;
-      border-radius: 10px !important;
+      border-radius: var(--radius-md) !important;
       padding: 14px 16px !important;
-      transition: all 0.15s ease !important;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02) !important;
+      transition: border-color 0.12s ease !important;
   }
 
   [data-testid="metric-container"]:hover {
-      border-color: var(--primary-300) !important;
+      border-color: var(--border-strong) !important;
   }
 
   [data-testid="metric-container"] label {
-      color: var(--text-secondary) !important;
-      font-size: 0.78rem !important;
-      font-weight: 600 !important;
+      color: var(--text-muted) !important;
+      font-size: 0.6875rem !important;
+      font-weight: 500 !important;
       text-transform: uppercase !important;
       letter-spacing: 0.04em !important;
   }
 
   [data-testid="metric-container"] [data-testid="metric-value"] {
-      color: var(--text-primary) !important;
-      font-size: clamp(1.2rem, 3vw, 1.55rem) !important;
-      font-weight: 700 !important;
+      color: var(--text-main) !important;
+      font-size: clamp(1.15rem, 2.5vw, 1.4rem) !important;
+      font-weight: 600 !important;
       font-variant-numeric: tabular-nums;
   }
 
   /* ── Expanders ── */
   .streamlit-expanderHeader {
-      background: var(--surface-secondary) !important;
+      background: var(--surface) !important;
       border: 1px solid var(--border) !important;
-      border-radius: 8px !important;
-      color: var(--text-primary) !important;
-      font-weight: 600 !important;
-      font-size: 0.88rem !important;
+      border-radius: var(--radius-sm) !important;
+      color: var(--text-main) !important;
+      font-weight: 500 !important;
+      font-size: 0.84rem !important;
       padding: 10px 14px !important;
-      min-height: 40px !important;
+      min-height: 38px !important;
+      transition: all 0.12s ease !important;
   }
 
   .streamlit-expanderHeader:hover {
-      background: var(--surface-app) !important;
+      background: var(--surface-subtle) !important;
+      border-color: var(--border-strong) !important;
   }
 
   .streamlit-expanderContent {
-      background: var(--surface-primary) !important;
-      border-radius: 0 0 8px 8px !important;
+      background: var(--surface) !important;
+      border-radius: 0 0 var(--radius-sm) var(--radius-sm) !important;
       border: 1px solid var(--border) !important;
       border-top: none !important;
-      padding: 16px !important;
+      padding: 14px 16px !important;
   }
 
   /* ── Status Widget ── */
   [data-testid="stStatus"] {
-      background: var(--surface-secondary) !important;
+      background: var(--surface) !important;
       border: 1px solid var(--border) !important;
-      border-radius: 10px !important;
+      border-radius: var(--radius-md) !important;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
   }
-  [data-testid="stStatus"] * { color: var(--text-primary) !important; }
+  [data-testid="stStatus"] * { color: var(--text-main) !important; }
 
   /* ── Tables & DataFrames ── */
   .stDataFrame {
-      border-radius: 10px !important;
+      border-radius: var(--radius-md) !important;
       overflow: hidden !important;
       border: 1px solid var(--border) !important;
+      background: var(--surface) !important;
   }
 
   .stDataFrame th {
-      background: var(--surface-secondary) !important;
+      background: var(--surface-subtle) !important;
       color: var(--text-secondary) !important;
-      font-weight: 600 !important;
-      font-size: 0.82rem !important;
+      font-weight: 500 !important;
+      font-size: 0.78rem !important;
       letter-spacing: 0.02em !important;
       border-bottom: 1px solid var(--border) !important;
   }
 
   .stDataFrame td {
-      color: var(--text-primary) !important;
-      border-color: var(--surface-secondary) !important;
+      color: var(--text-main) !important;
+      border-color: var(--surface-subtle) !important;
+      font-size: 0.8125rem !important;
   }
 
-  /* ── Sub-Tabs (e.g. Horizon Tabs) ── */
+  /* ── Segmented Tabs (ElevenLabs Style) ── */
   .stTabs [data-baseweb="tab-list"] {
-      gap: 4px;
-      background: var(--surface-secondary);
-      border-radius: 8px;
-      padding: 4px;
+      gap: 2px;
+      background: var(--surface-subtle);
+      border-radius: var(--radius-md);
+      padding: 3px;
       border: 1px solid var(--border);
   }
 
   .stTabs [data-baseweb="tab"] {
-      font-size: 0.82rem;
+      font-size: 0.8125rem;
       font-weight: 500;
-      padding: 6px 12px;
-      border-radius: 6px;
+      padding: 5px 12px;
+      border-radius: var(--radius-sm);
       color: var(--text-secondary);
       background: transparent;
       border: none;
-      transition: all 0.15s ease;
+      transition: all 0.12s ease;
   }
 
   .stTabs [data-baseweb="tab"]:hover {
-      color: var(--text-primary);
+      color: var(--text-main);
   }
 
   .stTabs [aria-selected="true"] {
-      background: var(--surface-primary) !important;
-      color: var(--text-primary) !important;
+      background: var(--surface) !important;
+      color: var(--text-main) !important;
       font-weight: 600 !important;
-      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06) !important;
   }
 
   /* ── Alerts & Notifications ── */
   .stAlert {
-      border-radius: 8px !important;
-      padding: 12px 16px !important;
-      font-weight: 500 !important;
+      border-radius: var(--radius-sm) !important;
+      padding: 10px 14px !important;
+      font-weight: 400 !important;
+      font-size: 0.84rem !important;
   }
-  .stSuccess { background: rgba(22, 163, 74, 0.1) !important; border: 1px solid rgba(22, 163, 74, 0.2) !important; color: var(--positive) !important; }
-  .stInfo    { background: var(--surface-secondary) !important; border: 1px solid var(--border) !important; color: var(--text-primary) !important; }
-  .stWarning { background: rgba(217, 119, 6, 0.1) !important; border: 1px solid rgba(217, 119, 6, 0.2) !important; color: var(--warning) !important; }
-  .stError   { background: rgba(220, 38, 38, 0.1) !important; border: 1px solid rgba(220, 38, 38, 0.2) !important; color: var(--negative) !important; }
+  .stSuccess { background: var(--positive-bg) !important; border: 1px solid var(--positive-border) !important; color: var(--positive) !important; }
+  .stInfo    { background: var(--surface-subtle) !important; border: 1px solid var(--border) !important; color: var(--text-main) !important; }
+  .stWarning { background: var(--warning-bg) !important; border: 1px solid var(--warning-border) !important; color: var(--warning) !important; }
+  .stError   { background: var(--negative-bg) !important; border: 1px solid var(--negative-border) !important; color: var(--negative) !important; }
 
-  /* ── Download Action Button ── */
+  /* ── Download Button ── */
   .stDownloadButton > button {
-      background: var(--positive) !important;
-      border: none !important;
-      color: #ffffff !important;
-      font-weight: 600;
-      border-radius: 8px;
+      background: var(--surface) !important;
+      border: 1px solid var(--border) !important;
+      color: var(--text-main) !important;
+      font-weight: 500 !important;
+      border-radius: var(--radius-sm) !important;
+      font-size: 0.84rem !important;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
   }
 
   .stDownloadButton > button:hover {
-      opacity: 0.9;
+      background: var(--surface-subtle) !important;
+      border-color: var(--border-strong) !important;
   }
 
   /* ── General Text Colors ── */
   p, li, span, div {
-      color: var(--text-primary);
+      color: var(--text-secondary);
   }
   h1, h2, h3, h4, h5 {
-      color: var(--text-primary);
+      color: var(--text-main);
       font-weight: 600;
+      letter-spacing: -0.02em;
   }
   .stCaption, caption {
-      color: var(--text-secondary) !important;
-      font-size: 0.8rem;
+      color: var(--text-muted) !important;
+      font-size: 0.78rem;
   }
 
-  /* ── Horizontal rule ── */
   hr { border-color: var(--border) !important; margin: 1.25rem 0; }
 
-  /* ── Mobile Responsive Adjustments ── */
+  /* ── Mobile Responsiveness ── */
   @media (max-width: 768px) {
       .block-container {
           padding-left: 1rem !important;
           padding-right: 1rem !important;
       }
-      .enterprise-hero-header {
-          padding: 1rem;
+      .eleven-header {
+          padding: 0.5rem 0 1rem 0;
       }
   }
 </style>
@@ -590,20 +626,20 @@ st.components.v1.html("""
   const style = document.createElement('style');
   style.id = id;
   style.textContent = `
-    [data-baseweb="popover"] { background: #ffffff !important; border-radius: 10px !important; border: 1px solid #E2E8F0 !important; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08) !important; overflow: hidden !important; }
-    [data-baseweb="menu"], ul[data-baseweb="menu"] { background: #ffffff !important; border-radius: 10px !important; padding: 4px !important; }
-    [role="option"] { background: transparent !important; color: #475569 !important; border-radius: 6px !important; margin: 1px 4px !important; padding: 9px 12px !important; font-family: 'Inter', sans-serif !important; font-size: 0.88rem !important; }
-    [role="option"]:hover { background: #F8FAFC !important; color: #0F172A !important; }
-    [role="option"][aria-selected="true"] { background: #F1F5F9 !important; color: #0F172A !important; font-weight: 600 !important; }
-    [data-baseweb="select"] input { color: #0F172A !important; }
-    [data-baseweb="tooltip"] { background: #0F172A !important; color: #ffffff !important; border-radius: 8px !important; font-family: 'Inter', sans-serif !important; }
+    [data-baseweb="popover"] { background: #FFFFFF !important; border-radius: 8px !important; border: 1px solid #E4E4E7 !important; box-shadow: 0 4px 16px rgba(0,0,0,0.08) !important; overflow: hidden !important; }
+    [data-baseweb="menu"], ul[data-baseweb="menu"] { background: #FFFFFF !important; border-radius: 8px !important; padding: 4px !important; }
+    [role="option"] { background: transparent !important; color: #52525B !important; border-radius: 6px !important; margin: 1px 4px !important; padding: 8px 12px !important; font-family: 'Inter', sans-serif !important; font-size: 0.84rem !important; }
+    [role="option"]:hover { background: #F4F4F5 !important; color: #18181B !important; }
+    [role="option"][aria-selected="true"] { background: #ECECEE !important; color: #18181B !important; font-weight: 600 !important; }
+    [data-baseweb="select"] input { color: #18181B !important; }
+    [data-baseweb="tooltip"] { background: #18181B !important; color: #FFFFFF !important; border-radius: 6px !important; font-family: 'Inter', sans-serif !important; font-size: 0.75rem !important; }
   `;
   try { window.parent.document.head.appendChild(style.cloneNode(true)); } catch(e) {}
   document.head.appendChild(style);
   new MutationObserver(() => {
     if (!document.getElementById(id)) document.head.appendChild(style.cloneNode(true));
   }).observe(document.body, { childList: true, subtree: true });
-})()
+})();
 </script>
 """, height=0)
 
@@ -644,35 +680,35 @@ with open('sectors.json', 'r') as f:
 
 # --- Main UI ---
 def main():
-    # ── Left Navigation Bar (Sidebar) ─────────────────────────────────────────
+    # ── Left Navigation Bar (ElevenLabs Style) ────────────────────────────────
     with st.sidebar:
         st.markdown("""
         <div class="sidebar-brand-container">
             <div class="sidebar-brand-header">
-                <div class="brand-icon-box">💸</div>
+                <div class="brand-icon-box">Q</div>
                 <div>
                     <div class="brand-text-title">QuanTum</div>
                     <div class="brand-text-sub">Financial Intelligence</div>
                 </div>
             </div>
             <div>
-                <span class="brand-tag">ENTERPRISE v3.5</span>
+                <span class="brand-tag">Enterprise v3.5</span>
             </div>
         </div>
         """, unsafe_allow_html=True)
 
         nav_options = [
-            "🏭 Sector Analysis",
-            "🏢 Stock Analysis",
-            "🏆 Top Picks",
-            "🤖 QuanTum Picks",
-            "🌍 Global Markets",
-            "📰 Market News",
-            "📚 Report Library"
+            "Sector Analysis",
+            "Stock Analysis",
+            "Top Picks",
+            "QuanTum Picks",
+            "Global Markets",
+            "Market News",
+            "Report Library"
         ]
 
         selected_section = st.radio(
-            "WORKSPACE NAVIGATION",
+            "WORKSPACE",
             nav_options,
             index=0,
             key="enterprise_nav"
@@ -702,65 +738,62 @@ def main():
                 </div>
                 <span class="status-val-pill">CONNECTED</span>
             </div>
-            <hr style="margin:8px 0;border-color:#f1f5f9;">
-            <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:#94a3b8;font-weight:600;">
+            <hr style="margin:10px 0;border-color:var(--border);">
+            <div style="display:flex;justify-content:space-between;font-size:0.6875rem;color:var(--text-dim);font-weight:500;">
                 <span>Coverage: NSE & Global</span>
                 <span>Pro Suite</span>
             </div>
         </div>
         """, unsafe_allow_html=True)
 
-    # ── Section Hero Banner ───────────────────────────────────────────────────
+    # ── Section Page Header ───────────────────────────────────────────────────
     section_meta = {
-        "🏭 Sector Analysis": ("Sector Intelligence", "Multi-Agent Deep Dive: Trends, Stocks & Institutional Positioning"),
-        "🏢 Stock Analysis": ("Investment Memo Council", "Deep dive 7-Agent research memo on Indian equities"),
-        "🏆 Top Picks": ("Screen & Rank", "Automated screening for best risk-reward opportunities"),
-        "🤖 QuanTum Picks": ("QuanTum Quant Engine", "Multi-factor quant algorithm: Technical + Fundamental + Sentiment"),
-        "🌍 Global Markets": ("Global Macro Research", "Emerging and developed markets macroeconomic intelligence"),
-        "📰 Market News": ("High-Impact News Pulse", "Real-time news stream with automated sentiment scoring"),
-        "📚 Report Library": ("Report Archive & Library", "Historical archive of generated memos, PDFs, and sector deep dives"),
+        "Sector Analysis": ("Sector Intelligence", "Multi-Agent Deep Dive: Trends, Valuation & Institutional Positioning"),
+        "Stock Analysis": ("Investment Memo Council", "Deep-dive 7-Agent research memorandum on Indian equities"),
+        "Top Picks": ("Screen & Rank", "Automated screening for best risk-reward opportunities across industries"),
+        "QuanTum Picks": ("QuanTum Quant Engine", "Multi-factor algorithmic engine: Technical + Fundamental + Sentiment"),
+        "Global Markets": ("Global Macro Research", "Emerging and developed markets macroeconomic intelligence"),
+        "Market News": ("Market News Pulse", "Real-time news stream with automated sentiment scoring"),
+        "Report Library": ("Report Archive & Library", "Historical archive of generated memos, PDFs, and sector deep dives"),
     }
 
     current_title, current_desc = section_meta.get(selected_section, ("Financial Intelligence", "Enterprise Market Analytics"))
 
     st.markdown(f"""
-    <div class="enterprise-hero-header">
+    <div class="eleven-header">
         <div>
-            <h1 class="main-title-text">{selected_section}</h1>
-            <div class="main-subtitle-text">{current_desc}</div>
+            <div class="eleven-breadcrumb">WORKSPACE / {selected_section.upper()}</div>
+            <h1 class="eleven-title">{current_title}</h1>
+            <div class="eleven-subtitle">{current_desc}</div>
         </div>
-        <div class="badge-chip-group">
-            <div class="badge-chip"><span class="live-pulse-dot"></span><span>Real-Time Engine</span></div>
-            <div class="badge-chip"><span>⚡ Multi-Factor AI</span></div>
-            <div class="badge-chip"><span>🛡️ Enterprise Security</span></div>
+        <div class="eleven-chips">
+            <div class="eleven-chip"><span class="live-pulse-dot"></span><span>Real-Time Engine</span></div>
+            <div class="eleven-chip"><span>Multi-Factor AI</span></div>
+            <div class="eleven-chip"><span>Enterprise Security</span></div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
     # ── Section 1: Sector Analysis ────────────────────────────────────────────
-    if selected_section == "🏭 Sector Analysis":
-        st.markdown("### Comprehensive Industry Analysis")
-        st.caption("Select an industry sector to initiate a 7-agent deep dive pipeline.")
-        
+    if selected_section == "Sector Analysis":
         col_s1, col_s2 = st.columns([3, 1])
         with col_s1:
-            selected_sector = st.selectbox("Choose Industry", SECTORS, key="sector_select")
+            selected_sector = st.selectbox("Industry Sector", SECTORS, key="sector_select")
         with col_s2:
-            st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
-            run_sector_btn = st.button("Generate Sector Report", type="primary")
+            run_sector_btn = st.button("Generate Sector Report", type="primary", use_container_width=True)
         
         if run_sector_btn:
             from sector_orchestrator import SectorOrchestrator
             
             report_container = st.empty()
             
-            with st.status("🏭 Sector Analysis Pipeline Running...", expanded=True) as status:
+            with st.status("Sector Analysis Pipeline Running...", expanded=True) as status:
                 def update_progress(msg):
                     st.markdown(f"<pre style='font-family: \"JetBrains Mono\", monospace; font-size: 0.8rem; background: transparent; border: none; padding: 0;'>{msg}</pre>", unsafe_allow_html=True)
                 
                 sector_council = SectorOrchestrator()
                 final_report = sector_council.run_sector_analysis(selected_sector, progress_callback=update_progress)
-                status.update(label="✅ Comprehensive Sector Report Ready!", state="complete", expanded=False)
+                status.update(label="Comprehensive Sector Report Ready!", state="complete", expanded=False)
             
             # Save Report
             os.makedirs('reports', exist_ok=True)
@@ -769,13 +802,13 @@ def main():
             with open(filename, 'w', encoding='utf-8') as f:
                 f.write(final_report)
             
-            st.success(f"📄 Report Generated: `{filename}`")
+            st.success(f"Report Generated: `{filename}`")
             
             # Generate PDF
             pdf = convert_to_pdf(final_report)
             if pdf:
                 st.download_button(
-                    "📥 Download Comprehensive Sector Report (PDF)", 
+                    "Download Sector Report (PDF)", 
                     pdf, 
                     f"{selected_sector}_Sector_Report.pdf", 
                     "application/pdf",
@@ -784,31 +817,27 @@ def main():
             else:
                 st.error("PDF generation failed.")
             
-            with st.expander("📖 Preview Report (Click to Expand)", expanded=True):
+            with st.expander("Preview Report", expanded=True):
                 st.markdown(final_report)
 
     # ── Section 2: Stock Analysis ─────────────────────────────────────────────
-    elif selected_section == "🏢 Stock Analysis":
-        st.markdown("### Deep Dive Investment Memo")
-        st.caption("Generate a rigorous institutional investment memo using the full 7-Agent Council.")
-
+    elif selected_section == "Stock Analysis":
         col_st1, col_st2 = st.columns([3, 1])
         with col_st1:
-            ticker_input = st.text_input("Enter Ticker Symbol (e.g., TATAMOTORS, RELIANCE, INFY)", placeholder="Type symbol...")
+            ticker_input = st.text_input("Ticker Symbol (NSE)", placeholder="e.g. TATAMOTORS, RELIANCE, INFY")
         with col_st2:
-            st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
-            run_stock_btn = st.button("Run Council Analysis", type="primary")
+            run_stock_btn = st.button("Run Council Analysis", type="primary", use_container_width=True)
         
         if run_stock_btn and ticker_input:
             orchestrator = AgentOrchestrator()
             report_container = st.empty()
             
-            with st.status("🚀 Convening the 7-Agent Council...", expanded=True) as status:
+            with st.status("Convening the 7-Agent Council...", expanded=True) as status:
                 def update_progress(msg):
                     st.markdown(f"<pre style='font-family: \"JetBrains Mono\", monospace; font-size: 0.8rem; background: transparent; border: none; padding: 0;'>{msg}</pre>", unsafe_allow_html=True)
                 
                 final_report = orchestrator.run_analysis_pipeline(ticker_input, progress_callback=update_progress)
-                status.update(label="✅ Final Investment Memo Ready!", state="complete", expanded=False)
+                status.update(label="Final Investment Memo Ready!", state="complete", expanded=False)
             
             report_container.markdown(final_report)
             
@@ -821,7 +850,7 @@ def main():
             pdf = convert_to_pdf(final_report)
             if pdf:
                 st.download_button(
-                    "📥 Download Investment Memo (PDF)",
+                    "Download Investment Memo (PDF)",
                     pdf,
                     f"{ticker_input}_Memo.pdf",
                     "application/pdf",
@@ -829,19 +858,15 @@ def main():
                 )
 
     # ── Section 3: Top Picks ──────────────────────────────────────────────────
-    elif selected_section == "🏆 Top Picks":
-        st.markdown("### Screen & Deep Dive Best Opportunities")
-        st.caption("Screen industry leaders and run autonomous deep dives on top candidates.")
-
+    elif selected_section == "Top Picks":
         col_tp1, col_tp2 = st.columns([3, 1])
         with col_tp1:
-            screen_sector = st.selectbox("Choose Industry to Screen", SECTORS, key="screen_selector")
+            screen_sector = st.selectbox("Industry to Screen", SECTORS, key="screen_selector")
         with col_tp2:
-            st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
-            run_tp_btn = st.button("Find Top Picks", type="primary")
+            run_tp_btn = st.button("Find Top Picks", type="primary", use_container_width=True)
         
         if run_tp_btn:
-            with st.status("🔍 Screening Sector...", expanded=True) as status:
+            with st.status("Screening Sector...", expanded=True) as status:
                 skills = analyst.load_skills()
                 model = analyst.setup_gemini()
                 screen_prompt = analyst.get_screening_prompt(screen_sector, skills)
@@ -850,29 +875,26 @@ def main():
                 ext_prompt = f"Extract exactly 3 ticker symbols from this text as a comma-separated list. Text: {screen_resp.text}"
                 tickers = [t.strip() for t in model.generate_content(ext_prompt).text.split(',')][:3]
                 
-                st.write(f"🎯 Top Picks Identified: {tickers}")
+                st.write(f"Top Picks Identified: {tickers}")
                 
                 full_report = f"# Top Picks Report: {screen_sector}\n\n"
                 orchestrator = AgentOrchestrator()
                 
                 for ticker in tickers:
-                    st.write(f"🔬 Analyzing {ticker}...")
+                    st.write(f"Analyzing {ticker}...")
                     memo = orchestrator.run_analysis_pipeline(ticker, progress_callback=lambda x: None)
                     full_report += f"\n## Analysis: {ticker}\n\n{memo}\n\n---\n\n"
                 
-                status.update(label="✅ Top Picks Report Generated!", state="complete", expanded=False)
+                status.update(label="Top Picks Report Generated!", state="complete", expanded=False)
             
             st.markdown(full_report)
             pdf = convert_to_pdf(full_report)
             if pdf:
-                st.download_button("📥 Download Top Picks Report (PDF)", pdf, f"{screen_sector}_TopPicks.pdf", "application/pdf", type="primary")
+                st.download_button("Download Top Picks Report (PDF)", pdf, f"{screen_sector}_TopPicks.pdf", "application/pdf", type="primary")
 
     # ── Section 4: QuanTum Picks ──────────────────────────────────────────────
-    elif selected_section == "🤖 QuanTum Picks":
-        st.markdown("### QuanTum Multi-Factor Engine")
-        st.caption("Technical Analysis + Fundamentals + News Sentiment → Ranked Algorithmic Recommendations")
-
-        with st.expander("⚙️ How the QuanTum Algorithm Works", expanded=False):
+    elif selected_section == "QuanTum Picks":
+        with st.expander("Algorithm Architecture & Scoring Model", expanded=False):
             col_a, col_b, col_c, col_d = st.columns(4)
             with col_a:
                 st.metric("Technical Score", "35% / Wk", "25% / Yr")
@@ -887,9 +909,9 @@ def main():
                 st.metric("Momentum Score", "15% / Wk", "25% / Yr")
                 st.caption("Price vs SMA50 & SMA200 trend")
 
-        st.markdown("---")
+        st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
 
-        col_q1, col_q2 = st.columns([2, 2])
+        col_q1, col_q2 = st.columns([3, 1])
         with col_q1:
             mode = st.radio(
                 "Execution Mode",
@@ -898,22 +920,21 @@ def main():
                 help="Fast: news-discovered stocks plus a trimmed Nifty universe. Full: the entire 80+ stock universe.",
             )
         with col_q2:
-            st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
-            run_btn = st.button("🚀 Run QuanTum Engine", type="primary", use_container_width=True)
+            run_btn = st.button("Run Quant Engine", type="primary", use_container_width=True)
 
         cached = load_report("quantum") if not run_btn else None
         if cached:
             st.success(f"Last saved run: {cached['created']} ({cached.get('mode') or 'full'})")
-            with st.expander("📖 Last saved report", expanded=False):
+            with st.expander("Last saved report", expanded=False):
                 st.markdown(cached["markdown"])
         elif not run_btn:
-            st.info("No saved report yet. Click 'Run QuanTum Engine' to generate one.")
+            st.info("No saved report yet. Click 'Run Quant Engine' to generate one.")
 
         if run_btn:
             from quantum_orchestrator import QuantumEngineOrchestrator
             progress_log = []
 
-            with st.status("🤖 QuanTum Engine Running...", expanded=True) as status:
+            with st.status("QuanTum Engine Running...", expanded=True) as status:
                 log_container = st.empty()
 
                 def qt_progress(msg):
@@ -926,10 +947,10 @@ def main():
                 result = engine.run(progress_callback=qt_progress, fast=(mode == "Fast"))
 
                 if "error" in result:
-                    status.update(label=f"❌ Error: {result['error']}", state="error")
+                    status.update(label=f"Error: {result['error']}", state="error")
                     st.error(result["error"])
                 else:
-                    status.update(label="✅ QuanTum Engine Complete!", state="complete", expanded=False)
+                    status.update(label="QuanTum Engine Complete!", state="complete", expanded=False)
                     cache_cols = ["ticker", "composite_score", "conviction", "close",
                                   "rsi", "pe_ratio", "roe", "entry_status"]
                     save_report(
@@ -945,9 +966,9 @@ def main():
                     )
 
             if "error" not in result:
-                st.markdown("### 📊 Ranked Horizon Picks")
+                st.markdown("### Ranked Horizon Picks")
                 horizon_tab1, horizon_tab2, horizon_tab3 = st.tabs([
-                    "🗓️ This Week", "📅 This Year", "🏆 5 Years"
+                    "This Week", "This Year", "5 Years"
                 ])
 
                 def show_picks_table(picks_df):
@@ -982,52 +1003,52 @@ def main():
                     st.caption("Structural wealth creators — buy and hold 5 years")
                     show_picks_table(result["fiveyear_picks"])
 
-                with st.expander("📰 News Headlines Used in Sentiment Analysis"):
+                with st.expander("News Headlines Used in Sentiment Analysis"):
                     for h in result.get("headlines", [])[:20]:
                         st.markdown(f"- **[{h['source']}]** {h['title']}")
 
                 st.markdown("---")
-                st.markdown("### 📝 Full QuanTum Recommendation Report")
+                st.markdown("### Full QuanTum Recommendation Report")
 
-                with st.expander("📖 View Full Report", expanded=True):
+                with st.expander("View Full Report", expanded=True):
                     st.markdown(result["report"])
 
                 pdf = convert_to_pdf(result["report"])
                 if pdf:
                     st.download_button(
-                        "📥 Download QuanTum Report (PDF)",
+                        "Download QuanTum Report (PDF)",
                         pdf,
                         f"QuanTum_Picks_{datetime.now().strftime('%Y%m%d')}.pdf",
                         "application/pdf",
                         type="primary",
                     )
 
-                st.success(f"💾 Report saved: `{result['report_path']}`")
+                st.success(f"Report saved: `{result['report_path']}`")
 
     # ── Section 5: Global Markets ─────────────────────────────────────────────
-    elif selected_section == "🌍 Global Markets":
-        st.markdown("### Global Macroeconomic Research")
-        st.caption("Multi-Agent Intelligence across Emerging and Developed financial centers.")
+    elif selected_section == "Global Markets":
+        col_gm1, col_gm2 = st.columns([3, 1])
+        with col_gm1:
+            market_type = st.radio(
+                "Market Region",
+                ["Emerging Markets", "Developed Markets"],
+                horizontal=True
+            )
+        with col_gm2:
+            run_gm_btn = st.button("Generate Macro Report", type="primary", use_container_width=True)
 
-        market_type = st.radio(
-            "Select Market Type",
-            ["🌏 Emerging Markets", "🇺🇸 Developed Markets"],
-            horizontal=True
-        )
-
-        if market_type == "🌏 Emerging Markets":
-            st.markdown("**Target Geographies**: Brazil, China, India, Indonesia, Turkey")
-            
-            if st.button("Generate Emerging Markets Report", type="primary"):
+        if market_type == "Emerging Markets":
+            st.caption("Coverage: Brazil, China, India, Indonesia, Turkey")
+            if run_gm_btn:
                 from global_markets_orchestrator import EmergingMarketsOrchestrator
                 
-                with st.status("🌏 Emerging Markets Analysis Running...", expanded=True) as status:
+                with st.status("Emerging Markets Analysis Running...", expanded=True) as status:
                     def update_progress(msg):
-                        st.write(msg)
+                        st.markdown(f"<pre style='font-family: \"JetBrains Mono\", monospace; font-size: 0.8rem; background: transparent; border: none; padding: 0;'>{msg}</pre>", unsafe_allow_html=True)
                     
                     orchestrator = EmergingMarketsOrchestrator()
                     final_report = orchestrator.run_analysis(progress_callback=update_progress)
-                    status.update(label="✅ Emerging Markets Report Ready!", state="complete", expanded=False)
+                    status.update(label="Emerging Markets Report Ready!", state="complete", expanded=False)
                 
                 os.makedirs('reports', exist_ok=True)
                 timestamp = datetime.now().strftime('%Y%m%d_%H%M')
@@ -1035,34 +1056,33 @@ def main():
                 with open(filename, 'w', encoding='utf-8') as f:
                     f.write(final_report)
                 
-                st.success(f"📄 Report Generated: `{filename}`")
+                st.success(f"Report Generated: `{filename}`")
                 
                 pdf = convert_to_pdf(final_report)
                 if pdf:
                     st.download_button(
-                        "📥 Download Emerging Markets Report (PDF)",
+                        "Download Emerging Markets Report (PDF)",
                         pdf,
                         "Emerging_Markets_Report.pdf",
                         "application/pdf",
                         type="primary"
                     )
                 
-                with st.expander("📖 Preview Report", expanded=True):
+                with st.expander("Preview Report", expanded=True):
                     st.markdown(final_report)
 
         else:
-            st.markdown("**Target Geographies**: United States, Europe, Japan, UK")
-            
-            if st.button("Generate Developed Markets Report", type="primary"):
+            st.caption("Coverage: United States, Europe, Japan, United Kingdom")
+            if run_gm_btn:
                 from global_markets_orchestrator import DevelopedMarketsOrchestrator
                 
-                with st.status("🇺🇸 Developed Markets Analysis Running...", expanded=True) as status:
+                with st.status("Developed Markets Analysis Running...", expanded=True) as status:
                     def update_progress(msg):
-                        st.write(msg)
+                        st.markdown(f"<pre style='font-family: \"JetBrains Mono\", monospace; font-size: 0.8rem; background: transparent; border: none; padding: 0;'>{msg}</pre>", unsafe_allow_html=True)
                     
                     orchestrator = DevelopedMarketsOrchestrator()
                     final_report = orchestrator.run_analysis(progress_callback=update_progress)
-                    status.update(label="✅ Developed Markets Report Ready!", state="complete", expanded=False)
+                    status.update(label="Developed Markets Report Ready!", state="complete", expanded=False)
                 
                 os.makedirs('reports', exist_ok=True)
                 timestamp = datetime.now().strftime('%Y%m%d_%H%M')
@@ -1070,62 +1090,60 @@ def main():
                 with open(filename, 'w', encoding='utf-8') as f:
                     f.write(final_report)
                 
-                st.success(f"📄 Report Generated: `{filename}`")
+                st.success(f"Report Generated: `{filename}`")
                 
                 pdf = convert_to_pdf(final_report)
                 if pdf:
                     st.download_button(
-                        "📥 Download Developed Markets Report (PDF)",
+                        "Download Developed Markets Report (PDF)",
                         pdf,
                         "Developed_Markets_Report.pdf",
                         "application/pdf",
                         type="primary"
                     )
                 
-                with st.expander("📖 Preview Report", expanded=True):
+                with st.expander("Preview Report", expanded=True):
                     st.markdown(final_report)
 
     # ── Section 6: Market News ────────────────────────────────────────────────
-    elif selected_section == "📰 Market News":
-        st.markdown("### Real-Time Market News & Sentiment")
-        st.caption("Automated ingestion from top financial feeds with AI sentiment classification.")
-
-        col1, col2 = st.columns([2, 1])
+    elif selected_section == "Market News":
+        col1, col2 = st.columns([3, 1])
         with col1:
             news_scope = st.selectbox(
-                "News Scope",
+                "News Feed Scope",
                 ["Global (India + World)", "India Only"],
                 key="news_scope"
             )
         with col2:
-            st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
-            if st.button("Fetch Latest News", type="primary"):
+            fetch_btn = st.button("Fetch Latest News", type="primary", use_container_width=True)
+            if fetch_btn:
                 st.session_state['refresh_news'] = True
 
         if st.session_state.get('refresh_news', False):
             from news_tracker_orchestrator import NewsTrackerOrchestrator
             scope = "global" if "Global" in news_scope else "india"
 
-            with st.status("📰 Fetching & Analyzing News Feeds...", expanded=True) as status:
+            with st.status("Ingesting & Analyzing News Feeds...", expanded=True) as status:
                 def update_progress(msg):
-                    st.write(msg)
+                    st.markdown(f"<pre style='font-family: \"JetBrains Mono\", monospace; font-size: 0.8rem; background: transparent; border: none; padding: 0;'>{msg}</pre>", unsafe_allow_html=True)
 
                 orchestrator = NewsTrackerOrchestrator()
                 organized_news = orchestrator.run_analysis(scope=scope, progress_callback=update_progress)
-                status.update(label="✅ News Analysis Complete!", state="complete", expanded=False)
+                status.update(label="News Analysis Complete!", state="complete", expanded=False)
 
             st.markdown("---")
-            st.markdown("### 🔴 High-Impact News (Market-Moving)")
+            st.markdown("### High-Impact News (Market-Moving)")
             high_news = organized_news.get('high_impact', [])
             if high_news:
                 for idx, item in enumerate(high_news[:10]):
-                    sentiment_color = {
-                        'BULLISH': '🟢',
-                        'BEARISH': '🔴',
-                        'NEUTRAL': '🟡'
-                    }.get(item.get('sentiment', 'NEUTRAL'), '🟡')
+                    sentiment = item.get('sentiment', 'NEUTRAL')
+                    badge_style = {
+                        'BULLISH': 'color: var(--positive); background: var(--positive-bg); border: 1px solid var(--positive-border);',
+                        'BEARISH': 'color: var(--negative); background: var(--negative-bg); border: 1px solid var(--negative-border);',
+                        'NEUTRAL': 'color: var(--text-secondary); background: var(--surface-subtle); border: 1px solid var(--border);'
+                    }.get(sentiment, 'color: var(--text-secondary);')
 
-                    with st.expander(f"{sentiment_color} {item.get('title', 'No Title')}", expanded=(idx < 3)):
+                    with st.expander(f"{item.get('title', 'No Title')} • [{sentiment}]", expanded=(idx < 3)):
                         st.markdown(f"**Summary**: {item.get('summary', item.get('body', ''))}")
                         st.caption(f"Sentiment: **{item.get('sentiment', 'N/A')}** | Impact: **{item.get('impact', 'N/A')}**")
                         if 'href' in item:
@@ -1134,12 +1152,12 @@ def main():
                 st.info("No high-impact news found at this time.")
 
             st.markdown("---")
-            st.markdown("### 🟡 Medium-Impact News")
+            st.markdown("### Medium-Impact News")
             medium_news = organized_news.get('medium_impact', [])
             if medium_news:
                 for item in medium_news[:6]:
                     sentiment = item.get('sentiment', 'NEUTRAL')
-                    st.markdown(f"**{item.get('title', 'No Title')}** ({sentiment})")
+                    st.markdown(f"**{item.get('title', 'No Title')}** — *{sentiment}*")
                     st.caption(item.get('summary', item.get('body', ''))[:200] + "...")
             else:
                 st.info("No medium-impact news found.")
@@ -1147,10 +1165,7 @@ def main():
             st.session_state['refresh_news'] = False
 
     # ── Section 7: Report Library ─────────────────────────────────────────────
-    elif selected_section == "📚 Report Library":
-        st.markdown("### Institutional Report Archive")
-        st.caption("Search, preview, and download previously generated research memos and quant reports.")
-
+    elif selected_section == "Report Library":
         reports_dir = 'reports'
         if not os.path.exists(reports_dir):
             st.info("No reports found yet. Generate your first report to populate the archive!")
@@ -1168,7 +1183,7 @@ def main():
                         key="report_type_filter"
                     )
                 with col2:
-                    search_term = st.text_input("Search reports", placeholder="Enter ticker or keyword...", key="search_reports")
+                    search_term = st.text_input("Search Reports", placeholder="Enter ticker or keyword...", key="search_reports")
 
                 filtered_files = []
                 for f in all_files:
@@ -1191,7 +1206,7 @@ def main():
                     reverse=True
                 )
 
-                st.markdown(f"**Found {len(filtered_files)} Report(s)**")
+                st.caption(f"Showing {len(filtered_files)} archive item(s)")
 
                 for filename in filtered_files:
                     file_path = os.path.join(reports_dir, filename)
@@ -1200,15 +1215,15 @@ def main():
                     mod_time = datetime.fromtimestamp(file_stats.st_mtime).strftime('%Y-%m-%d %H:%M')
 
                     if filename.startswith("Sector_"):
-                        icon, type_label = "🏭", "Sector"
+                        type_label = "Sector"
                     elif filename.startswith("DeepDive_"):
-                        icon, type_label = "🏢", "Stock Memo"
+                        type_label = "Stock Memo"
                     elif filename.startswith("Full_Report_"):
-                        icon, type_label = "🏆", "Top Picks"
+                        type_label = "Top Picks"
                     else:
-                        icon, type_label = "📄", "Report"
+                        type_label = "Report"
 
-                    with st.expander(f"{icon} **{filename}** ({type_label} • {file_size_kb:.1f} KB • {mod_time})", expanded=False):
+                    with st.expander(f"{filename} • ({type_label} • {file_size_kb:.1f} KB • {mod_time})", expanded=False):
                         with open(file_path, 'r', encoding='utf-8') as f:
                             content = f.read()
 
@@ -1217,7 +1232,7 @@ def main():
                             pdf = convert_to_pdf(content)
                             if pdf:
                                 st.download_button(
-                                    "📥 Download PDF",
+                                    "Download PDF",
                                     pdf,
                                     filename.replace('.md', '.pdf'),
                                     "application/pdf",
@@ -1225,14 +1240,14 @@ def main():
                                 )
                         with col_b:
                             st.download_button(
-                                "📝 Download Markdown",
+                                "Download Markdown",
                                 content,
                                 filename,
                                 "text/markdown",
                                 key=f"md_{filename}"
                             )
                         with col_c:
-                            if st.button("🗑️ Delete", key=f"del_{filename}"):
+                            if st.button("Delete", key=f"del_{filename}"):
                                 os.remove(file_path)
                                 st.rerun()
 
@@ -1240,9 +1255,10 @@ def main():
                         preview_text = content[:500] + "..." if len(content) > 500 else content
                         st.markdown(preview_text)
 
-                        with st.expander("📖 View Full Report"):
+                        with st.expander("View Full Report"):
                             st.markdown(content)
 
 
 if __name__ == "__main__":
     main()
+
