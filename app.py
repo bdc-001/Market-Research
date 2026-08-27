@@ -211,21 +211,16 @@ st.markdown("""
   }
 
   /* ═══════════════════════════════════════════
-     SIDEBAR — APPLE FROSTED GLASS
+     SIDEBAR — SENSE / APPLE STYLE
      ═══════════════════════════════════════════ */
   [data-testid="stSidebar"] {
-      background: rgba(255, 255, 255, 0.9) !important;
+      background: rgba(255, 255, 255, 0.95) !important;
       backdrop-filter: blur(20px) saturate(180%) !important;
       border-right: 1px solid var(--border) !important;
-      padding: 1.5rem 0.875rem !important;
+      padding: 1.25rem 0.75rem !important;
   }
   [data-testid="stSidebar"] > div:first-child {
       padding-top: 0 !important;
-  }
-  [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h1,
-  [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h2,
-  [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h3 {
-      color: var(--ink) !important;
   }
 
   .sidebar-brand-container {
@@ -240,12 +235,12 @@ st.markdown("""
       width: 34px; height: 34px; border-radius: var(--r-md);
       background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
       display: flex; align-items: center; justify-content: center;
-      font-size: 0.875rem; color: #fff; font-weight: 700;
+      font-size: 0.9375rem; color: #fff; font-weight: 800;
       box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
       flex-shrink: 0;
   }
   .brand-text-title {
-      font-size: 0.9375rem; font-weight: 700;
+      font-size: 1rem; font-weight: 800;
       color: var(--ink); letter-spacing: -0.02em; line-height: 1.2;
   }
   .brand-text-sub {
@@ -254,8 +249,8 @@ st.markdown("""
   }
   .brand-tag {
       display: inline-block; margin-top: 8px;
-      font-size: 0.5625rem; font-weight: 600;
-      letter-spacing: 0.04em; text-transform: uppercase;
+      font-size: 0.5625rem; font-weight: 700;
+      letter-spacing: 0.05em; text-transform: uppercase;
       padding: 2px 8px; border-radius: var(--r-pill);
       background: var(--brand-subtle); color: var(--brand);
       border: 1px solid var(--brand-border);
@@ -266,58 +261,67 @@ st.markdown("""
       font-size: 0.625rem !important; font-weight: 700 !important;
       color: var(--ink-subtle) !important;
       text-transform: uppercase !important; letter-spacing: 0.08em !important;
-      padding-left: 6px !important; margin-bottom: 6px !important;
+      padding-left: 8px !important; margin-bottom: 6px !important;
   }
   [data-testid="stSidebar"] .stRadio > div { gap: 2px !important; }
 
-  /* Hide all radio circle indicators in sidebar */
+  /* KILL ALL RADIO BUTTONS AND CIRCLES COMPLETELY */
   [data-testid="stSidebar"] [data-testid="stRadio"] label > div:first-child,
-  [data-testid="stSidebar"] [data-testid="stRadio"] label input,
-  [data-testid="stSidebar"] [data-testid="stRadio"] label [data-baseweb="radio"] > div:first-child,
-  [data-testid="stSidebar"] [data-testid="stRadio"] label span[class*="st-"],
-  [data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] > label > div:first-child,
-  [data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] label div[class*="stRadioButton"] {
+  [data-testid="stSidebar"] [data-testid="stRadio"] [data-baseweb="radio"] > div:first-child,
+  [data-testid="stSidebar"] [data-testid="stRadio"] input[type="radio"],
+  [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] input,
+  [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] svg,
+  [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] div[class*="stRadioButton"],
+  [data-testid="stSidebar"] [data-testid="stRadio"] span[class*="st-"] {
       display: none !important;
+      visibility: hidden !important;
       width: 0 !important;
       height: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
       opacity: 0 !important;
+      position: absolute !important;
+      pointer-events: none !important;
   }
 
-  /* Nav items — Apple List Rows */
-  [data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] label,
+  /* Sense Navigation Item */
+  [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label,
   [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"] {
       background: transparent !important;
-      border: none !important;
+      border: 1px solid transparent !important;
       border-radius: var(--r-md) !important;
-      padding: 8px 12px !important; 
-      margin: 1px 0 !important;
-      transition: all 0.12s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      padding: 9px 12px !important; 
+      margin: 2px 0 !important;
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
       cursor: pointer !important; 
       width: 100% !important;
       display: flex !important;
       align-items: center !important;
   }
-  [data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] label:hover,
+  [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label:hover,
   [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"]:hover {
       background: var(--bg-hover) !important;
   }
-  [data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] label div[data-testid="stMarkdownContainer"] p,
+  [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label div[data-testid="stMarkdownContainer"] p,
   [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"] div[data-testid="stMarkdownContainer"] p {
       color: var(--ink-secondary) !important;
       font-weight: 500 !important; 
       font-size: 0.8125rem !important; 
       margin: 0 !important;
+      letter-spacing: -0.01em !important;
   }
 
-  /* Active nav item — Apple Selected Tint */
-  [data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked),
+  /* Active nav item — Sense Blue/Purple Glow */
+  [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label:has(input:checked),
   [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"]:has(input:checked) {
       background: var(--brand-subtle) !important;
+      border-color: var(--brand-border) !important;
   }
-  [data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) div[data-testid="stMarkdownContainer"] p,
+  [data-testid="stSidebar"] [data-testid="stRadio"] [role="radiogroup"] label:has(input:checked) div[data-testid="stMarkdownContainer"] p,
   [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"]:has(input:checked) div[data-testid="stMarkdownContainer"] p {
       color: var(--brand) !important; 
-      font-weight: 600 !important;
+      font-weight: 700 !important;
   }
 
   /* Sidebar footer */
@@ -338,16 +342,213 @@ st.markdown("""
       color: var(--ink-secondary); font-weight: 500;
   }
   .status-val-pill {
-      font-size: 0.5625rem; font-weight: 600; padding: 2px 7px;
+      font-size: 0.5625rem; font-weight: 700; padding: 2px 7px;
       border-radius: var(--r-pill); letter-spacing: 0.03em;
       background: var(--green-subtle); color: var(--green);
       border: 1px solid var(--green-border);
   }
-  .live-pulse-dot {
-      width: 6px; height: 6px;
-      background: var(--green); border-radius: 50%;
-      display: inline-block;
-      animation: dot-pulse 2s infinite ease-in-out;
+
+  /* ═══════════════════════════════════════════
+     SENSE TOP TOOLBAR & CONTROLS
+     ═══════════════════════════════════════════ */
+  .sense-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 0 1.25rem 0;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+  }
+  .sense-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+  }
+  .sense-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--ink);
+      letter-spacing: -0.025em;
+      margin: 0;
+  }
+  .sense-user-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+  }
+  .sense-avatar-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--brand);
+      color: #FFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.75rem;
+      box-shadow: 0 2px 6px rgba(124,58,237,0.25);
+  }
+  .sense-icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+      color: var(--ink-muted);
+  }
+
+  /* Sense Filter Bar */
+  .sense-filter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 1.75rem;
+      flex-wrap: wrap;
+  }
+  .sense-filters-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+  }
+  .sense-pill-filter {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: var(--r-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--ink-secondary);
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+  }
+  .sense-pill-filter:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-strong);
+  }
+
+  /* ═══════════════════════════════════════════
+     SENSE 3-COLUMN CARD GRID
+     ═══════════════════════════════════════════ */
+  .sense-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+  }
+  .sense-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-apple);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 180px;
+  }
+  .sense-card:hover {
+      border-color: rgba(124, 58, 237, 0.3);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+      transform: translateY(-2px);
+  }
+  .sense-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 14px;
+  }
+  .sense-card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.015em;
+      line-height: 1.3;
+      margin: 0;
+  }
+  .sense-card-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: var(--r-pill);
+  }
+  .sense-status-active {
+      background: var(--green-subtle);
+      color: var(--green);
+      border: 1px solid var(--green-border);
+  }
+  .sense-status-paused {
+      background: var(--amber-subtle);
+      color: var(--amber);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+  }
+  .sense-status-resuming {
+      background: var(--brand-subtle);
+      color: var(--brand);
+      border: 1px solid var(--brand-border);
+  }
+
+  .sense-card-meta {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 10px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 12px;
+  }
+  .sense-meta-label {
+      font-size: 0.5625rem;
+      font-weight: 700;
+      color: var(--ink-subtle);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 2px;
+  }
+  .sense-meta-val {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--ink-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+  }
+
+  .sense-card-footer {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+  }
+  .sense-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: var(--r-pill);
+      font-size: 0.625rem;
+      font-weight: 600;
+      background: var(--bg-subtle);
+      color: var(--ink-muted);
+      border: 1px solid var(--border);
+  }
+  .sense-chip-active {
+      background: var(--brand-subtle);
+      color: var(--brand);
+      border-color: var(--brand-border);
   }
 
   /* ═══════════════════════════════════════════
@@ -864,15 +1065,15 @@ def main():
         </div>
         """, unsafe_allow_html=True)
 
-    # ── Section Page Header & Sticky Top Bar ─────────────────────────────────
+    # ── Section Page Header (Sense Style) ────────────────────────────────────
     section_meta = {
         "Sector Analysis": ("📊", "Sector Intelligence", "Multi-Agent Deep Dive: Trends, Valuation & Institutional Positioning"),
-        "Stock Analysis": ("🏢", "Investment Memo Council", "Deep-dive 7-Agent research memorandum on Indian equities"),
-        "Top Picks": ("🎯", "Screen & Rank", "Automated screening for best risk-reward opportunities across industries"),
-        "QuanTum Picks": ("⚡", "QuanTum Quant Engine", "Multi-factor algorithmic engine: Technical + Fundamental + Sentiment"),
-        "Global Markets": ("🌐", "Global Macro Research", "Emerging and developed markets macroeconomic intelligence"),
-        "Market News": ("📰", "Market News Pulse", "Real-time news stream with automated sentiment scoring"),
-        "Report Library": ("📁", "Report Archive & Library", "Historical archive of generated memos, PDFs, and sector deep dives"),
+        "Stock Analysis": ("🏢", "Stock Analysis", "Deep-dive 7-Agent research memorandum on Indian equities"),
+        "Top Picks": ("🎯", "Top Picks", "Automated screening for best risk-reward opportunities across industries"),
+        "QuanTum Picks": ("⚡", "QuanTum Picks", "Multi-factor algorithmic engine: Technical + Fundamental + Sentiment"),
+        "Global Markets": ("🌐", "Global Markets", "Emerging and developed markets macroeconomic intelligence"),
+        "Market News": ("📰", "Market News", "Real-time news stream with automated sentiment scoring"),
+        "Report Library": ("📁", "Report Library", "Historical archive of generated memos, PDFs, and sector deep dives"),
     }
 
     current_icon, current_title, current_desc = section_meta.get(
@@ -880,25 +1081,23 @@ def main():
     )
 
     st.markdown(f"""
-    <div class="qt-sticky-topbar">
-        <div class="qt-topbar-left">
-            <span class="qt-topbar-brand">QuanTum</span>
-            <span class="qt-topbar-sep">/</span>
-            <span class="qt-topbar-section">{current_icon} {selected_section}</span>
+    <div class="sense-topbar">
+        <div class="sense-title-group">
+            <h1 class="sense-title">{current_title}</h1>
         </div>
-        <div class="qt-topbar-right">
-            <div class="qt-topbar-badge"><span class="live-pulse-dot"></span> 7-Agent Council Active</div>
-            <div class="qt-topbar-badge qt-badge-accent">NSE Real-Time</div>
+        <div class="sense-user-actions">
+            <div class="sense-icon-btn" title="Dark mode toggle">🌙</div>
+            <div class="sense-icon-btn" title="Notifications">🔔</div>
+            <div class="sense-avatar-btn" title="Arsalaan Mohammed">A</div>
         </div>
     </div>
-    
-    <div class="qt-header">
-        <div class="qt-header-content">
-            <div class="qt-header-icon-box">{current_icon}</div>
-            <div>
-                <h1 class="qt-page-title">{current_title}</h1>
-                <div class="qt-page-sub">{current_desc}</div>
-            </div>
+
+    <div class="sense-filter-bar">
+        <div class="sense-filters-left">
+            <div class="sense-pill-filter">Status ▾</div>
+            <div class="sense-pill-filter">Horizon ▾</div>
+            <div class="sense-pill-filter">Agent ▾</div>
+            <div class="sense-pill-filter">☡ More Filters</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -909,7 +1108,57 @@ def main():
         with col_s1:
             selected_sector = st.selectbox("Industry Sector", SECTORS, key="sector_select")
         with col_s2:
-            run_sector_btn = st.button("Generate Sector Report", type="primary", use_container_width=True)
+            run_sector_btn = st.button("+ Generate Sector Report", type="primary", use_container_width=True)
+        
+        st.markdown("""
+        <div class="sense-grid">
+            <div class="sense-card">
+                <div class="sense-card-top">
+                    <h3 class="sense-card-title">Indian Defence & Aerospace</h3>
+                    <span class="sense-card-status sense-status-active">● Active</span>
+                </div>
+                <div class="sense-card-meta">
+                    <div><div class="sense-meta-label">AGENT</div><div class="sense-meta-val">7-Agent Council</div></div>
+                    <div><div class="sense-meta-label">COVERAGE</div><div class="sense-meta-val">HAL, BEL, BDL</div></div>
+                    <div><div class="sense-meta-label">OUTLOOK</div><div class="sense-meta-val">Bullish (+18%)</div></div>
+                </div>
+                <div class="sense-card-footer">
+                    <span class="sense-chip sense-chip-active">● Indigenisation</span>
+                    <span class="sense-chip">● Orderbook Growth</span>
+                </div>
+            </div>
+            <div class="sense-card">
+                <div class="sense-card-top">
+                    <h3 class="sense-card-title">Indian IT & AI Infrastructure</h3>
+                    <span class="sense-card-status sense-status-resuming">● Resuming</span>
+                </div>
+                <div class="sense-card-meta">
+                    <div><div class="sense-meta-label">AGENT</div><div class="sense-meta-val">Macro + Tech</div></div>
+                    <div><div class="sense-meta-label">COVERAGE</div><div class="sense-meta-val">TCS, INFY, HCL</div></div>
+                    <div><div class="sense-meta-label">VALUATION</div><div class="sense-meta-val">P/E 24.5 (Fair)</div></div>
+                </div>
+                <div class="sense-card-footer">
+                    <span class="sense-chip sense-chip-active">● Cloud Transformation</span>
+                    <span class="sense-chip">● Margin Resilient</span>
+                </div>
+            </div>
+            <div class="sense-card">
+                <div class="sense-card-top">
+                    <h3 class="sense-card-title">Banking & Private Credit</h3>
+                    <span class="sense-card-status sense-status-active">● Active</span>
+                </div>
+                <div class="sense-card-meta">
+                    <div><div class="sense-meta-label">AGENT</div><div class="sense-meta-val">Credit Analyst</div></div>
+                    <div><div class="sense-meta-label">COVERAGE</div><div class="sense-meta-val">HDFCBANK, ICICI</div></div>
+                    <div><div class="sense-meta-label">EFFICIENCY</div><div class="sense-meta-val">ROE 17.2%</div></div>
+                </div>
+                <div class="sense-card-footer">
+                    <span class="sense-chip sense-chip-active">● Low NPA</span>
+                    <span class="sense-chip">● NIM Expansion</span>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
         
         if run_sector_btn:
             from sector_orchestrator import SectorOrchestrator
@@ -955,7 +1204,57 @@ def main():
         with col_st1:
             ticker_input = st.text_input("Ticker Symbol (NSE)", placeholder="e.g. TATAMOTORS, RELIANCE, INFY")
         with col_st2:
-            run_stock_btn = st.button("Run Council Analysis", type="primary", use_container_width=True)
+            run_stock_btn = st.button("+ Run Council Analysis", type="primary", use_container_width=True)
+        
+        st.markdown("""
+        <div class="sense-grid">
+            <div class="sense-card">
+                <div class="sense-card-top">
+                    <h3 class="sense-card-title">TATAMOTORS (Tata Motors Ltd)</h3>
+                    <span class="sense-card-status sense-status-active">● High Conviction</span>
+                </div>
+                <div class="sense-card-meta">
+                    <div><div class="sense-meta-label">COUNCIL SCORE</div><div class="sense-meta-val">88 / 100</div></div>
+                    <div><div class="sense-meta-label">TECHNICALS</div><div class="sense-meta-val">RSI 56.4 (MACD +)</div></div>
+                    <div><div class="sense-meta-label">FUNDAMENTALS</div><div class="sense-meta-val">ROE 24.8%</div></div>
+                </div>
+                <div class="sense-card-footer">
+                    <span class="sense-chip sense-chip-active">● EV Transition</span>
+                    <span class="sense-chip">● JLR Margin Expansion</span>
+                </div>
+            </div>
+            <div class="sense-card">
+                <div class="sense-card-top">
+                    <h3 class="sense-card-title">RELIANCE (Reliance Industries)</h3>
+                    <span class="sense-card-status sense-status-paused">● Consolidation</span>
+                </div>
+                <div class="sense-card-meta">
+                    <div><div class="sense-meta-label">COUNCIL SCORE</div><div class="sense-meta-val">76 / 100</div></div>
+                    <div><div class="sense-meta-label">TECHNICALS</div><div class="sense-meta-val">Near SMA200</div></div>
+                    <div><div class="sense-meta-label">VALUATION</div><div class="sense-meta-val">P/E 26.1</div></div>
+                </div>
+                <div class="sense-card-footer">
+                    <span class="sense-chip sense-chip-active">● Jio Growth</span>
+                    <span class="sense-chip">● Retail Monetisation</span>
+                </div>
+            </div>
+            <div class="sense-card">
+                <div class="sense-card-top">
+                    <h3 class="sense-card-title">INFY (Infosys Limited)</h3>
+                    <span class="sense-card-status sense-status-resuming">● Accumulate</span>
+                </div>
+                <div class="sense-card-meta">
+                    <div><div class="sense-meta-label">COUNCIL SCORE</div><div class="sense-meta-val">82 / 100</div></div>
+                    <div><div class="sense-meta-label">TECHNICALS</div><div class="sense-meta-val">Above SMA50</div></div>
+                    <div><div class="sense-meta-label">YIELD</div><div class="sense-meta-val">Div Yield 2.6%</div></div>
+                </div>
+                <div class="sense-card-footer">
+                    <span class="sense-chip sense-chip-active">● Generative AI Deals</span>
+                    <span class="sense-chip">● Large Deal TCV</span>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
         
         if run_stock_btn and ticker_input:
             orchestrator = AgentOrchestrator()
@@ -992,7 +1291,57 @@ def main():
         with col_tp1:
             screen_sector = st.selectbox("Industry to Screen", SECTORS, key="screen_selector")
         with col_tp2:
-            run_tp_btn = st.button("Find Top Picks", type="primary", use_container_width=True)
+            run_tp_btn = st.button("+ Find Top Picks", type="primary", use_container_width=True)
+        
+        st.markdown("""
+        <div class="sense-grid">
+            <div class="sense-card">
+                <div class="sense-card-top">
+                    <h3 class="sense-card-title">HAL (Hindustan Aeronautics)</h3>
+                    <span class="sense-card-status sense-status-active">● Rank #1</span>
+                </div>
+                <div class="sense-card-meta">
+                    <div><div class="sense-meta-label">SECTOR</div><div class="sense-meta-val">Defence & Aero</div></div>
+                    <div><div class="sense-meta-label">COMPOSITE SCORE</div><div class="sense-meta-val">92.4 / 100</div></div>
+                    <div><div class="sense-meta-label">HORIZON</div><div class="sense-meta-val">1 Year (+28%)</div></div>
+                </div>
+                <div class="sense-card-footer">
+                    <span class="sense-chip sense-chip-active">● Tejas Mk1A Order</span>
+                    <span class="sense-chip">● High ROE (26%)</span>
+                </div>
+            </div>
+            <div class="sense-card">
+                <div class="sense-card-top">
+                    <h3 class="sense-card-title">DIXON (Dixon Technologies)</h3>
+                    <span class="sense-card-status sense-status-active">● Rank #2</span>
+                </div>
+                <div class="sense-card-meta">
+                    <div><div class="sense-meta-label">SECTOR</div><div class="sense-meta-val">Electronics Mfg</div></div>
+                    <div><div class="sense-meta-label">COMPOSITE SCORE</div><div class="sense-meta-val">89.1 / 100</div></div>
+                    <div><div class="sense-meta-label">HORIZON</div><div class="sense-meta-val">Positional (+22%)</div></div>
+                </div>
+                <div class="sense-card-footer">
+                    <span class="sense-chip sense-chip-active">● PLI Scheme</span>
+                    <span class="sense-chip">● Mobile Assembly</span>
+                </div>
+            </div>
+            <div class="sense-card">
+                <div class="sense-card-top">
+                    <h3 class="sense-card-title">KAYNES (Kaynes Technology)</h3>
+                    <span class="sense-card-status sense-status-resuming">● Rank #3</span>
+                </div>
+                <div class="sense-card-meta">
+                    <div><div class="sense-meta-label">SECTOR</div><div class="sense-meta-val">Semiconductor EMS</div></div>
+                    <div><div class="sense-meta-label">COMPOSITE SCORE</div><div class="sense-meta-val">86.5 / 100</div></div>
+                    <div><div class="sense-meta-label">HORIZON</div><div class="sense-meta-val">5 Years Compounder</div></div>
+                </div>
+                <div class="sense-card-footer">
+                    <span class="sense-chip sense-chip-active">● OSAT Fab Facility</span>
+                    <span class="sense-chip">● 40%+ Revenue CAGR</span>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
         
         if run_tp_btn:
             with st.status("Screening Sector...", expanded=True) as status:
@@ -1049,7 +1398,57 @@ def main():
                 help="Fast: news-discovered stocks plus a trimmed Nifty universe. Full: the entire 80+ stock universe.",
             )
         with col_q2:
-            run_btn = st.button("Run Quant Engine", type="primary", use_container_width=True)
+            run_btn = st.button("+ Run Quant Engine", type="primary", use_container_width=True)
+
+        st.markdown("""
+        <div class="sense-grid">
+            <div class="sense-card">
+                <div class="sense-card-top">
+                    <h3 class="sense-card-title">Weekly Alpha Screener</h3>
+                    <span class="sense-card-status sense-status-active">● Active</span>
+                </div>
+                <div class="sense-card-meta">
+                    <div><div class="sense-meta-label">WEIGHTS</div><div class="sense-meta-val">Tech 35% + News 35%</div></div>
+                    <div><div class="sense-meta-label">HORIZON</div><div class="sense-meta-val">1 - 5 Trading Days</div></div>
+                    <div><div class="sense-meta-label">UNIVERSE</div><div class="sense-meta-val">Nifty 500 + RSS</div></div>
+                </div>
+                <div class="sense-card-footer">
+                    <span class="sense-chip sense-chip-active">● Swing Breakouts</span>
+                    <span class="sense-chip">● RSI/MACD Crossover</span>
+                </div>
+            </div>
+            <div class="sense-card">
+                <div class="sense-card-top">
+                    <h3 class="sense-card-title">1-Year Positional Compounders</h3>
+                    <span class="sense-card-status sense-status-active">● Active</span>
+                </div>
+                <div class="sense-card-meta">
+                    <div><div class="sense-meta-label">WEIGHTS</div><div class="sense-meta-val">Fund 50% + Mom 25%</div></div>
+                    <div><div class="sense-meta-label">HORIZON</div><div class="sense-meta-val">6 - 12 Months</div></div>
+                    <div><div class="sense-meta-label">METRICS</div><div class="sense-meta-val">ROE > 18%, P/E Fair</div></div>
+                </div>
+                <div class="sense-card-footer">
+                    <span class="sense-chip sense-chip-active">● Quality Growth</span>
+                    <span class="sense-chip">● Institutional Inflow</span>
+                </div>
+            </div>
+            <div class="sense-card">
+                <div class="sense-card-top">
+                    <h3 class="sense-card-title">5-Year Structural Wealth</h3>
+                    <span class="sense-card-status sense-status-resuming">● Compounding</span>
+                </div>
+                <div class="sense-card-meta">
+                    <div><div class="sense-meta-label">WEIGHTS</div><div class="sense-meta-val">Fund 60% + Moat 40%</div></div>
+                    <div><div class="sense-meta-label">HORIZON</div><div class="sense-meta-val">3 - 5 Years Buy & Hold</div></div>
+                    <div><div class="sense-meta-label">RISK</div><div class="sense-meta-val">Low Debt / High ROCE</div></div>
+                </div>
+                <div class="sense-card-footer">
+                    <span class="sense-chip sense-chip-active">● Moat Monopolies</span>
+                    <span class="sense-chip">● Multi-Bagger Potential</span>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
         cached = load_report("quantum") if not run_btn else None
         if cached:
