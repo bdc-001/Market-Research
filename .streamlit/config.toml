@@ -7,9 +7,9 @@ address = "0.0.0.0"
 gatherUsageStats = false
 
 [theme]
-base = "dark"
-primaryColor = "#667eea"
-backgroundColor = "#0f0c29"
-secondaryBackgroundColor = "#1e1b3a"
-textColor = "#e8e8f0"
+base = "light"
+primaryColor = "#7c3aed"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f8fafc"
+textColor = "#0f172a"
 font = "sans serif"
