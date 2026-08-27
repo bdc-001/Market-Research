@@ -89,14 +89,14 @@ st.markdown("""
   }
 
   /* ═══════════════════════════════════════════
-     STREAMLIT TOPBAR & SIDEBAR TOGGLE — ZERO TOP GAP
+     STREAMLIT TOPBAR & SIDEBAR TOGGLE
      ═══════════════════════════════════════════ */
   header[data-testid="stHeader"] {
-      height: 3.25rem !important;
-      background: rgba(255, 255, 255, 0.95) !important;
-      backdrop-filter: blur(20px) saturate(180%) !important;
-      border-bottom: 1px solid var(--border) !important;
-      z-index: 9999 !important;
+      height: 2.75rem !important;
+      background: rgba(255, 255, 255, 0.7) !important;
+      backdrop-filter: blur(16px) saturate(180%) !important;
+      border-bottom: none !important;
+      z-index: 999 !important;
   }
 
   footer {
@@ -174,14 +174,13 @@ st.markdown("""
   }
 
   /* ═══════════════════════════════════════════
-     SENSE LAYOUT & SPACING — ZERO TOP WASTAGE
+     SENSE LAYOUT & SPACING
      ═══════════════════════════════════════════ */
   .block-container {
-      padding-top: 0.5rem !important;
-      padding-bottom: 2.5rem !important;
-      padding-left: 2rem !important;
-      padding-right: 2rem !important;
-      margin-top: 0 !important;
+      padding-top: 1.25rem !important;
+      padding-bottom: 3rem !important;
+      padding-left: 2.25rem !important;
+      padding-right: 2.25rem !important;
       max-width: 1440px !important;
   }
 
@@ -217,19 +216,16 @@ st.markdown("""
   }
 
   /* ═══════════════════════════════════════════
-     SIDEBAR — SENSE DOCKED AT TOP
+     SIDEBAR — SENSE DOCKED
      ═══════════════════════════════════════════ */
   [data-testid="stSidebar"] {
-      top: 0 !important;
-      height: 100vh !important;
       background: rgba(255, 255, 255, 0.98) !important;
       backdrop-filter: blur(20px) saturate(180%) !important;
       border-right: 1px solid var(--border) !important;
-      padding: 0.75rem 0.75rem 1.25rem 0.75rem !important;
-      z-index: 10000 !important;
+      padding: 1rem 0.75rem !important;
   }
   [data-testid="stSidebar"] > div:first-child {
-      padding-top: 0.25rem !important;
+      padding-top: 0.5rem !important;
   }
 
   .sidebar-brand-container {
@@ -358,45 +354,37 @@ st.markdown("""
   }
 
   /* ═══════════════════════════════════════════
-     SENSE FIXED TOPBAR — IN THE TOPBAR DIRECTLY
+     SENSE HEADER ROW & CONTROLS
      ═══════════════════════════════════════════ */
-  .sense-topbar-fixed {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3.25rem;
-      z-index: 99999;
+  .sense-header-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      pointer-events: none;
-      padding: 0 1.25rem;
+      padding: 0 0 1rem 0;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
   }
   .sense-title-group {
-      pointer-events: auto;
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-left: 3.75rem; /* room for sidebar collapse button */
+      gap: 12px;
   }
   .sense-title {
-      font-size: 1.1875rem;
+      font-size: 1.625rem;
       font-weight: 800;
       color: var(--ink);
       letter-spacing: -0.025em;
       margin: 0;
+      line-height: 1.2;
   }
   .sense-user-actions {
-      pointer-events: auto;
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-right: 6.5rem; /* room for Streamlit right icons */
   }
   .sense-avatar-btn {
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       background: var(--brand);
       color: #FFF;
@@ -404,19 +392,19 @@ st.markdown("""
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 0.6875rem;
+      font-size: 0.75rem;
       box-shadow: 0 2px 6px rgba(124,58,237,0.25);
   }
   .sense-icon-btn {
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       background: var(--bg-subtle);
       border: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.8125rem;
+      font-size: 0.875rem;
       color: var(--ink-muted);
   }
 
@@ -426,7 +414,6 @@ st.markdown("""
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      margin-top: 0.5rem;
       margin-bottom: 1.5rem;
       flex-wrap: wrap;
   }
@@ -1100,7 +1087,7 @@ def main():
     )
 
     st.markdown(f"""
-    <div class="sense-topbar-fixed">
+    <div class="sense-header-row">
         <div class="sense-title-group">
             <h1 class="sense-title">{current_icon} {current_title}</h1>
         </div>
