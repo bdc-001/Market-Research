@@ -40,16 +40,32 @@ where learned weights, learned rules and cached reports live.
 
 ## Deploy so it runs without your laptop
 
-Hugging Face Spaces, free CPU tier:
+Hugging Face's free plan only hosts **Static** Spaces (HTML/JS). Gradio and
+Docker, which would run this Python app, require PRO. Do not use a Static
+Space — it cannot execute Streamlit.
 
-1. Push this folder to its GitHub repo (`bdc-001/Market-Research`).
-2. Create a Space: SDK **Streamlit**, hardware **CPU basic**, app file `app.py`,
-   linked to that repo.
-3. In Space settings, add secrets: `GEMINI_API_KEY`, `TURSO_URL`, `TURSO_TOKEN`.
-4. Open the `*.hf.space` URL on your phone and use **Add to Home Screen**.
+Use **Streamlit Community Cloud** instead. It is free, made for this stack,
+and runs `app.py` from GitHub.
 
-The Space sleeps when idle and wakes when you open it, so the first load after a
-gap takes roughly 30 to 60 seconds. That is the trade for a free always-on URL.
+1. Push this folder to GitHub (`bdc-001/Market-Research`).
+2. Open https://share.streamlit.io and sign in with GitHub.
+3. Click **New app** / **Deploy an app**.
+4. Repository: `bdc-001/Market-Research`, branch `main`, main file `app.py`.
+5. **Advanced settings → Secrets**, paste:
+
+   ```toml
+   GEMINI_API_KEY = "..."
+   TURSO_URL = "libsql://your-db.turso.io"
+   TURSO_TOKEN = "..."
+   ```
+
+6. Deploy. The URL looks like `https://<name>.streamlit.app`.
+7. Open that URL on your phone and use **Add to Home Screen**.
+
+The app sleeps after a long idle period and wakes when you open it. First load
+after a gap can take 30–60 seconds. Free apps have about 1 GB of RAM, so use
+**Fast** mode from your phone. Enable Turso so learned rules and cached reports
+survive restarts.
 
 ### Run modes
 
