@@ -41,7 +41,10 @@ st.set_page_config(
 # ── QuanTum Enterprise Design System ──────────────────────────────────────────
 st.markdown("""
 <style>
+  /* ── Google Fonts: Inter, JetBrains Mono, Material Symbols ── */
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
+  @import url('https://fonts.googleapis.com/css2?family=Material+Icons:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
 
   :root {
       --bg: #FFFFFF;
@@ -108,24 +111,43 @@ st.markdown("""
   }
 
   /* ═══════════════════════════════════════════
-     GLOBAL RESET
+     GLOBAL TYPOGRAPHY & ICON PRESERVATION
      ═══════════════════════════════════════════ */
   *, *::before, *::after { box-sizing: border-box; }
 
-  html, body, [class*="css"], [class*="st-"],
-  [data-testid="stSidebar"], .stMarkdown, .stButton,
-  input, select, textarea, p, h1, h2, h3, h4, h5, h6,
-  span, div, label, li, th, td {
+  html, body, .stApp {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
       -webkit-font-smoothing: antialiased;
+      background: var(--bg) !important;
+      color: var(--ink);
   }
+
+  p, h1, h2, h3, h4, h5, h6, label, input, textarea, select, 
+  .stButton button, .stDownloadButton button, .stTextInput input {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  }
+
   code, pre, .stCodeBlock, .stCodeBlock code {
       font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
   }
 
-  .stApp {
-      background: var(--bg) !important;
-      color: var(--ink);
+  /* CRITICAL: Keep Material icon ligatures working properly (do not let text font override them) */
+  [data-testid="stIconMaterial"], 
+  .material-symbols-rounded, 
+  .material-icons, 
+  [class*="material-symbols"], 
+  [class*="material-icons"],
+  span[translate="no"] {
+      font-family: 'Material Symbols Rounded', 'Material Icons' !important;
+      font-weight: normal !important;
+      font-style: normal !important;
+      line-height: 1 !important;
+      text-transform: none !important;
+      letter-spacing: normal !important;
+      word-wrap: normal !important;
+      white-space: nowrap !important;
+      direction: ltr !important;
+      display: inline-block !important;
   }
 
   /* ═══════════════════════════════════════════
@@ -228,40 +250,60 @@ st.markdown("""
       text-transform: uppercase !important; letter-spacing: 0.08em !important;
       padding-left: 4px !important; margin-bottom: 4px !important;
   }
-  [data-testid="stSidebar"] .stRadio > div { gap: 1px !important; }
+  [data-testid="stSidebar"] .stRadio > div { gap: 2px !important; }
 
-  /* Hide radio circles */
-  [data-testid="stSidebar"] .stRadio [role="radiogroup"] label > div:first-child,
-  [data-testid="stSidebar"] .stRadio [data-baseweb="radio"] > div:first-child,
-  [data-testid="stSidebar"] .stRadio input[type="radio"] + div {
+  /* Hide all radio buttons / circle indicators in sidebar */
+  [data-testid="stSidebar"] [data-testid="stRadio"] label > div:first-child,
+  [data-testid="stSidebar"] [data-testid="stRadio"] label input,
+  [data-testid="stSidebar"] [data-testid="stRadio"] label [data-baseweb="radio"] > div:first-child,
+  [data-testid="stSidebar"] [data-testid="stRadio"] label span[class*="st-"],
+  [data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] > label > div:first-child,
+  [data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] label div[class*="stRadioButton"] {
       display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+      min-width: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      opacity: 0 !important;
   }
 
   /* Nav items */
+  [data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] label,
   [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"] {
       background: transparent !important;
       border: none !important;
       border-radius: 6px !important;
-      padding: 7px 10px !important; margin: 0 !important;
+      padding: 8px 10px !important; 
+      margin: 1px 0 !important;
       transition: background 0.1s ease !important;
-      cursor: pointer !important; width: 100% !important;
+      cursor: pointer !important; 
+      width: 100% !important;
+      display: flex !important;
+      align-items: center !important;
   }
+  [data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] label:hover,
   [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"]:hover {
       background: var(--bg-3) !important;
   }
+  [data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] label div[data-testid="stMarkdownContainer"] p,
   [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"] div[data-testid="stMarkdownContainer"] p {
       color: var(--ink-3) !important;
-      font-weight: 500 !important; font-size: 0.8125rem !important; margin: 0 !important;
+      font-weight: 500 !important; 
+      font-size: 0.8125rem !important; 
+      margin: 0 !important;
       line-height: 1.4 !important;
   }
 
-  /* Active nav */
+  /* Active nav item */
+  [data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked),
   [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"]:has(input:checked) {
       background: var(--brand-bg) !important;
   }
-  [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"] input:checked + div + div p,
+  [data-testid="stSidebar"] [data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) div[data-testid="stMarkdownContainer"] p,
   [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"]:has(input:checked) div[data-testid="stMarkdownContainer"] p {
-      color: var(--brand) !important; font-weight: 600 !important;
+      color: var(--brand) !important; 
+      font-weight: 600 !important;
   }
 
   /* Sidebar footer */
@@ -654,9 +696,20 @@ def main():
             "Report Library"
         ]
 
+        nav_icons = {
+            "Sector Analysis": "📊  Sector Analysis",
+            "Stock Analysis": "🏢  Stock Analysis",
+            "Top Picks": "🎯  Top Picks",
+            "QuanTum Picks": "⚡  QuanTum Picks",
+            "Global Markets": "🌐  Global Markets",
+            "Market News": "📰  Market News",
+            "Report Library": "📁  Report Library",
+        }
+
         selected_section = st.radio(
             "WORKSPACE",
             nav_options,
+            format_func=lambda x: nav_icons.get(x, x),
             index=0,
             key="enterprise_nav"
         )
