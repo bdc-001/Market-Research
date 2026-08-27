@@ -89,10 +89,11 @@ st.markdown("""
   }
 
   /* ═══════════════════════════════════════════
-     STREAMLIT TOPBAR & SIDEBAR TOGGLE
+     STREAMLIT TOPBAR & SIDEBAR TOGGLE — ZERO TOP GAP
      ═══════════════════════════════════════════ */
   header[data-testid="stHeader"] {
-      background: rgba(255, 255, 255, 0.85) !important;
+      height: 3.25rem !important;
+      background: rgba(255, 255, 255, 0.95) !important;
       backdrop-filter: blur(20px) saturate(180%) !important;
       border-bottom: 1px solid var(--border) !important;
       z-index: 9999 !important;
@@ -101,6 +102,7 @@ st.markdown("""
   footer {
       visibility: hidden !important;
       height: 0 !important;
+      display: none !important;
   }
 
   /* Sidebar toggle button */
@@ -114,7 +116,7 @@ st.markdown("""
       cursor: pointer !important;
   }
   [data-testid="collapsedControl"] {
-      top: 0.6rem !important;
+      top: 0.5rem !important;
       left: 0.75rem !important;
   }
   [data-testid="collapsedControl"] button,
@@ -172,11 +174,15 @@ st.markdown("""
   }
 
   /* ═══════════════════════════════════════════
-     APPLE LAYOUT & SPACING
+     SENSE LAYOUT & SPACING — ZERO TOP WASTAGE
      ═══════════════════════════════════════════ */
   .block-container {
-      padding: 2rem 2.5rem 3rem 2.5rem !important;
-      max-width: 1400px !important;
+      padding-top: 0.5rem !important;
+      padding-bottom: 2.5rem !important;
+      padding-left: 2rem !important;
+      padding-right: 2rem !important;
+      margin-top: 0 !important;
+      max-width: 1440px !important;
   }
 
   .stMarkdown, .stAlert, .stDataFrame,
@@ -211,16 +217,19 @@ st.markdown("""
   }
 
   /* ═══════════════════════════════════════════
-     SIDEBAR — SENSE / APPLE STYLE
+     SIDEBAR — SENSE DOCKED AT TOP
      ═══════════════════════════════════════════ */
   [data-testid="stSidebar"] {
-      background: rgba(255, 255, 255, 0.95) !important;
+      top: 0 !important;
+      height: 100vh !important;
+      background: rgba(255, 255, 255, 0.98) !important;
       backdrop-filter: blur(20px) saturate(180%) !important;
       border-right: 1px solid var(--border) !important;
-      padding: 1.25rem 0.75rem !important;
+      padding: 0.75rem 0.75rem 1.25rem 0.75rem !important;
+      z-index: 10000 !important;
   }
   [data-testid="stSidebar"] > div:first-child {
-      padding-top: 0 !important;
+      padding-top: 0.25rem !important;
   }
 
   .sidebar-brand-container {
@@ -355,7 +364,8 @@ st.markdown("""
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 0 1.25rem 0;
+      padding: 0 0 1rem 0;
+      margin-top: -0.25rem;
       margin-bottom: 1.25rem;
       border-bottom: 1px solid var(--border);
   }
@@ -1098,6 +1108,10 @@ def main():
             <div class="sense-pill-filter">Horizon ▾</div>
             <div class="sense-pill-filter">Agent ▾</div>
             <div class="sense-pill-filter">☡ More Filters</div>
+        </div>
+        <div class="sense-filters-left">
+            <div class="sense-pill-filter">↑↓ Recently updated ▾</div>
+            <div class="sense-pill-filter" style="letter-spacing: 2px;">⊞ ≡</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
