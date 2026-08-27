@@ -2,6 +2,7 @@
 QuanTum Engine Orchestrator (v7) — Full Pipeline + Entry Timing + Alpha Management
 
 Pipeline:
+  Phase 0:  Memory restore + verification of past signals (learning loop)
   Phase 1:  Market Regime Detection (BULL/BEAR/SIDEWAYS -> dynamic weights)
   Phase 2:  News Scanner (deep impact: sentiment + surprise + event + reaction)
   Phase 3:  Data Collection (price, technicals, fundamentals)
@@ -12,6 +13,7 @@ Pipeline:
   Phase 8:  Portfolio Construction (risk-adjusted sizing, sector caps)
   Phase 9:  Alpha Management (decay tracking, exit signals, live performance)
   Phase 10: Report Generation + PDF
+  Phase 11: Weight learning + critic (writes back into the next run)
 """
 import pandas as pd
 import sqlite3
@@ -29,6 +31,14 @@ from agents.quantum_entry_engine import EntryTimingEngine
 from agents.quantum_decay import AlphaDecayModel
 from agents.quantum_performance import PerformanceTracker
 from agents.quantum_synthesizer import QuantumSynthesizer
+from agents.quantum_learning import (
+    SignalVerifier, WeightLearner, ensure_learning_tables,
+)
+from agents.quantum_critic import CriticAgent
+from agents import memory
+
+# Long-horizon universe size when the caller asks for a fast run.
+FAST_UNIVERSE_SIZE = 30
 
 
 class QuantumEngineOrchestrator:
@@ -45,21 +55,46 @@ class QuantumEngineOrchestrator:
         self.decay_model = AlphaDecayModel()
         self.performance = PerformanceTracker()
         self.synthesizer = QuantumSynthesizer()
+        self.verifier = SignalVerifier()
+        self.learner = WeightLearner()
+        self.critic = CriticAgent()
 
     def run(
         self,
         tickers=None,
         run_backtest: bool = False,
         progress_callback=None,
+        fast: bool = False,
     ) -> dict:
+        """
+        Runs the full pipeline.
+
+        fast=True trims the long-horizon universe so a phone-triggered run
+        finishes in a few minutes. Weekly picks are unaffected because they come
+        from the news scanner either way; annual and 5-year picks are drawn from
+        a smaller universe and the report says so.
+        """
         if tickers is None:
             tickers = list(dict.fromkeys(NIFTY_UNIVERSE))
+        if fast:
+            tickers = tickers[:FAST_UNIVERSE_SIZE]
 
         def update(msg):
             if progress_callback:
                 progress_callback(msg)
             else:
                 print(f"  {msg}")
+
+        # -- Phase 0: Learning memory ----------------------------------------
+        # Restore rules first: a fresh container has an empty rules file but the
+        # database still holds everything learned so far.
+        ensure_learning_tables()
+        restored = memory.restore_rules()
+        if restored:
+            update(f"Restored {restored} learned rules from memory")
+
+        update("Phase 0 -- Verifying past signals...")
+        verification = self.verifier.run(progress_callback=update)
 
         # -- Phase 1: Market Regime Detection --------------------------------
         update("Phase 1/10 -- Regime Detection...")
@@ -177,10 +212,10 @@ class QuantumEngineOrchestrator:
             update(f"Exit signals triggered for {exit_count} positions")
         update(f"Active positions: {decay_summary['active_positions']}")
 
-        # Log signals to signal_log for performance tracking
-        self._log_signals(week_scored, "week")
-        self._log_signals(year_scored, "year")
-        self._log_signals(fiveyear_scored, "5years")
+        # Log signals to signal_log for performance tracking and learning
+        self._log_signals(week_scored, "week", regime)
+        self._log_signals(year_scored, "year", regime)
+        self._log_signals(fiveyear_scored, "5years", regime)
 
         # Record portfolio snapshots for daily tracking
         self.performance.record_portfolio(week_portfolio, "week", progress_callback=update)
@@ -226,9 +261,29 @@ class QuantumEngineOrchestrator:
 
         update(f"Report saved: {report_path}")
 
+        # -- Phase 11: Learning ------------------------------------------------
+        # Runs last so a failure here cannot cost the user their report.
+        update("Phase 11 -- Learning from verified outcomes...")
+        for horizon, weights in (("week", week_weights), ("year", year_weights),
+                                 ("5years", fiveyear_weights)):
+            try:
+                self.learner.run(
+                    self.regime_detector.base_weights(regime, horizon),
+                    horizon, regime, progress_callback=update,
+                )
+            except Exception as exc:
+                update(f"Weight learning skipped for {horizon}: {exc}")
+
+        critique = self.critic.run(
+            week_picks=week_scored, verification=verification,
+            regime=regime, progress_callback=update,
+        )
+
         return {
             "report": report,
             "report_path": report_path,
+            "verification": verification,
+            "critique": critique,
             "week_picks": week_scored.head(10),
             "year_picks": year_scored.head(10),
             "fiveyear_picks": fiveyear_scored.head(10),
@@ -263,8 +318,13 @@ class QuantumEngineOrchestrator:
                 parts.append(f"{label}: {s.iloc[0]['ticker']} ({s.iloc[0]['composite_score']:.1f})")
         update("Scoring complete -- " + " | ".join(parts))
 
-    def _log_signals(self, scored: pd.DataFrame, horizon: str):
+    def _log_signals(self, scored: pd.DataFrame, horizon: str, regime: str = ""):
+        """
+        Records the top picks with every factor score, which is what the weight
+        learner later correlates against realised alpha.
+        """
         try:
+            ensure_learning_tables()
             conn = get_db()
             today = datetime.today().strftime("%Y-%m-%d")
             for _, row in scored.head(10).iterrows():
@@ -273,12 +333,17 @@ class QuantumEngineOrchestrator:
                        (date, ticker, horizon, composite_score,
                         value_rank, quality_rank, momentum_rank,
                         technical_rank, volatility_rank,
+                        sector_growth_rank, news_catalyst_rank,
+                        flow_rank, earnings_rev_rank, regime,
                         factor_agreement, conviction, close_at_signal)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                     (today, row["ticker"], horizon, row["composite_score"],
                      row["value_score"], row["quality_score"],
                      row["momentum_score"], row["technical_score"],
-                     row["volatility_score"], int(row["factor_agreement"]),
+                     row["volatility_score"],
+                     row.get("sector_growth_score"), row.get("news_catalyst_score"),
+                     row.get("flow_score"), row.get("earnings_rev_score"), regime,
+                     int(row["factor_agreement"]),
                      row["conviction"], row["close"]),
                 )
             conn.commit()

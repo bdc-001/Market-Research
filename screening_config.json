@@ -298,7 +298,7 @@
       },
       "file": {
         "enabled": true,
-        "path": "c:\\\\Users\\\\HP\\\\OpenClaw\\\\Stock Research\\\\Market Research\\\\reports\\\\buffett_dalio_screening_{date}.md"
+        "path": "reports/buffett_dalio_screening_{date}.md"
       }
     }
   },

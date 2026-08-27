@@ -190,9 +190,16 @@ Instead of scanning a fixed list of 80–100 stocks every day, we let **the mark
 
 ## Repository Context
 
-This project lives under **OpenClaw** (`Stock Research/Market Research/`). It uses:
+This is a standalone Python project. The stack is Streamlit, Gemini, yfinance
+and Turso, deployed as a Hugging Face Space so analysis can be triggered from a
+phone without a laptop running. See `README.md` for deployment.
 
-- **OpenClaw** for gateway/channels/cron if you want scheduled runs and multi-channel delivery.
-- **Standalone scripts** (e.g. `quantum_orchestrator.py`, `telegram_bot.py`) so you can also run QuanTum and the bot without the full OpenClaw stack.
+- **UI:** `app.py` (Streamlit), the primary way to trigger and read analysis.
+- **Headless:** `quantum_orchestrator.py` and `weekly_report_runner.py` for
+  scheduled or scripted runs.
+- **Optional:** `telegram_bot.py` for delivery; not required by anything else.
 
-The write-up above describes the **Financial Intelligence / QuanTum Engine** we are building: news-first discovery, technical confirmation, multi-horizon factor scoring, and PDF reports delivered via Telegram.
+The write-up above describes the **Financial Intelligence / QuanTum Engine**:
+news-first discovery, technical confirmation, multi-horizon factor scoring, PDF
+reports, and a learning loop that adjusts factor weights and agent rules from
+verified outcomes.

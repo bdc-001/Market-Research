@@ -25,6 +25,7 @@ for _key in ("TURSO_URL", "TURSO_TOKEN"):
 # Import Agents
 from agents.research_agent import ResearchAgent
 from orchestrator import AgentOrchestrator
+from report_store import load_report, save_report, picks_to_records
 import financial_analyst_cli as analyst # Keep old screening logic for now
 
 
@@ -787,12 +788,26 @@ def main():
 
         st.markdown("---")
 
-        # Universe selector
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            st.info("🔍 Scanning **80+ NSE stocks** across Nifty 500 universe (auto-selected)")
-        with col2:
-            run_btn = st.button("🚀 Run QuanTum Engine", type="primary", use_container_width=True)
+        # Run mode. Fast keeps a phone-triggered run to a few minutes by
+        # trimming the long-horizon universe; weekly picks are unaffected
+        # because they always come from the news scanner.
+        mode = st.radio(
+            "Run mode",
+            ["Fast", "Full"],
+            horizontal=True,
+            help="Fast: news-discovered stocks plus a trimmed Nifty universe. "
+                 "Full: the entire 80+ stock universe, several minutes longer.",
+        )
+        run_btn = st.button("🚀 Run QuanTum Engine", type="primary", use_container_width=True)
+
+        # Last completed run, shown instantly so the page is useful on open.
+        cached = load_report("quantum") if not run_btn else None
+        if cached:
+            st.success(f"Last run: {cached['created']} ({cached.get('mode') or 'full'})")
+            with st.expander("📖 Last saved report", expanded=False):
+                st.markdown(cached["markdown"])
+        elif not run_btn:
+            st.info("No saved report yet. Tap Run to generate one.")
 
         if run_btn:
             from quantum_orchestrator import QuantumEngineOrchestrator
@@ -809,13 +824,26 @@ def main():
                     ]))
 
                 engine = QuantumEngineOrchestrator()
-                result = engine.run(progress_callback=qt_progress)
+                result = engine.run(progress_callback=qt_progress, fast=(mode == "Fast"))
 
                 if "error" in result:
                     status.update(label=f"❌ Error: {result['error']}", state="error")
                     st.error(result["error"])
                 else:
                     status.update(label="✅ QuanTum Engine Complete!", state="complete", expanded=False)
+                    cache_cols = ["ticker", "composite_score", "conviction", "close",
+                                  "rsi", "pe_ratio", "roe", "entry_status"]
+                    save_report(
+                        "quantum",
+                        result.get("report", ""),
+                        picks={
+                            horizon: picks_to_records(result.get(key), cache_cols)
+                            for horizon, key in (("week", "week_picks"),
+                                                 ("year", "year_picks"),
+                                                 ("fiveyear", "fiveyear_picks"))
+                        },
+                        mode=mode.lower(),
+                    )
 
             if "error" not in result:
                 # ── Ranked Picks Tables ───────────────────────────────────

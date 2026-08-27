@@ -8,7 +8,6 @@ import sys
 import json
 import time
 from datetime import datetime
-import google.generativeai as genai
 
 # Fix Windows console encoding
 if sys.platform == 'win32':
@@ -19,28 +18,17 @@ if sys.platform == 'win32':
         pass
 
 # Configuration
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 SCREENING_CONFIG_PATH = 'screening_config.json'
-SKILLS_PATH = 'skills'
 REPORTS_DIR = 'reports'
 
 def setup_gemini():
-    if not GEMINI_API_KEY:
-        print("❌ GEMINI_API_KEY not found in environment variables.")
-        print("Please run: $env:GEMINI_API_KEY = 'YOUR_KEY'")
-        sys.exit(1)
-    genai.configure(api_key=GEMINI_API_KEY)
-    # Using the Gemini 3 Flash Preview model for deep analysis
-    return genai.GenerativeModel('gemini-3-flash-preview')
+    from agents.common import setup_gemini as _setup
+    return _setup()
 
 def load_skills():
-    skills = {}
-    try:
-        with open(f'{SKILLS_PATH}/stock_screener/SKILL.md', 'r', encoding='utf-8') as f:
-            skills['stock_screener'] = f.read()
-    except:
-        skills['stock_screener'] = "Focus on ROE > 15%, Moat, and Management Integrity."
-    return skills
+    """Loads the quality-screen skill body via the shared skill registry."""
+    from agents.skill_loader import load_skill_body
+    return {'stock_screener': load_skill_body('stock_screener')}
 
 def get_screening_prompt(industry, skills):
     return f"""

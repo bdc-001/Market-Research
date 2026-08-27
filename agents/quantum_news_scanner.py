@@ -19,6 +19,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 from agents.common import setup_gemini
+from agents.skill_loader import load_skill_body
 
 logging.getLogger("yfinance").setLevel(logging.CRITICAL)
 
@@ -53,7 +54,7 @@ EVENT_TYPE_WEIGHTS = {
 }
 
 DISCOVERY_PROMPT = """\
-You are a financial news analyst for Indian stock markets (NSE/BSE).
+{skill}
 
 **Headlines (last 24 hours):**
 {headlines}
@@ -219,7 +220,13 @@ class NewsScanner:
             for h in headlines[:80]
         ])
 
-        prompt = DISCOVERY_PROMPT.format(headlines=headline_text)
+        prompt = DISCOVERY_PROMPT.format(
+            skill=load_skill_body(
+                "news_extractor",
+                default="You are a financial news analyst for Indian stock markets (NSE/BSE).",
+            ),
+            headlines=headline_text,
+        )
 
         try:
             resp = self.model.generate_content(prompt).text.strip()

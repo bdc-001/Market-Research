@@ -1,420 +1,114 @@
-# Financial Assistant - Setup Guide
+# QuanTum — Financial Intelligence
 
-## Overview
+An Indian-market equity research app you trigger from your phone. News decides
+which stocks are in play, technicals and fundamentals confirm them, and the
+system learns from whether its past picks actually beat the Nifty.
 
-This is your automated stock screening assistant built on OpenClaw. It analyzes companies daily based on your criteria and delivers actionable investment insights.
+Runs as a Streamlit web app. Hosted in the cloud, so your laptop does not need
+to be open.
 
-## What It Does
+## What it does
 
-Every weekday at 9 AM, the assistant will:
+- **News-first discovery.** RSS from Economic Times, Moneycontrol, Business
+  Standard, Mint and NDTV Profit, extracted by Gemini into tickers with a
+  catalyst, sentiment and event type.
+- **Multi-horizon scoring.** Nine factors, weighted by market regime, for three
+  horizons: this week, this year, five years.
+- **Entry timing and portfolio construction.** Pullback, volume and volatility
+  checks; risk-adjusted sizing with sector caps.
+- **Reports.** Markdown plus a styled PDF, cached so the app opens instantly.
+- **Self-learning.** See below.
 
-1. **Scan** all publicly listed companies in your chosen industry
-2. **Extract** comprehensive financial metrics from multiple sources
-3. **Filter** companies based on your investment criteria
-4. **Score** and rank the best opportunities
-5. **Generate** a detailed report with top stock picks
-6. **Deliver** the report to your preferred channel (Telegram/Discord/Slack/File)
-
-## Quick Start
-
-### 1. Install OpenClaw
-
-```bash
-# Install globally
-npm install -g openclaw@latest
-
-# Run onboarding wizard
-openclaw onboard --install-daemon
-```
-
-During onboarding:
-- Choose **Anthropic Claude Opus 4.6** (recommended for financial analysis)
-- Set workspace to: `c:\Users\HP\OpenClaw\Stock Research\Market Research`
-- Enable browser tool (required for data extraction)
-
-### 2. Configure Your Screening Criteria
-
-Edit `screening_config.json` to customize:
-
-**Industry Selection:**
-```json
-{
-  "screening": {
-    "industry": "Technology",  // Change to your preferred industry
-    "sector": "Software - Application"
-  }
-}
-```
-
-**Common Industries:**
-- Technology
-- Healthcare
-- Financial Services
-- Consumer Cyclical
-- Energy
-- Industrials
-- Real Estate
-- Communication Services
-
-**Filter Criteria:**
-
-The default configuration screens for:
-- Market cap > $500M
-- P/E ratio between 5-35
-- Revenue growth > 15%
-- Profit margin > 10%
-- ROE > 15%
-- Debt-to-Equity < 1.5
-- Positive free cash flow
-
-**Customize these values** based on your investment strategy!
-
-### 3. Set Up Delivery Channel (Optional)
-
-Choose how you want to receive daily reports:
-
-#### Option A: File System (Default)
-Reports saved to: `financial-assistant/reports/daily_screening_{date}.md`
-
-#### Option B: Telegram
-1. Create a Telegram bot via @BotFather
-2. Get your bot token
-3. Update `openclaw.json`:
-```json
-{
-  "channels": {
-    "telegram": {
-      "enabled": true,
-      "botToken": "YOUR_BOT_TOKEN",
-      "allowFrom": ["YOUR_USER_ID"]
-    }
-  }
-}
-```
-4. Update `screening_config.json`:
-```json
-{
-  "output": {
-    "delivery": {
-      "telegram": {
-        "enabled": true,
-        "chatId": "YOUR_CHAT_ID"
-      }
-    }
-  }
-}
-```
-
-#### Option C: Discord
-1. Create a Discord bot
-2. Add to your server
-3. Update `openclaw.json` with bot token and channel ID
-
-#### Option D: Slack
-1. Create a Slack app
-2. Get bot and app tokens
-3. Update `openclaw.json` with credentials
-
-### 4. Start the Gateway
+## Quick start (local)
 
 ```bash
-# Start OpenClaw gateway
-openclaw gateway --port 18789 --verbose
+pip install -r requirements.txt
+streamlit run app.py
 ```
 
-The gateway will:
-- Load your configuration
-- Enable the browser tool
-- Start the cron scheduler
-- Run daily screening at 9 AM
+Secrets go in `.streamlit/secrets.toml` (never committed):
 
-### 5. Test the Workflow
-
-Don't wait until 9 AM! Test it now:
-
-```bash
-openclaw agent --session financial_screener --message "Run the daily stock screening workflow using the current screening_config.json"
+```toml
+GEMINI_API_KEY = "..."
+TURSO_URL = "libsql://your-db.turso.io"   # optional
+TURSO_TOKEN = "..."                        # optional
 ```
 
-This will:
-- Execute the full screening process
-- Generate a report
-- Save/send based on your delivery settings
+Without Turso the app falls back to a local SQLite file. In the cloud Turso is
+strongly recommended: container disks are wiped on restart, and the database is
+where learned weights, learned rules and cached reports live.
 
-## File Structure
+## Deploy so it runs without your laptop
+
+Hugging Face Spaces, free CPU tier:
+
+1. Push this folder to its GitHub repo (`bdc-001/Market-Research`).
+2. Create a Space: SDK **Streamlit**, hardware **CPU basic**, app file `app.py`,
+   linked to that repo.
+3. In Space settings, add secrets: `GEMINI_API_KEY`, `TURSO_URL`, `TURSO_TOKEN`.
+4. Open the `*.hf.space` URL on your phone and use **Add to Home Screen**.
+
+The Space sleeps when idle and wakes when you open it, so the first load after a
+gap takes roughly 30 to 60 seconds. That is the trade for a free always-on URL.
+
+### Run modes
+
+The QuanTum tab opens on the last saved report, so you see something useful
+immediately. Two modes are available when you run a fresh analysis:
+
+| Mode | Universe | Use when |
+| --- | --- | --- |
+| Fast | News-discovered stocks plus a trimmed Nifty universe | Triggering from a phone; finishes in a few minutes |
+| Full | Complete 80+ stock universe | You want the widest long-horizon coverage |
+
+Weekly picks are identical in both modes because they always come from the news
+scanner. Fast mode only narrows the annual and five-year universe.
+
+## How the system learns
+
+Two kinds of memory, because the two halves of the pipeline learn differently.
+
+**Factor weights (numeric).** Every run logs its picks with all nine factor
+scores. `SignalVerifier` later fills in what each pick actually did against the
+Nifty. `WeightLearner` measures the rank correlation between each factor and
+realised alpha, then shrinks the weights toward what worked. Updates are capped
+and require at least 30 verified signals, so a thin sample cannot wreck a model.
+See `agents/quantum_learning.py`.
+
+**Rules (semantic).** `GEMINI.md` is prepended to every model call and points at
+`memory/learned_rules.md`. After each run the critic agent compares picks with
+outcomes and appends at most three imperative rules, such as "Always discount
+block-deal headlines to low urgency because the move precedes the story." Rules
+are mirrored to the database and restored on boot, so a container restart does
+not erase what the system has learned. See `agents/quantum_critic.py`.
+
+## Skills
+
+Skills live in `skills/<name>/SKILL.md` with YAML front matter. Only the front
+matter is read at startup; the full instruction body is loaded when a skill is
+actually used (`agents/skill_loader.py`).
+
+| Skill | Purpose |
+| --- | --- |
+| `news_extractor` | Headlines to tickers, catalyst, sentiment, event type |
+| `stock_screener` | Buffett-Dalio quality judgement |
+| `critic` | Turns outcomes into durable rules |
+
+## Layout
 
 ```
-financial-assistant/
-├── openclaw.json                 # Main OpenClaw configuration
-├── screening_config.json         # Your screening criteria
-├── skills/
-│   ├── stock_screener/
-│   │   └── SKILL.md             # Stock screening logic
-│   └── data_extractor/
-│       └── SKILL.md             # Data extraction logic
-├── reports/                      # Generated reports
-│   ├── daily_screening_2026-02-12.md
-│   └── daily_screening_2026-02-13.md
-└── logs/
-    └── openclaw.log             # System logs
+app.py                    Streamlit UI
+quantum_orchestrator.py   11-phase pipeline
+agents/                   scoring, data, flow, learning, critic
+skills/                   YAML-front-matter skill definitions
+memory/learned_rules.md   accumulated rules
+report_store.py           cached reports for instant page loads
+weekly_report_runner.py   headless run for a scheduler
+telegram_bot.py           optional delivery, not required
 ```
 
-## Customization Guide
+## Notes
 
-### Change Screening Time
-
-Edit `openclaw.json`:
-
-```json
-{
-  "cron": {
-    "jobs": [
-      {
-        "schedule": "0 18 * * 1-5"  // Change to 6 PM
-      }
-    ]
-  }
-}
-```
-
-Cron format: `minute hour day month weekday`
-- `0 9 * * 1-5` = 9 AM, weekdays
-- `0 12 * * *` = 12 PM, daily
-- `30 15 * * 1,3,5` = 3:30 PM, Mon/Wed/Fri
-
-### Screen Multiple Industries
-
-Create multiple config files:
-
-1. Copy `screening_config.json` to `screening_config_healthcare.json`
-2. Edit the new file with different industry and criteria
-3. Add a second cron job in `openclaw.json`:
-
-```json
-{
-  "cron": {
-    "jobs": [
-      {
-        "name": "tech_screening",
-        "schedule": "0 9 * * 1-5",
-        "message": "Run screening using screening_config.json"
-      },
-      {
-        "name": "healthcare_screening",
-        "schedule": "0 10 * * 1-5",
-        "message": "Run screening using screening_config_healthcare.json"
-      }
-    ]
-  }
-}
-```
-
-### Adjust Scoring Weights
-
-In `screening_config.json`, change what matters most:
-
-```json
-{
-  "scoring": {
-    "weights": {
-      "valuation": 20,      // How important is valuation?
-      "growth": 30,         // Prioritize growth?
-      "profitability": 25,  // Or profitability?
-      "financialHealth": 15,
-      "analyst": 10
-    }
-  }
-}
-```
-
-Total must equal 100.
-
-### Add Custom Filters
-
-You can add any financial metric to the filters. Examples:
-
-```json
-{
-  "filters": {
-    "dividendYield": {
-      "min": 3,
-      "description": "Dividend yield at least 3%"
-    },
-    "evToEbitda": {
-      "min": 0,
-      "max": 15,
-      "description": "EV/EBITDA under 15"
-    },
-    "bookValueGrowth": {
-      "min": 10,
-      "unit": "percent"
-    }
-  }
-}
-```
-
-## Advanced Usage
-
-### Interactive Refinement
-
-Chat with the agent to refine results:
-
-```bash
-openclaw agent --session financial_screener --message "From today's results, show me only stocks with market cap under $5B"
-```
-
-### Historical Analysis
-
-```bash
-openclaw agent --session financial_screener --message "Compare this week's top picks with last month's. Which stocks consistently appear?"
-```
-
-### Portfolio Monitoring
-
-```bash
-openclaw agent --session financial_screener --message "I own AAPL, MSFT, NVDA. Run the screening criteria against my holdings and flag any concerns."
-```
-
-### Custom Research
-
-```bash
-openclaw agent --session financial_screener --message "Deep dive into the top 3 stocks from today's screening. Analyze their latest 10-K filings and identify key risks."
-```
-
-## Monitoring & Maintenance
-
-### Check System Health
-
-```bash
-openclaw doctor
-```
-
-### View Recent Reports
-
-```bash
-# List all reports
-ls financial-assistant/reports/
-
-# View latest report
-cat financial-assistant/reports/daily_screening_2026-02-12.md
-```
-
-### Check Logs
-
-```bash
-cat financial-assistant/logs/openclaw.log
-```
-
-### Update OpenClaw
-
-```bash
-openclaw update --channel stable
-```
-
-## Troubleshooting
-
-### Screening Doesn't Run
-
-1. Check gateway is running: `openclaw gateway --status`
-2. Verify cron is enabled in `openclaw.json`
-3. Check logs for errors
-
-### No Companies Pass Filters
-
-Your criteria might be too strict. Try:
-1. Relaxing some filter thresholds
-2. Removing some filters temporarily
-3. Checking if the industry has enough companies
-
-### Browser Issues
-
-If data extraction fails:
-1. Ensure browser tool is enabled
-2. Try running with `headless: false` to see what's happening
-3. Check if websites have changed their layout
-4. Use fallback data sources
-
-### Data Quality Issues
-
-If metrics seem wrong:
-1. Verify data source is accessible
-2. Check for website layout changes
-3. Enable caching to reduce requests
-4. Use multiple data sources for validation
-
-## Tips for Best Results
-
-1. **Start Conservative**: Use strict filters initially, then relax as needed
-2. **Multiple Strategies**: Run different screening configs for different investment styles
-3. **Track Over Time**: Save reports and compare week-over-week
-4. **Combine with Research**: Use screening as a starting point, not the final decision
-5. **Adjust for Market**: Modify criteria based on bull/bear market conditions
-6. **Review Regularly**: Check and update your criteria monthly
-
-## Example Investment Strategies
-
-### Value Investing
-```json
-{
-  "filters": {
-    "peRatio": { "max": 15 },
-    "pbRatio": { "max": 1.5 },
-    "dividendYield": { "min": 3 },
-    "debtToEquity": { "max": 0.5 }
-  }
-}
-```
-
-### Growth Investing
-```json
-{
-  "filters": {
-    "revenueGrowth1Y": { "min": 25 },
-    "earningsGrowth1Y": { "min": 20 },
-    "profitMargin": { "min": 15 },
-    "roe": { "min": 20 }
-  }
-}
-```
-
-### Dividend Investing
-```json
-{
-  "filters": {
-    "dividendYield": { "min": 4 },
-    "payoutRatio": { "max": 60 },
-    "debtToEquity": { "max": 1.0 },
-    "freeCashFlow": { "positive": true }
-  }
-}
-```
-
-### Small Cap Growth
-```json
-{
-  "filters": {
-    "marketCap": { "min": 300000000, "max": 2000000000 },
-    "revenueGrowth1Y": { "min": 30 },
-    "profitMargin": { "min": 12 }
-  }
-}
-```
-
-## Support & Resources
-
-- **OpenClaw Docs**: https://docs.openclaw.ai
-- **Workflow**: See `.agent/workflows/daily-stock-screening.md`
-- **Skills**: Check `skills/*/SKILL.md` for detailed documentation
-- **Community**: Join OpenClaw Discord for help
-
-## Next Steps
-
-1. ✅ Install OpenClaw
-2. ✅ Customize `screening_config.json` with your criteria
-3. ✅ Set up delivery channel (Telegram/Discord/Slack)
-4. ✅ Test the workflow manually
-5. ✅ Let it run automatically daily
-6. ✅ Review reports and refine criteria
-7. ✅ Build your watchlist from top picks
-
-Happy investing! 🚀📈
+- Screening output is research, not investment advice.
+- yfinance and the NSE endpoints rate-limit. A Full run can take several
+  minutes; that is the data source, not the app.

@@ -1,14 +1,16 @@
 """
 Weekly Report Runner
 ====================
-Invoked every Monday morning by the OpenClaw cron job.
+Headless entry point for the full weekly pipeline. Run it from a scheduler
+(GitHub Actions, cron, Task Scheduler) or by hand.
+
 Runs all three financial pipelines in sequence:
   1. QuanTum Engine (multi-horizon stock picks)
   2. Sector Reports (Defence, Healthcare, Green Energy)
   3. Buffett-Dalio Screener (SME quality screen)
 
-Prints a concise summary to stdout — OpenClaw reads this and
-delivers it to WhatsApp + Telegram via the cron announce mechanism.
+Prints a concise summary to stdout and saves it next to the reports, so a
+scheduler can pick up either the text or the files.
 
 Usage:
   py weekly_report_runner.py
@@ -218,7 +220,6 @@ def main():
         screener_result = run_buffett_dalio()
 
     # ── Build the delivery message ────────────────────────────────────────────
-    # This is what OpenClaw posts to WhatsApp + Telegram
     lines = [
         f"*Weekly Financial Intelligence Report*",
         f"_{WEEK_LABEL}_",
@@ -259,8 +260,8 @@ def main():
 
     delivery_message = "\n".join(lines)
 
-    # ── Print the message (OpenClaw cron reads stdout for announce delivery) ──
-    section("DELIVERY MESSAGE (OpenClaw will send this)")
+    # ── Print the message (a scheduler can capture stdout for delivery) ───────
+    section("SUMMARY")
     print(delivery_message)
 
     # Also save a copy of the summary

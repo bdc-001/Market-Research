@@ -2,7 +2,6 @@
 .streamlit/secrets.toml
 .env
 *.env
-openclaw.json
 
 # ── Python cache ──────────────────────────────────────────────────────────────
 __pycache__/

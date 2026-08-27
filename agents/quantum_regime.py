@@ -249,8 +249,26 @@ class RegimeDetector:
             return None
         return round(above_50dma / total_valid * 100, 1)
 
-    def get_weights(self, regime: str, horizon: str) -> dict:
-        """Returns the regime-adjusted factor weights for a given horizon."""
+    def base_weights(self, regime: str, horizon: str) -> dict:
+        """The hardcoded regime weights, before anything has been learned."""
         return REGIME_WEIGHTS.get(regime, REGIME_WEIGHTS["SIDEWAYS"]).get(
             horizon, REGIME_WEIGHTS["SIDEWAYS"]["year"]
         )
+
+    def get_weights(self, regime: str, horizon: str) -> dict:
+        """
+        Regime weights for a horizon, overridden by anything the learning layer
+        has established from verified outcomes. Falls back to the hardcoded
+        table when no weights have been learned yet.
+        """
+        base = self.base_weights(regime, horizon)
+        try:
+            from agents.quantum_learning import load_learned_weights
+            learned = load_learned_weights(horizon, regime)
+        except Exception:
+            learned = None
+
+        if not learned:
+            return base
+        # Only override factors the base model has switched on for this horizon.
+        return {f: (learned.get(f, w) if w > 0 else w) for f, w in base.items()}

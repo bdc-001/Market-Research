@@ -246,40 +246,30 @@ Your system now looks for **exceptional businesses with durable competitive adva
 - Industry: "All" (finds best across markets)
 - Aggressive filtering (as intended)
 
-### `stock_screener/SKILL.md`
+### `skills/stock_screener/SKILL.md`
 - Complete framework documentation
 - Implementation notes
 - Red flag identification
 - Industry-specific adjustments
 
-### `data_extractor/SKILL.md`
-- 10-year historical data extraction
-- Multiple data sources
-- Qualitative data gathering (annual reports)
-- Management analysis
-
 ---
 
 ## 🚀 Next Steps
 
-### 1. Install OpenClaw
+### 1. Install dependencies
 ```bash
-npm install -g openclaw@latest
-openclaw onboard --install-daemon
+pip install -r requirements.txt
 ```
 
-### 2. Test Your First Screening
+### 2. Run the screener
+Open the Streamlit app and use the **Top Picks** tab, or run the weekly
+pipeline headless:
 ```bash
-cd c:\Users\HP\OpenClaw\Stock Research\Market Research
-.\assistant.ps1 run
+streamlit run app.py
+py weekly_report_runner.py --screener-only
 ```
 
-### 3. Review Results
-```bash
-.\assistant.ps1 report
-```
-
-### 4. Adjust If Needed
+### 3. Adjust If Needed
 - Too few results? Slightly relax some filters
 - Too many results? Your criteria are too loose (unlikely!)
 - Wrong types of companies? Adjust industry or moat requirements
@@ -350,7 +340,7 @@ This is a **professional-grade investment research system** that:
 
 Your financial assistant is now configured to find **wonderful companies at fair prices**, not just cheap stocks.
 
-**Install OpenClaw, run your first screening, and discover exceptional businesses worth owning for decades!**
+**Run your first screening and discover exceptional businesses worth owning for decades!**
 
 Happy investing! 🚀📈
 

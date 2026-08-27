@@ -38,7 +38,7 @@ echo.
 echo Next steps:
 echo   1. Close this window
 echo   2. Open a NEW PowerShell window
-echo   3. Run: python run_screening.py
+echo   3. Run: streamlit run app.py
 echo.
 echo Press any key to exit...
 pause >nul

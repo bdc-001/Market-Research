@@ -7,24 +7,44 @@ import json
 import google.generativeai as genai
 from typing import Dict, Any, List
 
-def setup_gemini():
-    """Returns a configured Gemini 3 Flash Preview model."""
-    GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-    
+MODEL_NAME = 'gemini-3-flash-preview'
+
+
+def get_api_key() -> str:
+    key = os.getenv('GEMINI_API_KEY')
+
     # Fallback to Streamlit secrets if environment variable not found
-    if not GEMINI_API_KEY:
+    if not key:
         try:
             import streamlit as st
-            GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
-        except:
+            key = st.secrets["GEMINI_API_KEY"]
+        except Exception:
             pass
-    
-    if not GEMINI_API_KEY:
+
+    if not key:
         raise ValueError("GEMINI_API_KEY not found in environment")
-    
-    genai.configure(api_key=GEMINI_API_KEY)
-    # Using the powerful new model for reasoning
-    return genai.GenerativeModel('gemini-3-flash-preview')
+    return key
+
+
+def setup_gemini(with_memory: bool = True):
+    """
+    Returns a Gemini model whose system instruction is GEMINI.md plus every
+    rule the critic agent has learned so far. Pass with_memory=False for the
+    critic itself, which must reason about the rules rather than obey them.
+    """
+    genai.configure(api_key=get_api_key())
+
+    instruction = None
+    if with_memory:
+        try:
+            from agents.memory import system_instruction
+            instruction = system_instruction()
+        except Exception:
+            instruction = None
+
+    if instruction:
+        return genai.GenerativeModel(MODEL_NAME, system_instruction=instruction)
+    return genai.GenerativeModel(MODEL_NAME)
 
 def clean_json(text: str) -> Dict[str, Any]:
     """Extracts JSON from markdown fences."""

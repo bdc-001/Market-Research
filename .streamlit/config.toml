@@ -1,13 +1,10 @@
 [server]
 headless = true
-port = 8501
 enableCORS = false
 address = "0.0.0.0"
 
 [browser]
 gatherUsageStats = false
-serverAddress = "192.168.1.25"
-serverPort = 8501
 
 [theme]
 base = "dark"
