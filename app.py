@@ -64,20 +64,44 @@ st.markdown("""
   }
 
   /* ═══════════════════════════════════════════
-     NUKE ALL STREAMLIT CHROME — this is critical
+     STREAMLIT CHROME — hide clutter, keep sidebar toggle
      ═══════════════════════════════════════════ */
-  #MainMenu, footer, header[data-testid="stHeader"],
+  header[data-testid="stHeader"] {
+      background: transparent !important;
+      color: var(--ink) !important;
+  }
+
+  #MainMenu, footer,
   div[data-testid="stToolbar"],
   div[data-testid="stDecoration"],
   div[data-testid="stStatusWidget"],
   button[data-testid="stBaseButton-headerNoPadding"],
-  div[data-testid="collapsedControl"] {
+  .stDeployButton {
+      display: none !important;
       visibility: hidden !important;
       height: 0 !important;
-      min-height: 0 !important;
-      max-height: 0 !important;
-      overflow: hidden !important;
-      position: fixed !important;
+  }
+
+  /* Sidebar toggle button (collapsed & open) */
+  [data-testid="collapsedControl"],
+  [data-testid="stSidebarCollapseButton"] {
+      visibility: visible !important;
+      display: flex !important;
+      z-index: 1000 !important;
+  }
+  [data-testid="collapsedControl"] button,
+  [data-testid="stSidebarCollapseButton"] button {
+      border: 1px solid var(--border) !important;
+      background: var(--bg) !important;
+      border-radius: var(--r) !important;
+      color: var(--ink-2) !important;
+      transition: all 0.12s ease !important;
+  }
+  [data-testid="collapsedControl"] button:hover,
+  [data-testid="stSidebarCollapseButton"] button:hover {
+      background: var(--bg-3) !important;
+      border-color: var(--border-2) !important;
+      color: var(--brand) !important;
   }
 
   /* ═══════════════════════════════════════════
