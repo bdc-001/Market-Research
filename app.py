@@ -351,20 +351,103 @@ st.markdown("""
   }
 
   /* ═══════════════════════════════════════════
-     PAGE HEADER — CLEAN INSTITUTIONAL
+     STICKY TOP NAVBAR & SECTION HEADER
      ═══════════════════════════════════════════ */
+  .qt-sticky-topbar {
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1.25rem;
+      margin: -1rem -2.5rem 1.5rem -2.5rem;
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  }
+  .qt-topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8125rem;
+      font-weight: 500;
+  }
+  .qt-topbar-brand {
+      color: var(--ink-muted);
+      font-weight: 600;
+  }
+  .qt-topbar-sep {
+      color: var(--ink-subtle);
+  }
+  .qt-topbar-section {
+      color: var(--ink);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+  }
+  .qt-topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+  }
+  .qt-topbar-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: var(--r-pill);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      color: var(--ink-secondary);
+  }
+  .qt-badge-accent {
+      background: var(--brand-subtle);
+      border-color: var(--brand-border);
+      color: var(--brand);
+  }
+
   .qt-header {
-      padding: 0 0 1.5rem 0;
-      margin-bottom: 1.5rem;
+      padding: 0.5rem 0 1.5rem 0;
+      margin-bottom: 1.75rem;
       border-bottom: 1px solid var(--border);
   }
+  .qt-header-content {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+  }
+  .qt-header-icon-box {
+      width: 46px;
+      height: 46px;
+      border-radius: var(--r-lg);
+      background: var(--brand-subtle);
+      border: 1px solid var(--brand-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      box-shadow: var(--shadow-apple);
+      flex-shrink: 0;
+  }
   .qt-page-title {
-      font-size: 1.5rem; font-weight: 700; color: var(--ink);
-      letter-spacing: -0.025em; line-height: 1.2; margin: 0;
+      font-size: 1.625rem;
+      font-weight: 800;
+      color: var(--ink);
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin: 0;
   }
   .qt-page-sub {
-      font-size: 0.875rem; color: var(--ink-muted);
-      margin-top: 4px; font-weight: 400; line-height: 1.4;
+      font-size: 0.875rem;
+      color: var(--ink-muted);
+      margin-top: 4px;
+      font-weight: 400;
+      line-height: 1.4;
   }
 
   /* ═══════════════════════════════════════════
@@ -781,23 +864,42 @@ def main():
         </div>
         """, unsafe_allow_html=True)
 
-    # ── Section Page Header ───────────────────────────────────────────────────
+    # ── Section Page Header & Sticky Top Bar ─────────────────────────────────
     section_meta = {
-        "Sector Analysis": ("Sector Intelligence", "Multi-Agent Deep Dive: Trends, Valuation & Institutional Positioning"),
-        "Stock Analysis": ("Investment Memo Council", "Deep-dive 7-Agent research memorandum on Indian equities"),
-        "Top Picks": ("Screen & Rank", "Automated screening for best risk-reward opportunities across industries"),
-        "QuanTum Picks": ("QuanTum Quant Engine", "Multi-factor algorithmic engine: Technical + Fundamental + Sentiment"),
-        "Global Markets": ("Global Macro Research", "Emerging and developed markets macroeconomic intelligence"),
-        "Market News": ("Market News Pulse", "Real-time news stream with automated sentiment scoring"),
-        "Report Library": ("Report Archive & Library", "Historical archive of generated memos, PDFs, and sector deep dives"),
+        "Sector Analysis": ("📊", "Sector Intelligence", "Multi-Agent Deep Dive: Trends, Valuation & Institutional Positioning"),
+        "Stock Analysis": ("🏢", "Investment Memo Council", "Deep-dive 7-Agent research memorandum on Indian equities"),
+        "Top Picks": ("🎯", "Screen & Rank", "Automated screening for best risk-reward opportunities across industries"),
+        "QuanTum Picks": ("⚡", "QuanTum Quant Engine", "Multi-factor algorithmic engine: Technical + Fundamental + Sentiment"),
+        "Global Markets": ("🌐", "Global Macro Research", "Emerging and developed markets macroeconomic intelligence"),
+        "Market News": ("📰", "Market News Pulse", "Real-time news stream with automated sentiment scoring"),
+        "Report Library": ("📁", "Report Archive & Library", "Historical archive of generated memos, PDFs, and sector deep dives"),
     }
 
-    current_title, current_desc = section_meta.get(selected_section, ("Financial Intelligence", "Enterprise Market Analytics"))
+    current_icon, current_title, current_desc = section_meta.get(
+        selected_section, ("⚡", "Financial Intelligence", "Enterprise Market Analytics")
+    )
 
     st.markdown(f"""
+    <div class="qt-sticky-topbar">
+        <div class="qt-topbar-left">
+            <span class="qt-topbar-brand">QuanTum</span>
+            <span class="qt-topbar-sep">/</span>
+            <span class="qt-topbar-section">{current_icon} {selected_section}</span>
+        </div>
+        <div class="qt-topbar-right">
+            <div class="qt-topbar-badge"><span class="live-pulse-dot"></span> 7-Agent Council Active</div>
+            <div class="qt-topbar-badge qt-badge-accent">NSE Real-Time</div>
+        </div>
+    </div>
+    
     <div class="qt-header">
-        <h1 class="qt-page-title">{current_title}</h1>
-        <div class="qt-page-sub">{current_desc}</div>
+        <div class="qt-header-content">
+            <div class="qt-header-icon-box">{current_icon}</div>
+            <div>
+                <h1 class="qt-page-title">{current_title}</h1>
+                <div class="qt-page-sub">{current_desc}</div>
+            </div>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
