@@ -30,27 +30,27 @@ class AgentOrchestrator:
                 print(f"🔄 {msg}")
 
         # Phase 1: Research (Parallelizable in theory, sequential for simplicity here to avoid rate limits)
-        update_status("🕵️ Research Agent: Digging into Annual Reports...")
+        update_status("Research Agent\n████████████████░░░\nDigging into Annual Reports...")
         research_data = self.researcher.run(ticker)
         
-        update_status("📰 Market Scout: Scanning News & Sentiment...")
+        update_status("Market Scout Agent\n████████████████░░░\nScanning News & Sentiment...")
         market_data = self.scout.run(ticker)
         
         # Phase 2: Analysis (The Debate)
-        update_status("📈 Financial Agent: Calculating ROE & Valuation...")
+        update_status("Financial Agent\n████████████████░░░\nCalculating ROE & Valuation...")
         quant_verdict = self.quant.run(ticker, research_data)
         
-        update_status("🐂 Bull Agent: Arguments for Buying...")
+        update_status("Bull Agent\n████████████████░░░\nSynthesizing Arguments for Buying...")
         bull_case = self.bull.run(ticker, research_data)
         
-        update_status("🐻 Bear Agent: Arguments for Selling...")
+        update_status("Bear Agent\n████████████████░░░\nSynthesizing Arguments for Selling...")
         bear_case = self.bear.run(ticker, research_data)
         
-        update_status("📉 Technical Analyst: Examining Price Action...")
+        update_status("Technical Agent\n████████████████░░░\nExamining Price Action...")
         technical_outlook = self.chartist.run(ticker)
         
         # Phase 3: Synthesis (The Verdict)
-        update_status("⚖️ Editor Agent: Drafting Final Report...")
+        update_status("Editor Agent\n████████████████░░░\nDrafting Final Council Report...")
         final_report = self.editor.run(
             ticker, 
             research_data, 
@@ -61,5 +61,5 @@ class AgentOrchestrator:
             technical_outlook
         )
         
-        update_status("✅ Analysis Complete!")
+        update_status("Council Analysis Complete\n███████████████████\nFinal Verdict Ready")
         return final_report

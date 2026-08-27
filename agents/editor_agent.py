@@ -25,6 +25,33 @@ class EditorAgent(BaseAgent):
         
         # Investment Analysis: {ticker}
         
+        <pre>
+        ┌────────────────────────────────────────────┐
+        │  INSIGHT                                   │
+        │                                            │
+        │  [Verdict: Strong Buy/Hold/Avoid]          │
+        │  [Score: e.g. 82 / 100]                    │
+        │                                            │
+        │  ────────────────────────────────────────  │
+        │                                            │
+        │  WHY                                       │
+        │  [1-2 sentence core rationale]             │
+        │                                            │
+        │  EVIDENCE                                  │
+        │  • [Key evidence 1]                        │
+        │  • [Key evidence 2]                        │
+        │  • [Key evidence 3]                        │
+        │                                            │
+        │  AGENT CONSENSUS                           │
+        │  ● Research     [Bullish/Bearish/Neutral]  │
+        │  ● Financial    [Bullish/Bearish/Neutral]  │
+        │  ● Bull         Bullish                    │
+        │  ● Bear         Bearish                    │
+        │                                            │
+        │  ⚠ Key risk: [Main risk factor]            │
+        └────────────────────────────────────────────┘
+        </pre>
+        
         ## 1. Executive Summary
         - **Verdict**: (Strong Buy / Accumulate / Hold / Avoid)
         - **Target Horizon**: (1-3 Years)
