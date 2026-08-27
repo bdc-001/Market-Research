@@ -227,17 +227,17 @@ st.markdown("""
   }
 
   /* Hide raw radio circles */
-  [data-testid="stSidebar"] .stRadio label[data-baseweb="radio"] input[type="radio"] + div {
+  [data-testid="stSidebar"] .stRadio [role="radio"] > div:first-child,
+  [data-testid="stSidebar"] .stRadio [data-baseweb="radio"] > div:first-child {
       display: none !important;
   }
 
   /* ── Sidebar Status Card ── */
   .sidebar-status-card {
-      background: var(--surface-primary);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 16px;
-      margin-top: 1.5rem;
+      background: transparent;
+      border-top: 1px solid var(--border);
+      padding: 16px 0;
+      margin-top: 1rem;
   }
 
   .status-header-text {
@@ -286,10 +286,9 @@ st.markdown("""
 
   /* ── Main View Header ── */
   .enterprise-hero-header {
-      background: var(--surface-primary);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.5rem;
+      background: transparent;
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 0 1.5rem 0;
       margin-bottom: 2rem;
       display: flex;
       align-items: center;
@@ -302,7 +301,7 @@ st.markdown("""
       font-size: clamp(1.4rem, 3vw, 1.75rem);
       font-weight: 600;
       color: var(--text-primary);
-      letter-spacing: -0.02em;
+      letter-spacing: -0.03em;
       line-height: 1.2;
       margin: 0;
   }
@@ -326,11 +325,12 @@ st.markdown("""
       align-items: center;
       gap: 6px;
       padding: 4px 10px;
-      border-radius: 9999px;
-      font-size: 0.75rem;
+      border-radius: 6px;
+      font-size: 0.72rem;
       font-weight: 500;
-      background: var(--primary-50);
-      color: var(--primary-600);
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
   }
 
   /* ── Enterprise Cards & Panels ── */
@@ -345,19 +345,31 @@ st.markdown("""
   /* ── Buttons (Purple Theme) ── */
   .stButton > button {
       width: 100%;
-      padding: 12px 20px;
+      min-height: 40px !important;
+      padding: 0 16px !important;
       font-size: 0.88rem;
-      font-weight: 600;
-      font-family: 'Inter', sans-serif !important;
+      font-weight: 500;
       border-radius: 8px;
-      border: none;
-      background: var(--primary-600) !important;
-      color: #ffffff !important;
-      transition: background 0.15s ease;
-      min-height: 40px;
+      border: 1px solid transparent !important;
+      background: var(--surface-primary);
+      color: var(--text-primary);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+      transition: all 0.15s ease;
   }
 
   .stButton > button:hover {
+      background: var(--surface-secondary);
+      border-color: var(--border) !important;
+      color: var(--text-primary) !important;
+  }
+
+  .stButton > button[kind="primary"] {
+      background: var(--primary-600) !important;
+      color: #ffffff !important;
+      border: none !important;
+  }
+
+  .stButton > button[kind="primary"]:hover {
       background: var(--primary-500) !important;
   }
 
