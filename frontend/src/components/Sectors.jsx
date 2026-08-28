@@ -92,56 +92,6 @@ export default function Sectors() {
         </button>
       </div>
 
-      <div className="card-grid">
-        <div className="dashboard-card">
-          <div className="card-header">
-            <span className="card-title">Indian Defence & Aerospace</span>
-            <span className="card-status status-active">● Active</span>
-          </div>
-          <div className="card-metrics">
-            <div className="metric-item"><div className="metric-label">AGENT</div><div className="metric-value">7-Agent Council</div></div>
-            <div className="metric-item"><div className="metric-label">COVERAGE</div><div className="metric-value">HAL, BEL, BDL</div></div>
-            <div className="metric-item"><div className="metric-label">OUTLOOK</div><div className="metric-value">Bullish (+18%)</div></div>
-          </div>
-          <div className="card-tags">
-            <span className="card-tag active">● Indigenisation</span>
-            <span className="card-tag">● Orderbook Growth</span>
-          </div>
-        </div>
-
-        <div className="dashboard-card">
-          <div className="card-header">
-            <span className="card-title">Indian IT & AI Infrastructure</span>
-            <span className="card-status status-warning">● Resuming</span>
-          </div>
-          <div className="card-metrics">
-            <div className="metric-item"><div className="metric-label">AGENT</div><div className="metric-value">Macro + Tech</div></div>
-            <div className="metric-item"><div className="metric-label">COVERAGE</div><div className="metric-value">TCS, INFY, HCL</div></div>
-            <div className="metric-item"><div className="metric-label">VALUATION</div><div className="metric-value">P/E 24.5 (Fair)</div></div>
-          </div>
-          <div className="card-tags">
-            <span className="card-tag active">● Cloud Transformation</span>
-            <span className="card-tag">● Margin Resilient</span>
-          </div>
-        </div>
-
-        <div className="dashboard-card">
-          <div className="card-header">
-            <span className="card-title">Banking & Private Credit</span>
-            <span className="card-status status-active">● Active</span>
-          </div>
-          <div className="card-metrics">
-            <div className="metric-item"><div className="metric-label">AGENT</div><div className="metric-value">Credit Analyst</div></div>
-            <div className="metric-item"><div className="metric-label">COVERAGE</div><div className="metric-value">HDFCBANK, ICICI</div></div>
-            <div className="metric-item"><div className="metric-label">EFFICIENCY</div><div className="metric-value">ROE 17.2%</div></div>
-          </div>
-          <div className="card-tags">
-            <span className="card-tag active">● Low NPA</span>
-            <span className="card-tag">● NIM Expansion</span>
-          </div>
-        </div>
-      </div>
-
       <CouncilChamber logs={logs} isRunning={isRunning} headline="Sector desk" />
       <LogViewer logs={logs} isRunning={isRunning} />
 

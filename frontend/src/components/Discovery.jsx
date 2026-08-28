@@ -116,6 +116,10 @@ export default function Discovery() {
 
       <div className="card-grid">
         <div className="dashboard-card">
+          <div className="metric-label">DATABASE</div>
+          <div className="disc-metric" style={{ fontSize: '1.05rem' }}>{summary?.turso ? 'Turso' : 'Local empty'}</div>
+        </div>
+        <div className="dashboard-card">
           <div className="metric-label">COUNCIL EPISODES</div>
           <div className="disc-metric">{summary?.count ?? '—'}</div>
         </div>
@@ -154,8 +158,19 @@ export default function Discovery() {
       </div>
 
       {!summary?.episodes?.length && !error && (
-        <div className="report-card" style={{ textAlign: 'center', color: 'var(--ink-muted)' }}>
-          No Discovery Council episodes yet. Run <code>python build_discovery_sample.py</code> locally, then refresh.
+        <div className="report-card">
+          <h3 style={{ fontSize: '1.05rem', fontWeight: 800, marginBottom: 8 }}>No Discovery episodes in the connected database</h3>
+          {summary?.turso === false ? (
+            <p style={{ color: 'var(--ink-secondary)', lineHeight: 1.55 }}>
+              This Render service is <b>not using Turso</b>. It is reading an empty disk file inside the container, so CHAVDA and the sample never appear.
+              In Render → this Web Service → Environment, confirm <code>TURSO_URL</code> and <code>TURSO_TOKEN</code> are set, then <b>Manual Deploy</b> (env vars do not apply until a new deploy).
+            </p>
+          ) : (
+            <p style={{ color: 'var(--ink-secondary)', lineHeight: 1.55 }}>
+              Turso is connected, but there are no rows with <code>source = discovery_council</code>.
+              Run <code>python build_discovery_sample.py</code> locally (with the same Turso keys) so episodes are written to the cloud database, then refresh this page.
+            </p>
+          )}
         </div>
       )}
 

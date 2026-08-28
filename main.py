@@ -111,14 +111,17 @@ def _horizon_due(ep, days=30):
 
 @app.get("/api/health")
 def health():
-    return {"ok": True, "runtime": "slim"}
+    from turso_db import is_configured
+    return {"ok": True, "runtime": "slim", "turso": is_configured()}
 
 
 @app.get("/api/discovery/episodes")
 def discovery_episodes():
     try:
         from agents.episode_store import list_discovery_council_episodes
+        from turso_db import is_configured
         rows = list_discovery_council_episodes()
+        turso = is_configured()
     except Exception as exc:
         return JSONResponse(status_code=500, content={"error": str(exc)})
     today = date.today()
@@ -144,6 +147,7 @@ def discovery_episodes():
         "event_types": types,
         "pending_30": pending_30,
         "lessons": 0,
+        "turso": turso,
     }
 
 

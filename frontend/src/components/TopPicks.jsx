@@ -92,56 +92,6 @@ export default function TopPicks() {
         </button>
       </div>
 
-      <div className="card-grid">
-        <div className="dashboard-card">
-          <div className="card-header">
-            <span className="card-title">HAL (Hindustan Aeronautics)</span>
-            <span className="card-status status-active">● Rank #1</span>
-          </div>
-          <div className="card-metrics">
-            <div className="metric-item"><div className="metric-label">SECTOR</div><div className="metric-value">Defence & Aero</div></div>
-            <div className="metric-item"><div className="metric-label">SCORE</div><div className="metric-value">92.4 / 100</div></div>
-            <div className="metric-item"><div className="metric-label">HORIZON</div><div className="metric-value">1 Year (+28%)</div></div>
-          </div>
-          <div className="card-tags">
-            <span className="card-tag active">● Tejas Mk1A Order</span>
-            <span className="card-tag">● High ROE (26%)</span>
-          </div>
-        </div>
-
-        <div className="dashboard-card">
-          <div className="card-header">
-            <span className="card-title">DIXON (Dixon Technologies)</span>
-            <span className="card-status status-active">● Rank #2</span>
-          </div>
-          <div className="card-metrics">
-            <div className="metric-item"><div className="metric-label">SECTOR</div><div className="metric-value">Electronics Mfg</div></div>
-            <div className="metric-item"><div className="metric-label">SCORE</div><div className="metric-value">89.1 / 100</div></div>
-            <div className="metric-item"><div className="metric-label">HORIZON</div><div className="metric-value">Positional (+22%)</div></div>
-          </div>
-          <div className="card-tags">
-            <span className="card-tag active">● PLI Scheme</span>
-            <span className="card-tag">● Mobile Assembly</span>
-          </div>
-        </div>
-
-        <div className="dashboard-card">
-          <div className="card-header">
-            <span className="card-title">KAYNES (Kaynes Technology)</span>
-            <span className="card-status status-warning">● Rank #3</span>
-          </div>
-          <div className="card-metrics">
-            <div className="metric-item"><div className="metric-label">SECTOR</div><div className="metric-value">Semiconductor EMS</div></div>
-            <div className="metric-item"><div className="metric-label">SCORE</div><div className="metric-value">86.5 / 100</div></div>
-            <div className="metric-item"><div className="metric-label">HORIZON</div><div className="metric-value">5 Years Compound</div></div>
-          </div>
-          <div className="card-tags">
-            <span className="card-tag active">● OSAT Fab Facility</span>
-            <span className="card-tag">● 40%+ Rev CAGR</span>
-          </div>
-        </div>
-      </div>
-
       <CouncilChamber logs={logs} isRunning={isRunning} headline="Screening committee" />
       <LogViewer logs={logs} isRunning={isRunning} />
 

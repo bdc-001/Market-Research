@@ -6,7 +6,7 @@ import { getApiUrl } from './api';
 
 export default function StockAnalysis() {
   const [ticker, setTicker] = useState('');
-  const [activeChartSymbol, setActiveChartSymbol] = useState('TATAMOTORS');
+  const [activeChartSymbol, setActiveChartSymbol] = useState('');
   const [isRunning, setIsRunning] = useState(false);
   const [logs, setLogs] = useState([]);
   const [report, setReport] = useState(null);
@@ -54,11 +54,6 @@ export default function StockAnalysis() {
     triggerAnalysis(ticker);
   };
 
-  const handleCardClick = (symbol) => {
-    setActiveChartSymbol(symbol);
-    setTicker(symbol);
-  };
-
   const handleDownloadPdf = () => {
     if (!filename) return;
     setPdfGenerating(true);
@@ -92,68 +87,7 @@ export default function StockAnalysis() {
         </button>
       </div>
 
-      <div className="card-grid">
-        <div 
-          className="dashboard-card" 
-          onClick={() => handleCardClick('TATAMOTORS')}
-          style={{ cursor: "pointer", border: activeChartSymbol === 'TATAMOTORS' ? "1px solid var(--brand)" : "1px solid var(--border)" }}
-        >
-          <div className="card-header">
-            <span className="card-title">TATAMOTORS</span>
-            <span className="card-status status-active">● High Conviction</span>
-          </div>
-          <div className="card-metrics">
-            <div className="metric-item"><div className="metric-label">SCORE</div><div className="metric-value">88 / 100</div></div>
-            <div className="metric-item"><div className="metric-label">TECHNICALS</div><div className="metric-value">RSI 56.4 (MACD +)</div></div>
-            <div className="metric-item"><div className="metric-label">ROE</div><div className="metric-value">24.8%</div></div>
-          </div>
-          <div className="card-tags">
-            <span className="card-tag active">● EV Transition</span>
-            <span className="card-tag">● JLR Margins</span>
-          </div>
-        </div>
-
-        <div 
-          className="dashboard-card" 
-          onClick={() => handleCardClick('RELIANCE')}
-          style={{ cursor: "pointer", border: activeChartSymbol === 'RELIANCE' ? "1px solid var(--brand)" : "1px solid var(--border)" }}
-        >
-          <div className="card-header">
-            <span className="card-title">RELIANCE</span>
-            <span className="card-status status-warning">● Consolidation</span>
-          </div>
-          <div className="card-metrics">
-            <div className="metric-item"><div className="metric-label">SCORE</div><div className="metric-value">76 / 100</div></div>
-            <div className="metric-item"><div className="metric-label">TECHNICALS</div><div className="metric-value">Near SMA200</div></div>
-            <div className="metric-item"><div className="metric-label">P/E</div><div className="metric-value">26.1</div></div>
-          </div>
-          <div className="card-tags">
-            <span className="card-tag active">● Jio Growth</span>
-            <span className="card-tag">● Retail Monetisation</span>
-          </div>
-        </div>
-
-        <div 
-          className="dashboard-card" 
-          onClick={() => handleCardClick('INFY')}
-          style={{ cursor: "pointer", border: activeChartSymbol === 'INFY' ? "1px solid var(--brand)" : "1px solid var(--border)" }}
-        >
-          <div className="card-header">
-            <span className="card-title">INFY</span>
-            <span className="card-status status-info">● Accumulate</span>
-          </div>
-          <div className="card-metrics">
-            <div className="metric-item"><div className="metric-label">SCORE</div><div className="metric-value">82 / 100</div></div>
-            <div className="metric-item"><div className="metric-label">TECHNICALS</div><div className="metric-value">Above SMA50</div></div>
-            <div className="metric-item"><div className="metric-label">YIELD</div><div className="metric-value">Div 2.6%</div></div>
-          </div>
-          <div className="card-tags">
-            <span className="card-tag active">● GenAI Deals</span>
-            <span className="card-tag">● Large Deal TCV</span>
-          </div>
-        </div>
-      </div>
-
+      {activeChartSymbol && (
       <div style={{ marginBottom: "24px" }}>
         <h3 style={{ fontSize: "1rem", fontWeight: "bold", marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
           <span className="material-symbols-rounded" style={{ color: "var(--brand)" }}>monitoring</span>
@@ -161,6 +95,7 @@ export default function StockAnalysis() {
         </h3>
         <TradingViewChart symbol={activeChartSymbol} />
       </div>
+      )}
 
       <CouncilChamber logs={logs} isRunning={isRunning} headline="7-agent equity council" />
       <LogViewer logs={logs} isRunning={isRunning} />
