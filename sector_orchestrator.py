@@ -26,17 +26,17 @@ class SectorOrchestrator:
                 print(f"🔄 {msg}")
 
         # Phase 1: Macro Research
-        update("🕵️ Research Agent: Analyzing Industry Trends & Government Policies...")
+        update("Research Agent\n████████████████░░░\nAnalyzing Industry Trends & Government Policies...")
         industry_context = f"{sector} industry india 2025 growth drivers government policies PLI scheme"
         macro_data = self.researcher.run(industry_context)
         
         # Phase 2: Market Intelligence
-        update("📰 Market Scout: Tracking Institutional Movements & Key Players...")
+        update("Market Scout Agent\n████████████████░░░\nTracking Institutional Movements & Key Players...")
         institutional_query = f"{sector} india institutional investors FII DII positioning major stocks 2025"
         institutional_data = self.scout.run(institutional_query)
         
         # Phase 3: Stock Screening
-        update("📈 Financial Agent: Screening Top Stocks in Sector...")
+        update("Financial Agent\n████████████████░░░\nScreening Top Stocks in Sector...")
         screening_prompt = f"""
         Identify the Top 10 publicly listed companies in **{sector}** (Indian Market).
         
@@ -51,7 +51,7 @@ class SectorOrchestrator:
         stock_comparison = self.model.generate_content(screening_prompt).text
         
         # Phase 4: Synthesis
-        update("⚖️ Editor: Synthesizing Comprehensive Sector Report...")
+        update("Editor Agent\n████████████████░░░\nSynthesizing Comprehensive Sector Report...")
         synthesis_prompt = f"""
         Create a **Comprehensive Sector Analysis Report** for **{sector}**.
         
@@ -129,5 +129,5 @@ class SectorOrchestrator:
         
         final_report = self.model.generate_content(synthesis_prompt).text
         
-        update("✅ Sector Analysis Complete!")
+        update("Council Analysis Complete\n███████████████████\nSector Report Ready")
         return final_report

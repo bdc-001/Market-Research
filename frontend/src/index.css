@@ -1,0 +1,135 @@
+/* index.css */
+:root {
+  /* Premium Dark Theme (Default) */
+  --bg-app: #090d16;
+  --bg-sidebar: rgba(13, 20, 35, 0.95);
+  --bg-card: #111a2e;
+  --bg-surface: #17223b;
+  --bg-hover: #1e2c4c;
+  --bg-active: rgba(139, 92, 246, 0.15);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.15);
+  
+  --ink: #f8fafc;
+  --ink-secondary: #cbd5e1;
+  --ink-muted: #94a3b8;
+  --ink-subtle: #64748b;
+  
+  --brand: #8b5cf6;
+  --brand-hover: #a78bfa;
+  --brand-active: #7c3aed;
+  --brand-subtle: rgba(139, 92, 246, 0.12);
+  --brand-border: rgba(139, 92, 246, 0.3);
+  --brand-glow: rgba(139, 92, 246, 0.25);
+  
+  --green: #10b981;
+  --green-subtle: rgba(16, 185, 129, 0.08);
+  --green-border: rgba(16, 185, 129, 0.25);
+  
+  --red: #ef4444;
+  --red-subtle: rgba(239, 68, 68, 0.08);
+  --red-border: rgba(239, 68, 68, 0.25);
+  
+  --amber: #f59e0b;
+  --amber-subtle: rgba(245, 158, 11, 0.08);
+  --amber-border: rgba(245, 158, 11, 0.25);
+  
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-pill: 9999px;
+  
+  --shadow-apple: 0 4px 20px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2);
+  --shadow-elevated: 0 12px 30px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* Light Theme overrides */
+:root.light-theme {
+  --bg-app: #f8fafc;
+  --bg-sidebar: rgba(255, 255, 255, 0.98);
+  --bg-card: #ffffff;
+  --bg-surface: #f1f5f9;
+  --bg-hover: #e2e8f0;
+  --bg-active: rgba(124, 58, 237, 0.08);
+  --border: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.14);
+  
+  --ink: #0f172a;
+  --ink-secondary: #334155;
+  --ink-muted: #64748b;
+  --ink-subtle: #94a3b8;
+  
+  --brand: #7c3aec;
+  --brand-hover: #6d28d9;
+  --brand-active: #5b21b6;
+  --brand-subtle: #f5f3ff;
+  --brand-border: #ede9fe;
+  --brand-glow: rgba(124, 58, 237, 0.12);
+  
+  --green: #10b981;
+  --green-subtle: rgba(16, 185, 129, 0.08);
+  --green-border: rgba(16, 185, 129, 0.2);
+  
+  --red: #ef4444;
+  --red-subtle: rgba(239, 68, 68, 0.08);
+  --red-border: rgba(239, 68, 68, 0.2);
+  
+  --amber: #f59e0b;
+  --amber-subtle: rgba(245, 158, 11, 0.08);
+  --amber-border: rgba(245, 158, 11, 0.2);
+  
+  --shadow-apple: 0 1px 2px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.02);
+  --shadow-elevated: 0 4px 20px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.03);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Figtree', -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-app);
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-hover);
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.9); }
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+.animate-pulse-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: var(--green);
+  border-radius: 50%;
+  animation: pulse 1.8s infinite ease-in-out;
+}
