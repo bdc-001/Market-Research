@@ -9,10 +9,22 @@ import MarketNews from './components/MarketNews';
 import ReportLibrary from './components/ReportLibrary';
 import Discovery from './components/Discovery';
 
+const PANES = [
+  ['Discovery', Discovery],
+  ['Sector Analysis', Sectors],
+  ['Stock Analysis', StockAnalysis],
+  ['Top Picks', TopPicks],
+  ['QuanTum Picks', QuantumPicks],
+  ['Global Markets', GlobalMarkets],
+  ['Market News', MarketNews],
+  ['Report Library', ReportLibrary],
+];
+
 export default function App() {
   const [selectedSection, setSelectedSection] = useState('Discovery');
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const [navCollapsed, setNavCollapsed] = useState(() => localStorage.getItem('qt-nav-collapsed') === '1');
+  const [visited, setVisited] = useState({ Discovery: true });
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark-theme', isDarkTheme);
@@ -22,40 +34,30 @@ export default function App() {
     localStorage.setItem('qt-nav-collapsed', navCollapsed ? '1' : '0');
   }, [navCollapsed]);
 
+  useEffect(() => {
+    setVisited((prev) => (prev[selectedSection] ? prev : { ...prev, [selectedSection]: true }));
+  }, [selectedSection]);
+
   const navOptions = [
-    { name: "Discovery", icon: "radar" },
-    { name: "Sector Analysis", icon: "analytics" },
-    { name: "Stock Analysis", icon: "domain" },
-    { name: "Top Picks", icon: "stars" },
-    { name: "QuanTum Picks", icon: "electric_bolt" },
-    { name: "Global Markets", icon: "public" },
-    { name: "Market News", icon: "newspaper" },
-    { name: "Report Library", icon: "folder_open" }
+    { name: 'Discovery', icon: 'radar' },
+    { name: 'Sector Analysis', icon: 'analytics' },
+    { name: 'Stock Analysis', icon: 'domain' },
+    { name: 'Top Picks', icon: 'stars' },
+    { name: 'QuanTum Picks', icon: 'electric_bolt' },
+    { name: 'Global Markets', icon: 'public' },
+    { name: 'Market News', icon: 'newspaper' },
+    { name: 'Report Library', icon: 'folder_open' },
   ];
 
   const sectionMeta = {
-    "Discovery": { title: "Arsalaan’s Office", desc: "Ask Itachi to convene. Evidence pack → Council → memo on the CEO desk" },
-    "Sector Analysis": { title: "Sector Intelligence", desc: "Multi-Agent Deep Dive: Trends, Valuation & Institutional Positioning" },
-    "Stock Analysis": { title: "Stock Analysis", desc: "Deep-dive 7-Agent research memorandum on Indian equities" },
-    "Top Picks": { title: "Top Picks", desc: "Automated screening for best risk-reward opportunities across industries" },
-    "QuanTum Picks": { title: "QuanTum Picks", desc: "Multi-factor algorithmic engine: Technical + Fundamental + Sentiment" },
-    "Global Markets": { title: "Global Markets", desc: "Emerging and developed markets macroeconomic intelligence" },
-    "Market News": { title: "Market News", desc: "Real-time news stream with automated sentiment scoring" },
-    "Report Library": { title: "Report Library", desc: "Historical archive of generated memos, PDFs, and sector deep dives" }
-  };
-
-  const renderActiveSection = () => {
-    switch (selectedSection) {
-      case "Discovery": return <Discovery />;
-      case "Sector Analysis": return <Sectors />;
-      case "Stock Analysis": return <StockAnalysis />;
-      case "Top Picks": return <TopPicks />;
-      case "QuanTum Picks": return <QuantumPicks />;
-      case "Global Markets": return <GlobalMarkets />;
-      case "Market News": return <MarketNews />;
-      case "Report Library": return <ReportLibrary />;
-      default: return <Discovery />;
-    }
+    Discovery: { title: 'Arsalaan’s Office', desc: 'Run Discovery: filings → evidence → Council → new episodes on the desk' },
+    'Sector Analysis': { title: 'Sector Intelligence', desc: 'Multi-Agent Deep Dive: Trends, Valuation & Institutional Positioning' },
+    'Stock Analysis': { title: 'Stock Analysis', desc: 'Deep-dive 7-Agent research memorandum on Indian equities' },
+    'Top Picks': { title: 'Top Picks', desc: 'Automated screening for best risk-reward opportunities across industries' },
+    'QuanTum Picks': { title: 'QuanTum Picks', desc: 'Multi-factor algorithmic engine: Technical + Fundamental + Sentiment' },
+    'Global Markets': { title: 'Global Markets', desc: 'Emerging and developed markets macroeconomic intelligence' },
+    'Market News': { title: 'Market News', desc: 'Real-time news stream with automated sentiment scoring' },
+    'Report Library': { title: 'Report Library', desc: 'Historical archive of generated memos, PDFs, and sector deep dives' },
   };
 
   return (
@@ -63,20 +65,20 @@ export default function App() {
       <aside className={`sidebar ${navCollapsed ? 'collapsed' : ''}`}>
         <div>
           <div className="brand-section">
-            <div className="brand-logo">Q</div>
+            <div
+              className="brand-logo"
+              role="button"
+              tabIndex={0}
+              title={navCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              onClick={() => setNavCollapsed(!navCollapsed)}
+              onKeyDown={(e) => e.key === 'Enter' && setNavCollapsed(!navCollapsed)}
+            >
+              Q
+            </div>
             <div className="brand-text">
               <h1>Quantum Corp</h1>
               <p>Arsalaan’s Office</p>
             </div>
-            <button
-              className="nav-collapse-btn"
-              onClick={() => setNavCollapsed(!navCollapsed)}
-              title={navCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-              <span className="material-symbols-rounded">
-                {navCollapsed ? 'chevron_right' : 'chevron_left'}
-              </span>
-            </button>
           </div>
 
           <div className="status-title workspace-label">WORKSPACE</div>
@@ -96,7 +98,6 @@ export default function App() {
           </nav>
         </div>
 
-        {/* System Status Tracker */}
         <div className="status-card">
           <div className="status-title">SYSTEM STATUS</div>
           <div className="status-row">
@@ -123,19 +124,9 @@ export default function App() {
         </div>
       </aside>
 
-      {/* ── Main Dashboard Panel ──────────────────────────── */}
       <main className="main-content">
         <header className="top-bar">
           <div className="top-bar-left">
-            <button
-              className="icon-btn nav-expand-mobile"
-              onClick={() => setNavCollapsed(!navCollapsed)}
-              title={navCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-              <span className="material-symbols-rounded">
-                {navCollapsed ? 'menu' : 'menu_open'}
-              </span>
-            </button>
             <div className="page-header">
               <h2>{sectionMeta[selectedSection].title}</h2>
               <p>{sectionMeta[selectedSection].desc}</p>
@@ -151,16 +142,18 @@ export default function App() {
                 {isDarkTheme ? 'light_mode' : 'dark_mode'}
               </span>
             </button>
-            <button className="icon-btn" title="Notifications">
-              <span className="material-symbols-rounded">notifications</span>
-            </button>
             <div className="avatar-btn" title="Arsalaan Mohammed">A</div>
           </div>
         </header>
 
-        {/* Render Workspace Area */}
-        <div className="page-enter" key={selectedSection} style={{ flexGrow: 1 }}>
-          {renderActiveSection()}
+        <div className="workspace-panes" style={{ flexGrow: 1 }}>
+          {PANES.map(([name, Comp]) => (
+            visited[name] ? (
+              <div key={name} className="workspace-pane" hidden={selectedSection !== name}>
+                <Comp />
+              </div>
+            ) : null
+          ))}
         </div>
       </main>
     </div>

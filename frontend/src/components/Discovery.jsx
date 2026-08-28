@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { getApiUrl } from './api';
+import { fetchJson } from './api';
 import CouncilChamber, { turnsFromPredictions } from './CouncilChamber';
 import LogViewer from './LogViewer';
 import { ConveneButton, MetricSkeletons, SenseLoader } from './Loader';
@@ -45,22 +45,21 @@ export default function Discovery() {
   const [detail, setDetail] = useState(null);
   const [loadingList, setLoadingList] = useState(true);
   const [loadingDetail, setLoadingDetail] = useState(false);
-  const [callTicker, setCallTicker] = useState('');
   const [replayKey, setReplayKey] = useState(0);
   const run = useCouncilRun();
 
   const loadEpisodes = (preferId) => {
     setLoadingList(true);
-    return fetch(getApiUrl('/api/discovery/episodes'))
-      .then((res) => {
-        if (!res.ok) throw new Error('Could not load Discovery episodes');
-        return res.json();
-      })
+    return fetchJson('/api/discovery/episodes')
       .then((data) => {
         setSummary(data);
-        const ids = (data.episodes || []).map((e) => e.id);
-        if (preferId && ids.includes(preferId)) setSelectedId(preferId);
-        else if (data.episodes?.length && !selectedId) setSelectedId(data.episodes[0].id);
+        setError('');
+        setSelectedId((current) => {
+          const rows = data.episodes || [];
+          if (preferId && rows.some((row) => row.id === preferId)) return preferId;
+          if (current && rows.some((row) => row.id === current)) return current;
+          return rows[0]?.id || '';
+        });
       })
       .catch((err) => setError(err.message || 'Discovery unavailable'))
       .finally(() => setLoadingList(false));
@@ -77,10 +76,7 @@ export default function Discovery() {
   }, [summary, typeFilter]);
 
   useEffect(() => {
-    if (!filtered.length) {
-      setSelectedId('');
-      return;
-    }
+    if (!filtered.length) return;
     if (!filtered.some((ep) => ep.id === selectedId)) {
       setSelectedId(filtered[0].id);
     }
@@ -91,18 +87,21 @@ export default function Discovery() {
       setDetail(null);
       return undefined;
     }
+    const ac = new AbortController();
     setLoadingDetail(true);
-    fetch(getApiUrl(`/api/discovery/episodes/${selectedId}`))
-      .then((res) => {
-        if (!res.ok) throw new Error('Episode not found');
-        return res.json();
-      })
+    fetchJson(`/api/discovery/episodes/${selectedId}`, { signal: ac.signal })
       .then((data) => {
         setDetail(data);
-        if (data.episode?.ticker && !callTicker) setCallTicker(data.episode.ticker);
+        setError('');
       })
-      .catch((err) => setError(err.message))
-      .finally(() => setLoadingDetail(false));
+      .catch((err) => {
+        if (err.name === 'AbortError') return;
+        setError(err.message);
+      })
+      .finally(() => {
+        if (!ac.signal.aborted) setLoadingDetail(false);
+      });
+    return () => ac.abort();
   }, [selectedId]);
 
   const types = Object.keys(summary?.event_types || {}).sort();
@@ -117,16 +116,14 @@ export default function Discovery() {
     [detail, replayKey],
   );
 
-  const handleConvene = () => {
-    const ticker = (callTicker || ep?.ticker || '').toUpperCase().trim();
-    if (!ticker) return;
+  const handleScan = () => {
     setError('');
-    setCallTicker(ticker);
     run.start({
-      url: `/api/run/discovery?ticker=${encodeURIComponent(ticker)}`,
-      subject: ticker,
+      url: '/api/run/discovery-engine',
+      subject: 'new SME filings',
       onComplete: (data) => {
-        if (data.episode_id) loadEpisodes(data.episode_id);
+        const newest = data.episode_id || data.episodes?.[data.episodes.length - 1]?.episode_id;
+        loadEpisodes(newest);
       },
     });
   };
@@ -144,8 +141,8 @@ export default function Discovery() {
       </div>
 
       <p className="sense-note">
-        Ask Itachi to convene. He loads the evidence pack, then Historian → Quant → Bull → Bear → Chartist brief, then he puts the memo on your desk.
-        Agents are not taught. Lessons stay empty. CHAVDA is episode #1, not a rule.
+        Run Discovery and Itachi scans SME / microcap filings, expands evidence, then convenes council on new names.
+        New episodes land on this desk. Agents are not taught. CHAVDA is episode #1, not a rule.
       </p>
 
       {error && <div className="alert-box alert-error">{error}</div>}
@@ -171,21 +168,14 @@ export default function Discovery() {
       )}
 
       <div className="action-panel">
-        <div className="control-group">
-          <label className="control-label">Ask Itachi · ticker</label>
-          <input
-            className="form-input"
-            value={callTicker}
-            onChange={(e) => setCallTicker(e.target.value.toUpperCase())}
-            placeholder="e.g. CHAVDA, EXCELSOFT"
-            disabled={run.isRunning}
-            onKeyDown={(e) => e.key === 'Enter' && handleConvene()}
-          />
-        </div>
+        <p className="sense-note" style={{ margin: 0, flex: 1 }}>
+          Itachi picks fresh filings, skips names already on file, and files new council episodes.
+        </p>
         <ConveneButton
           running={run.isRunning}
-          disabled={!callTicker.trim()}
-          onClick={handleConvene}
+          onClick={handleScan}
+          label="Run Discovery engine"
+          busyLabel="Scanning filings…"
         />
       </div>
 
@@ -215,7 +205,7 @@ export default function Discovery() {
         <div className="report-card">
           <h3 style={{ fontSize: '1.05rem', fontWeight: 800, marginBottom: 8 }}>No Discovery episodes in the connected database</h3>
           <p style={{ color: 'var(--ink-secondary)', lineHeight: 1.55 }}>
-            Ask Itachi to convene on a ticker that already has an evidence pack, or sync Turso so stored episodes appear.
+            Ask Itachi to run Discovery. He will scan filings and suggest new episodes here.
           </p>
         </div>
       )}
@@ -225,7 +215,7 @@ export default function Discovery() {
         logs={run.logs}
         isRunning={run.isRunning}
         script={!run.isRunning && officeScript.length ? officeScript : null}
-        subject={run.isRunning ? callTicker : (ep?.ticker || callTicker)}
+        subject={run.isRunning ? 'Discovery scan' : (ep?.ticker || '')}
         decision={run.payload?.decision || ep?.final_decision}
         headline="Arsalaan’s Office"
         loading={loadingDetail && !ep}

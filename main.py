@@ -123,6 +123,31 @@ def _editor_open(subject: str) -> str:
     )
 
 
+def _sse_from_queue(q):
+    def _qget():
+        try:
+            return q.get(timeout=12)
+        except queue.Empty:
+            return {"type": "_keepalive"}
+
+    async def sse_generator():
+        loop = asyncio.get_event_loop()
+        while True:
+            item = await loop.run_in_executor(None, _qget)
+            if item.get("type") == "_keepalive":
+                yield ": ping\n\n"
+                continue
+            yield f"data: {json.dumps(item)}\n\n"
+            if item["type"] in ("complete", "error"):
+                break
+
+    return StreamingResponse(
+        sse_generator(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
 def _sse_response(work):
     q = queue.Queue()
 
@@ -135,16 +160,7 @@ def _sse_response(work):
             q.put({"type": "error", "message": str(e)})
 
     threading.Thread(target=run_pipeline, daemon=True).start()
-
-    async def sse_generator():
-        loop = asyncio.get_event_loop()
-        while True:
-            item = await loop.run_in_executor(None, q.get)
-            yield f"data: {json.dumps(item)}\n\n"
-            if item["type"] in ("complete", "error"):
-                break
-
-    return StreamingResponse(sse_generator(), media_type="text/event-stream")
+    return _sse_from_queue(q)
 
 
 def _brief_stored_episode(q, ticker: str, ep: dict, preds: list):
@@ -184,13 +200,22 @@ def _brief_stored_episode(q, ticker: str, ep: dict, preds: list):
 
 @app.get("/api/discovery/episodes")
 def discovery_episodes():
-    try:
-        from agents.episode_store import list_discovery_council_episodes
-        from turso_db import is_configured
-        rows = list_discovery_council_episodes(slim=True)
-        turso = is_configured()
-    except Exception as exc:
-        return JSONResponse(status_code=500, content={"error": str(exc)})
+    last_exc = None
+    rows = []
+    turso = False
+    for attempt in range(3):
+        try:
+            from agents.episode_store import list_discovery_council_episodes
+            from turso_db import is_configured
+            rows = list_discovery_council_episodes(slim=True)
+            turso = is_configured()
+            last_exc = None
+            break
+        except Exception as exc:
+            last_exc = exc
+            time.sleep(0.45 * (attempt + 1))
+    if last_exc is not None:
+        return JSONResponse(status_code=500, content={"error": str(last_exc)})
     today = date.today()
     types = {}
     pending_30 = 0
@@ -230,30 +255,34 @@ def discovery_episodes():
 
 @app.get("/api/discovery/episodes/{episode_id}")
 def discovery_episode_detail(episode_id: str):
-    try:
-        from agents.episode_store import (
-            fetch_episode,
-            fetch_horizon_outcomes,
-            fetch_predictions,
-        )
-        ep = fetch_episode(episode_id, slim=True)
-        if not ep:
-            return JSONResponse(status_code=404, content={"error": "Episode not found"})
-        ep_out = {
-            k: ep.get(k)
-            for k in (
-                "id", "ticker", "source", "event_type", "final_decision",
-                "entry_price", "entry_date", "created_at", "event_id",
+    last_exc = None
+    for attempt in range(3):
+        try:
+            from agents.episode_store import (
+                fetch_episode,
+                fetch_horizon_outcomes,
+                fetch_predictions,
             )
-        }
-        ep_out["due_30"] = _horizon_due(ep, 30)
-        return _jsonable({
-            "episode": ep_out,
-            "predictions": fetch_predictions(episode_id, slim=True),
-            "horizons": fetch_horizon_outcomes(episode_id, slim=True),
-        })
-    except Exception as exc:
-        return JSONResponse(status_code=500, content={"error": str(exc)})
+            ep = fetch_episode(episode_id, slim=True)
+            if not ep:
+                return JSONResponse(status_code=404, content={"error": "Episode not found"})
+            ep_out = {
+                k: ep.get(k)
+                for k in (
+                    "id", "ticker", "source", "event_type", "final_decision",
+                    "entry_price", "entry_date", "created_at", "event_id",
+                )
+            }
+            ep_out["due_30"] = _horizon_due(ep, 30)
+            return _jsonable({
+                "episode": ep_out,
+                "predictions": fetch_predictions(episode_id, slim=True),
+                "horizons": fetch_horizon_outcomes(episode_id, slim=True),
+            })
+        except Exception as exc:
+            last_exc = exc
+            time.sleep(0.45 * (attempt + 1))
+    return JSONResponse(status_code=500, content={"error": str(last_exc)})
 
 
 @app.get("/api/sectors")
@@ -416,6 +445,50 @@ def run_discovery(ticker: str = Query(...), fresh: int = Query(0)):
     return _sse_response(work)
 
 
+@app.get("/api/run/discovery-engine")
+def run_discovery_engine(
+    lookback_days: int = Query(7),
+    max_n: int = Query(3),
+):
+    def work(q):
+        q.put({
+            "type": "progress",
+            "message": (
+                "Itachi (Editor): Sir, I will scan SME and microcap filings, "
+                "expand evidence, then convene council on new names. "
+                "CHAVDA stays episode #1 and is not a rule."
+            ),
+        })
+        from build_discovery_sample import run_sample
+        result = run_sample(
+            lookback_days=int(lookback_days),
+            max_events_to_llm=40,
+            max_n=max(1, min(int(max_n), 6)),
+            max_per_type=1,
+            progress=lambda m: q.put({"type": "progress", "message": m}),
+        )
+        stored = [r for r in (result.get("results") or []) if r.get("episode_id")]
+        q.put({
+            "type": "complete",
+            "stored": True,
+            "episode_id": stored[-1]["episode_id"] if stored else None,
+            "decision": stored[-1].get("decision") if stored else None,
+            "episodes": [
+                {
+                    "ticker": r.get("ticker"),
+                    "episode_id": r.get("episode_id"),
+                    "decision": r.get("decision"),
+                }
+                for r in stored
+            ],
+            "picked": result.get("picked") or [],
+            "report": None,
+            "filename": result.get("inventory_path"),
+        })
+
+    return _sse_response(work)
+
+
 @app.get("/api/run/sector")
 def run_sector(sector: str = Query(...)):
     q = queue.Queue()
@@ -451,16 +524,7 @@ def run_sector(sector: str = Query(...)):
             q.put({"type": "error", "message": str(e)})
             
     threading.Thread(target=run_pipeline, daemon=True).start()
-    
-    async def sse_generator():
-        loop = asyncio.get_event_loop()
-        while True:
-            item = await loop.run_in_executor(None, q.get)
-            yield f"data: {json.dumps(item)}\n\n"
-            if item["type"] in ("complete", "error"):
-                break
-                
-    return StreamingResponse(sse_generator(), media_type="text/event-stream")
+    return _sse_from_queue(q)
 
 
 @app.get("/api/run/stock")
@@ -498,16 +562,7 @@ def run_stock(ticker: str = Query(...)):
             q.put({"type": "error", "message": str(e)})
             
     threading.Thread(target=run_pipeline, daemon=True).start()
-    
-    async def sse_generator():
-        loop = asyncio.get_event_loop()
-        while True:
-            item = await loop.run_in_executor(None, q.get)
-            yield f"data: {json.dumps(item)}\n\n"
-            if item["type"] in ("complete", "error"):
-                break
-                
-    return StreamingResponse(sse_generator(), media_type="text/event-stream")
+    return _sse_from_queue(q)
 
 
 @app.get("/api/run/quantum")
@@ -561,16 +616,7 @@ def run_quantum(mode: str = Query("fast")):
             q.put({"type": "error", "message": str(e)})
             
     threading.Thread(target=run_pipeline, daemon=True).start()
-    
-    async def sse_generator():
-        loop = asyncio.get_event_loop()
-        while True:
-            item = await loop.run_in_executor(None, q.get)
-            yield f"data: {json.dumps(item)}\n\n"
-            if item["type"] in ("complete", "error"):
-                break
-                
-    return StreamingResponse(sse_generator(), media_type="text/event-stream")
+    return _sse_from_queue(q)
 
 
 @app.get("/api/run/global-markets")
@@ -614,16 +660,7 @@ def run_global_markets(market_type: str = Query(...)):
             q.put({"type": "error", "message": str(e)})
             
     threading.Thread(target=run_pipeline, daemon=True).start()
-    
-    async def sse_generator():
-        loop = asyncio.get_event_loop()
-        while True:
-            item = await loop.run_in_executor(None, q.get)
-            yield f"data: {json.dumps(item)}\n\n"
-            if item["type"] in ("complete", "error"):
-                break
-                
-    return StreamingResponse(sse_generator(), media_type="text/event-stream")
+    return _sse_from_queue(q)
 
 
 @app.get("/api/run/news")
@@ -648,16 +685,7 @@ def run_news(scope: str = Query("global")):
             q.put({"type": "error", "message": str(e)})
             
     threading.Thread(target=run_pipeline, daemon=True).start()
-    
-    async def sse_generator():
-        loop = asyncio.get_event_loop()
-        while True:
-            item = await loop.run_in_executor(None, q.get)
-            yield f"data: {json.dumps(item)}\n\n"
-            if item["type"] in ("complete", "error"):
-                break
-                
-    return StreamingResponse(sse_generator(), media_type="text/event-stream")
+    return _sse_from_queue(q)
 
 
 @app.get("/api/run/top-picks")
@@ -711,16 +739,7 @@ def run_top_picks(sector: str = Query(...)):
             q.put({"type": "error", "message": str(e)})
             
     threading.Thread(target=run_pipeline, daemon=True).start()
-    
-    async def sse_generator():
-        loop = asyncio.get_event_loop()
-        while True:
-            item = await loop.run_in_executor(None, q.get)
-            yield f"data: {json.dumps(item)}\n\n"
-            if item["type"] in ("complete", "error"):
-                break
-                
-    return StreamingResponse(sse_generator(), media_type="text/event-stream")
+    return _sse_from_queue(q)
 
 # ── Mount Frontend Assets ─────────────────────────────────────────────────────
 

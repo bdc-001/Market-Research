@@ -58,10 +58,11 @@ export function useCouncilRun() {
         }
       };
       es.onerror = () => {
-        setLogs((prev) => [...prev, 'Connection error. Terminating pipeline.']);
-        setIsRunning(false);
-        es.close();
-        esRef.current = null;
+        if (es.readyState === EventSource.CLOSED) {
+          setLogs((prev) => [...prev, 'Connection closed before the memo arrived.']);
+          setIsRunning(false);
+          esRef.current = null;
+        }
       };
     }, 700);
   };

@@ -1,7 +1,22 @@
 // api.js
 export const getApiUrl = (path) => {
-  // If VITE_API_URL env variable is provided (e.g. "https://quantum-backend.onrender.com"), use it.
-  // Otherwise, default to relative paths (for monorepo single-server setups).
   const base = import.meta.env.VITE_API_URL || '';
   return `${base}${path}`;
 };
+
+export async function fetchJson(path, { tries = 3, signal } = {}) {
+  let last;
+  for (let i = 0; i < tries; i++) {
+    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+    try {
+      const res = await fetch(getApiUrl(path), { signal });
+      if (res.ok) return res.json();
+      last = new Error(`Could not load ${path} (${res.status})`);
+    } catch (err) {
+      if (err.name === 'AbortError') throw err;
+      last = err;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 450 * (i + 1)));
+  }
+  throw last || new Error(`Could not load ${path}`);
+}

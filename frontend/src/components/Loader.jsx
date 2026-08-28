@@ -23,7 +23,13 @@ export function MetricSkeletons({ count = 5 }) {
   );
 }
 
-export function ConveneButton({ running, disabled, onClick, label = 'Ask Itachi to convene' }) {
+export function ConveneButton({
+  running,
+  disabled,
+  onClick,
+  label = 'Ask Itachi to convene',
+  busyLabel = 'Convening…',
+}) {
   return (
     <button
       className="btn btn-primary"
@@ -34,7 +40,7 @@ export function ConveneButton({ running, disabled, onClick, label = 'Ask Itachi 
       {running ? (
         <>
           <SenseSpinner light />
-          Convening…
+          {busyLabel}
         </>
       ) : (
         <>

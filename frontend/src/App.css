@@ -181,7 +181,17 @@
   margin-bottom: 24px;
 }
 
+.workspace-panes {
+  flex-grow: 1;
+  min-height: 0;
+}
+
+.workspace-pane[hidden] {
+  display: none !important;
+}
+
 .brand-logo {
+  cursor: pointer;
   width: 36px;
   height: 36px;
   background: linear-gradient(135deg, var(--brand) 0%, var(--brand-active) 100%);
