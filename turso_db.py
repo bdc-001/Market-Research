@@ -20,20 +20,47 @@ import re
 import json
 import requests
 import sqlite3
+from pathlib import Path
 from typing import Any, Sequence
 
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
+def _load_secrets_file() -> None:
+    """Fill missing TURSO_* env vars from .streamlit/secrets.toml."""
+    path = Path(__file__).resolve().parent / ".streamlit" / "secrets.toml"
+    if not path.exists():
+        return
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key in ("TURSO_URL", "TURSO_TOKEN") and value:
+            os.environ.setdefault(key, value)
+
+
+def _clean(value: str) -> str:
+    return (value or "").replace("\r", "").replace("\n", "").replace(" ", "").strip().strip('"').strip("'")
+
+
 def _get_url() -> str:
-    url = os.environ.get("TURSO_URL", "")
+    _load_secrets_file()
+    url = _clean(os.environ.get("TURSO_URL", ""))
     if url.startswith("libsql://"):
         url = "https://" + url[len("libsql://"):]
     return url.rstrip("/")
 
 
 def _get_token() -> str:
-    return os.environ.get("TURSO_TOKEN", "")
+    _load_secrets_file()
+    return _clean(os.environ.get("TURSO_TOKEN", ""))
 
 
 # ── Cursor ────────────────────────────────────────────────────────────────────

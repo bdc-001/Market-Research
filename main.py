@@ -138,8 +138,18 @@ def discovery_episodes():
                     pending_30 += 1
             except ValueError:
                 pass
-        item = dict(ep)
-        item["due_30"] = due
+        item = {
+            "id": ep.get("id"),
+            "ticker": ep.get("ticker"),
+            "source": ep.get("source"),
+            "event_type": et,
+            "final_decision": ep.get("final_decision"),
+            "entry_price": ep.get("entry_price"),
+            "entry_date": ep.get("entry_date"),
+            "created_at": ep.get("created_at"),
+            "event_id": ep.get("event_id"),
+            "due_30": due,
+        }
         out.append(item)
     return {
         "episodes": _jsonable(out),
@@ -164,9 +174,26 @@ def discovery_episode_detail(episode_id: str):
         ep = next((row for row in episodes if row.get("id") == episode_id), None)
         if not ep:
             return JSONResponse(status_code=404, content={"error": "Episode not found"})
+        ep_out = {
+            k: ep.get(k)
+            for k in (
+                "id", "ticker", "source", "event_type", "final_decision",
+                "entry_price", "entry_date", "created_at", "event_id",
+            )
+        }
+        ep_out["due_30"] = _horizon_due(ep, 30)
+        preds = []
+        for pred in fetch_predictions(episode_id):
+            preds.append({
+                "id": pred.get("id"),
+                "agent_name": pred.get("agent_name"),
+                "prediction_direction": pred.get("prediction_direction"),
+                "recommendation": pred.get("recommendation"),
+                "confidence": pred.get("confidence"),
+            })
         return _jsonable({
-            "episode": {**ep, "due_30": _horizon_due(ep, 30)},
-            "predictions": fetch_predictions(episode_id),
+            "episode": ep_out,
+            "predictions": preds,
             "horizons": fetch_horizon_outcomes(episode_id),
             "agent_outcomes": fetch_agent_outcomes(episode_id),
         })
