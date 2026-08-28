@@ -182,6 +182,8 @@ class DiscoveryOrchestrator:
                 item["filing_text"] = src.get("filing_text") or item.get("filing_text") or ""
                 item["subject"] = src.get("subject") or item.get("subject")
                 item["source_text"] = item.get("subject") or src.get("subject") or ""
+            for ev in gated:
+                ev["filing_text"] = ""
             extract_lines = [
                 f"{e.get('ticker')} type={e.get('event_type')} "
                 f"amount={e.get('amount_inr_cr')} src={e.get('source_id')} "

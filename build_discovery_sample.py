@@ -29,6 +29,10 @@ def sample_config(lookback_days: int, max_events_to_llm: int) -> dict:
     radar = cfg.setdefault("radar", {})
     radar["announcement_lookback_days"] = int(lookback_days)
     radar["max_events_to_llm"] = int(max_events_to_llm)
+    from agents.host_limits import constrained_host
+    if constrained_host():
+        radar["max_raw_announcements"] = min(int(radar.get("max_raw_announcements") or 500), 120)
+        radar["max_events_to_llm"] = min(int(max_events_to_llm), 8)
     return cfg
 
 

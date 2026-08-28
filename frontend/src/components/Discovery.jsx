@@ -170,6 +170,7 @@ export default function Discovery() {
       <div className="action-panel">
         <p className="sense-note" style={{ margin: 0, flex: 1 }}>
           Itachi picks fresh filings, skips names already on file, and files new council episodes.
+          The hosted office runs one committee at a time and one new name per scan.
         </p>
         <ConveneButton
           running={run.isRunning}

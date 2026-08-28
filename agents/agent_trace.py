@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from datetime import datetime
 
+from agents.host_limits import constrained_host
+
 PREVIEW_CHARS = 6000
 LIVE_CHARS = 1800
 
@@ -154,14 +156,15 @@ class TraceLog:
         note: str = "",
     ):
         passed_s = passed or ""
+        limit = 800 if constrained_host() else PREVIEW_CHARS
         self.steps.append({
             "id": step_id,
             "name": name,
             "kind": kind,
             "receives_from": receives_from,
             "sends_to": sends_to,
-            "received": clip(received),
-            "passed": clip(passed_s),
+            "received": clip(received, limit),
+            "passed": clip(passed_s, limit),
             "passed_chars": len(passed_s),
             "parsed": parsed,
             "note": note,

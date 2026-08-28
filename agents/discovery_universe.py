@@ -15,6 +15,7 @@ import pandas as pd
 import yfinance as yf
 
 from agents.discovery_config import load_discovery_config
+from agents.host_limits import adv_batch_size, constrained_host, release_memory, yfinance_threads
 from agents.nse_client import ExchangeClient
 
 logger = logging.getLogger(__name__)
@@ -166,18 +167,24 @@ def attach_adv(df: pd.DataFrame, progress=None) -> pd.DataFrame:
         df["adv_inr"] = pd.Series(dtype=float)
         return df
     tickers = [f"{t}.NS" for t in df["ticker"].tolist()]
-    _log(progress, f"Universe: computing 20d ADV for {len(tickers)} names...")
-    hist = _download(tickers, period="1mo")
+    batch = adv_batch_size()
+    _log(progress, f"Universe: computing 20d ADV for {len(tickers)} names in batches of {batch}...")
     adv_map: dict[str, float] = {}
-    for ticker in df["ticker"]:
-        close, volume = _series_pair(hist, f"{ticker}.NS")
-        if close is None or volume is None or len(close) < 5 or len(volume) < 5:
-            continue
-        n = min(len(close), len(volume), 20)
-        traded = (close.iloc[-n:] * volume.iloc[-n:]).dropna()
-        if traded.empty:
-            continue
-        adv_map[ticker] = float(traded.mean())
+    for i in range(0, len(tickers), batch):
+        chunk = tickers[i : i + batch]
+        hist = _download(chunk, period="1mo")
+        for yf_symbol in chunk:
+            ticker = yf_symbol[:-3]
+            close, volume = _series_pair(hist, yf_symbol)
+            if close is None or volume is None or len(close) < 5 or len(volume) < 5:
+                continue
+            n = min(len(close), len(volume), 20)
+            traded = (close.iloc[-n:] * volume.iloc[-n:]).dropna()
+            if traded.empty:
+                continue
+            adv_map[ticker] = float(traded.mean())
+        del hist
+        release_memory()
     out = df.copy()
     out["adv_inr"] = out["ticker"].map(adv_map)
     return out
@@ -305,6 +312,9 @@ def attach_fundamentals(df: pd.DataFrame, progress=None) -> pd.DataFrame:
     need = out["analyst_status"].eq("unknown") | out["revenue_cr"].isna() | out["mcap_cr"].isna()
     if not need.any():
         return out
+    if constrained_host():
+        _log(progress, "Fundamentals: keep NSE mcap; skip Yahoo .info on this host")
+        return out
     _log(progress, f"Fundamentals: {int(need.sum())} names (analyst/revenue/mcap)...")
     for idx in out.index[need]:
         ticker = out.at[idx, "ticker"]
@@ -364,7 +374,8 @@ def _download(symbols: list[str], period: str) -> pd.DataFrame | None:
     try:
         return yf.download(
             symbols, period=period, interval="1d",
-            progress=False, auto_adjust=True, group_by="ticker", threads=True,
+            progress=False, auto_adjust=True, group_by="ticker",
+            threads=yfinance_threads(),
         )
     except Exception as exc:
         logger.debug("yfinance download failed: %s", exc)

@@ -113,7 +113,8 @@ def _pdf_text(session, url: str) -> str:
         resp = session.get(url, timeout=20)
         if resp.status_code != 200 or len(resp.content) < 200:
             return ""
-        text = _extract(resp.content)
+        blob = resp.content[:2_000_000]
+        text = _extract(blob)
         if text:
             path.write_text(text[:12000], encoding="utf-8")
         return text

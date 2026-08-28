@@ -36,6 +36,7 @@ bootstrap_secrets()
 # xhtml2pdf are loaded inside the routes that need them so a slim
 # api/requirements.txt can stay under the 500 MB function limit.
 from report_store import load_report, save_report, picks_to_records
+from agents.host_limits import constrained_host, release_memory, rss_mb
 
 _HEAVY_UNAVAILABLE = (
     "This host is missing the analysis stack. "
@@ -112,7 +113,14 @@ def _horizon_due(ep, days=30):
 @app.get("/api/health")
 def health():
     from turso_db import is_configured
-    return {"ok": True, "runtime": "slim", "turso": is_configured()}
+    return {
+        "ok": True,
+        "runtime": "slim",
+        "turso": is_configured(),
+        "constrained": constrained_host(),
+        "rss_mb": rss_mb(),
+        "busy": _job_name["value"],
+    }
 
 
 def _editor_open(subject: str) -> str:
@@ -148,8 +156,25 @@ def _sse_from_queue(q):
     )
 
 
-def _sse_response(work):
+_job_lock = threading.Lock()
+_job_name = {"value": None}
+
+
+def _sse_busy(message: str):
     q = queue.Queue()
+    q.put({"type": "error", "message": message})
+    return _sse_from_queue(q)
+
+
+def _sse_response(work, job_name: str = "analysis"):
+    q = queue.Queue()
+    if not _job_lock.acquire(blocking=False):
+        busy = _job_name["value"] or "another desk"
+        return _sse_busy(
+            f"Itachi (Editor): Sir, I am already in session on {busy}. "
+            "This host runs one committee at a time. Wait for that memo."
+        )
+    _job_name["value"] = job_name
 
     def run_pipeline():
         try:
@@ -158,6 +183,14 @@ def _sse_response(work):
             q.put({"type": "error", "message": f"{_HEAVY_UNAVAILABLE} ({e})"})
         except Exception as e:
             q.put({"type": "error", "message": str(e)})
+        finally:
+            try:
+                release_memory()
+                print(f"job done name={job_name} rss_mb={rss_mb()}", flush=True)
+            except Exception:
+                pass
+            _job_name["value"] = None
+            _job_lock.release()
 
     threading.Thread(target=run_pipeline, daemon=True).start()
     return _sse_from_queue(q)
@@ -375,7 +408,15 @@ class PdfPayload(BaseModel):
 
 @app.post("/api/pdf")
 def generate_pdf(payload: PdfPayload):
-    pdf_bytes = convert_to_pdf(payload.markdown)
+    if _job_lock.locked():
+        return JSONResponse(
+            status_code=503,
+            content={"error": "Itachi is in session. Download the PDF after that memo lands."},
+        )
+    try:
+        pdf_bytes = convert_to_pdf(payload.markdown)
+    finally:
+        release_memory()
     if not pdf_bytes:
         return JSONResponse(
             status_code=501,
@@ -442,7 +483,7 @@ def run_discovery(ticker: str = Query(...), fresh: int = Query(0)):
             "filename": result.get("memo_path"),
         })
 
-    return _sse_response(work)
+    return _sse_response(work, job_name=f"discovery {symbol}")
 
 
 @app.get("/api/run/discovery-engine")
@@ -450,20 +491,29 @@ def run_discovery_engine(
     lookback_days: int = Query(7),
     max_n: int = Query(3),
 ):
+    lean = constrained_host()
+    days = min(int(lookback_days), 5 if lean else int(lookback_days))
+    names = 1 if lean else max(1, min(int(max_n), 6))
+    llm_n = 8 if lean else 40
+
     def work(q):
         q.put({
             "type": "progress",
             "message": (
                 "Itachi (Editor): Sir, I will scan SME and microcap filings, "
                 "expand evidence, then convene council on new names. "
-                "CHAVDA stays episode #1 and is not a rule."
+                + (
+                    "This office host is memory-capped, so I will take one new name. "
+                    if lean else ""
+                )
+                + "CHAVDA stays episode #1 and is not a rule."
             ),
         })
         from build_discovery_sample import run_sample
         result = run_sample(
-            lookback_days=int(lookback_days),
-            max_events_to_llm=40,
-            max_n=max(1, min(int(max_n), 6)),
+            lookback_days=days,
+            max_events_to_llm=llm_n,
+            max_n=names,
             max_per_type=1,
             progress=lambda m: q.put({"type": "progress", "message": m}),
         )
@@ -486,260 +536,183 @@ def run_discovery_engine(
             "filename": result.get("inventory_path"),
         })
 
-    return _sse_response(work)
+    return _sse_response(work, job_name="discovery engine")
 
 
 @app.get("/api/run/sector")
 def run_sector(sector: str = Query(...)):
-    q = queue.Queue()
-    
-    def run_pipeline():
-        try:
-            q.put({"type": "progress", "message": _editor_open(sector)})
-            q.put({"type": "progress", "message": f"Starting Sector Analysis for: {sector}"})
-            from sector_orchestrator import SectorOrchestrator
-            sector_council = SectorOrchestrator()
-            
-            def callback(msg):
-                q.put({"type": "progress", "message": msg})
-                
-            report = sector_council.run_sector_analysis(sector, progress_callback=callback)
-            
-            os.makedirs('reports', exist_ok=True)
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M')
-            filename = f"Sector_{sector.replace(' ', '_')}_{timestamp}.md"
-            file_path = os.path.join('reports', filename)
-            with open(file_path, 'w', encoding='utf-8') as f:
-                f.write(report)
-                
-            q.put({
-                "type": "complete", 
-                "report": report, 
-                "filename": filename,
-                "created": datetime.now().strftime("%Y-%m-%d %H:%M")
-            })
-        except ImportError as e:
-            q.put({"type": "error", "message": f"{_HEAVY_UNAVAILABLE} ({e})"})
-        except Exception as e:
-            q.put({"type": "error", "message": str(e)})
-            
-    threading.Thread(target=run_pipeline, daemon=True).start()
-    return _sse_from_queue(q)
+    def work(q):
+        q.put({"type": "progress", "message": _editor_open(sector)})
+        q.put({"type": "progress", "message": f"Starting Sector Analysis for: {sector}"})
+        from sector_orchestrator import SectorOrchestrator
+        sector_council = SectorOrchestrator()
+        report = sector_council.run_sector_analysis(
+            sector, progress_callback=lambda m: q.put({"type": "progress", "message": m}),
+        )
+        os.makedirs("reports", exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+        filename = f"Sector_{sector.replace(' ', '_')}_{timestamp}.md"
+        with open(os.path.join("reports", filename), "w", encoding="utf-8") as f:
+            f.write(report)
+        q.put({
+            "type": "complete",
+            "report": report,
+            "filename": filename,
+            "created": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        })
+
+    return _sse_response(work, job_name=f"sector {sector}")
 
 
 @app.get("/api/run/stock")
 def run_stock(ticker: str = Query(...)):
-    q = queue.Queue()
-    
-    def run_pipeline():
-        try:
-            q.put({"type": "progress", "message": _editor_open(ticker)})
-            q.put({"type": "progress", "message": f"Convening Council for ticker: {ticker}"})
-            from orchestrator import AgentOrchestrator
-            orchestrator = AgentOrchestrator()
-            
-            def callback(msg):
-                q.put({"type": "progress", "message": msg})
-                
-            report = orchestrator.run_analysis_pipeline(ticker, progress_callback=callback)
-            
-            os.makedirs('reports', exist_ok=True)
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M')
-            filename = f"DeepDive_{ticker}_{timestamp}.md"
-            file_path = os.path.join('reports', filename)
-            with open(file_path, 'w', encoding='utf-8') as f:
-                f.write(report)
-                
-            q.put({
-                "type": "complete", 
-                "report": report, 
-                "filename": filename,
-                "created": datetime.now().strftime("%Y-%m-%d %H:%M")
-            })
-        except ImportError as e:
-            q.put({"type": "error", "message": f"{_HEAVY_UNAVAILABLE} ({e})"})
-        except Exception as e:
-            q.put({"type": "error", "message": str(e)})
-            
-    threading.Thread(target=run_pipeline, daemon=True).start()
-    return _sse_from_queue(q)
+    def work(q):
+        q.put({"type": "progress", "message": _editor_open(ticker)})
+        q.put({"type": "progress", "message": f"Convening Council for ticker: {ticker}"})
+        from orchestrator import AgentOrchestrator
+        orchestrator = AgentOrchestrator()
+        report = orchestrator.run_analysis_pipeline(
+            ticker, progress_callback=lambda m: q.put({"type": "progress", "message": m}),
+        )
+        os.makedirs("reports", exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+        filename = f"DeepDive_{ticker}_{timestamp}.md"
+        with open(os.path.join("reports", filename), "w", encoding="utf-8") as f:
+            f.write(report)
+        q.put({
+            "type": "complete",
+            "report": report,
+            "filename": filename,
+            "created": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        })
+
+    return _sse_response(work, job_name=f"stock {ticker}")
 
 
 @app.get("/api/run/quantum")
 def run_quantum(mode: str = Query("fast")):
-    q = queue.Queue()
-    
-    def run_pipeline():
-        try:
-            q.put({"type": "progress", "message": _editor_open(f"QuanTum {mode}")})
-            q.put({"type": "progress", "message": f"Initiating QuanTum Algorithmic Screener (Mode: {mode})"})
-            from quantum_orchestrator import QuantumEngineOrchestrator
-            engine = QuantumEngineOrchestrator()
-            
-            def callback(msg):
-                q.put({"type": "progress", "message": msg})
-                
-            result = engine.run(progress_callback=callback, fast=(mode == "fast"))
-            
-            if "error" in result:
-                q.put({"type": "error", "message": result["error"]})
-            else:
-                cache_cols = ["ticker", "composite_score", "conviction", "close",
-                              "rsi", "pe_ratio", "roe", "entry_status"]
-                
-                picks_data = {
-                    horizon: picks_to_records(result.get(key), cache_cols)
-                    for horizon, key in (("week", "week_picks"),
-                                         ("year", "year_picks"),
-                                         ("fiveyear", "fiveyear_picks"))
-                }
-                
-                save_report(
-                    "quantum",
-                    result.get("report", ""),
-                    picks=picks_data,
-                    mode=mode,
-                )
-                
-                q.put({
-                    "type": "complete",
-                    "report": result.get("report", ""),
-                    "report_path": result.get("report_path", ""),
-                    "week_picks": picks_data["week"],
-                    "year_picks": picks_data["year"],
-                    "fiveyear_picks": picks_data["fiveyear"],
-                    "headlines": result.get("headlines", [])[:20]
-                })
-        except ImportError as e:
-            q.put({"type": "error", "message": f"{_HEAVY_UNAVAILABLE} ({e})"})
-        except Exception as e:
-            q.put({"type": "error", "message": str(e)})
-            
-    threading.Thread(target=run_pipeline, daemon=True).start()
-    return _sse_from_queue(q)
+    def work(q):
+        q.put({"type": "progress", "message": _editor_open(f"QuanTum {mode}")})
+        q.put({"type": "progress", "message": f"Initiating QuanTum Algorithmic Screener (Mode: {mode})"})
+        from quantum_orchestrator import QuantumEngineOrchestrator
+        engine = QuantumEngineOrchestrator()
+        result = engine.run(
+            progress_callback=lambda m: q.put({"type": "progress", "message": m}),
+            fast=(mode == "fast"),
+        )
+        if "error" in result:
+            q.put({"type": "error", "message": result["error"]})
+            return
+        cache_cols = ["ticker", "composite_score", "conviction", "close",
+                      "rsi", "pe_ratio", "roe", "entry_status"]
+        picks_data = {
+            horizon: picks_to_records(result.get(key), cache_cols)
+            for horizon, key in (("week", "week_picks"),
+                                 ("year", "year_picks"),
+                                 ("fiveyear", "fiveyear_picks"))
+        }
+        save_report("quantum", result.get("report", ""), picks=picks_data, mode=mode)
+        q.put({
+            "type": "complete",
+            "report": result.get("report", ""),
+            "report_path": result.get("report_path", ""),
+            "week_picks": picks_data["week"],
+            "year_picks": picks_data["year"],
+            "fiveyear_picks": picks_data["fiveyear"],
+            "headlines": result.get("headlines", [])[:20],
+        })
+
+    return _sse_response(work, job_name=f"quantum {mode}")
 
 
 @app.get("/api/run/global-markets")
 def run_global_markets(market_type: str = Query(...)):
-    q = queue.Queue()
-    
-    def run_pipeline():
-        try:
-            q.put({"type": "progress", "message": _editor_open(market_type)})
-            q.put({"type": "progress", "message": f"Loading Global Macro orchestrator for: {market_type}"})
-            from global_markets_orchestrator import (
-                DevelopedMarketsOrchestrator,
-                EmergingMarketsOrchestrator,
-            )
-            if market_type == "Emerging Markets":
-                orchestrator = EmergingMarketsOrchestrator()
-            else:
-                orchestrator = DevelopedMarketsOrchestrator()
-                
-            def callback(msg):
-                q.put({"type": "progress", "message": msg})
-                
-            report = orchestrator.run_analysis(progress_callback=callback)
-            
-            os.makedirs('reports', exist_ok=True)
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M')
-            filename = f"Global_{market_type.replace(' ', '')}_{timestamp}.md"
-            file_path = os.path.join('reports', filename)
-            with open(file_path, 'w', encoding='utf-8') as f:
-                f.write(report)
-                
-            q.put({
-                "type": "complete", 
-                "report": report, 
-                "filename": filename,
-                "created": datetime.now().strftime("%Y-%m-%d %H:%M")
-            })
-        except ImportError as e:
-            q.put({"type": "error", "message": f"{_HEAVY_UNAVAILABLE} ({e})"})
-        except Exception as e:
-            q.put({"type": "error", "message": str(e)})
-            
-    threading.Thread(target=run_pipeline, daemon=True).start()
-    return _sse_from_queue(q)
+    def work(q):
+        q.put({"type": "progress", "message": _editor_open(market_type)})
+        q.put({"type": "progress", "message": f"Loading Global Macro orchestrator for: {market_type}"})
+        from global_markets_orchestrator import (
+            DevelopedMarketsOrchestrator,
+            EmergingMarketsOrchestrator,
+        )
+        if market_type == "Emerging Markets":
+            orchestrator = EmergingMarketsOrchestrator()
+        else:
+            orchestrator = DevelopedMarketsOrchestrator()
+        report = orchestrator.run_analysis(
+            progress_callback=lambda m: q.put({"type": "progress", "message": m}),
+        )
+        os.makedirs("reports", exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+        filename = f"Global_{market_type.replace(' ', '')}_{timestamp}.md"
+        with open(os.path.join("reports", filename), "w", encoding="utf-8") as f:
+            f.write(report)
+        q.put({
+            "type": "complete",
+            "report": report,
+            "filename": filename,
+            "created": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        })
+
+    return _sse_response(work, job_name=f"global {market_type}")
 
 
 @app.get("/api/run/news")
 def run_news(scope: str = Query("global")):
-    q = queue.Queue()
-    
-    def run_pipeline():
-        try:
-            q.put({"type": "progress", "message": _editor_open(f"news desk ({scope})")})
-            q.put({"type": "progress", "message": f"Connecting news parser. Scope: {scope}"})
-            from news_tracker_orchestrator import NewsTrackerOrchestrator
-            orchestrator = NewsTrackerOrchestrator()
-            
-            def callback(msg):
-                q.put({"type": "progress", "message": msg})
-                
-            news_data = orchestrator.run_analysis(scope=scope, progress_callback=callback)
-            q.put({"type": "complete", "news": news_data})
-        except ImportError as e:
-            q.put({"type": "error", "message": f"{_HEAVY_UNAVAILABLE} ({e})"})
-        except Exception as e:
-            q.put({"type": "error", "message": str(e)})
-            
-    threading.Thread(target=run_pipeline, daemon=True).start()
-    return _sse_from_queue(q)
+    def work(q):
+        q.put({"type": "progress", "message": _editor_open(f"news desk ({scope})")})
+        q.put({"type": "progress", "message": f"Connecting news parser. Scope: {scope}"})
+        from news_tracker_orchestrator import NewsTrackerOrchestrator
+        news_data = NewsTrackerOrchestrator().run_analysis(
+            scope=scope,
+            progress_callback=lambda m: q.put({"type": "progress", "message": m}),
+        )
+        q.put({"type": "complete", "news": news_data})
+
+    return _sse_response(work, job_name=f"news {scope}")
 
 
 @app.get("/api/run/top-picks")
 def run_top_picks(sector: str = Query(...)):
-    q = queue.Queue()
-    
-    def run_pipeline():
-        try:
-            q.put({"type": "progress", "message": _editor_open(sector)})
-            def callback(msg):
-                q.put({"type": "progress", "message": msg})
-                
-            callback("Starting Top Picks screener...")
-            import financial_analyst_cli as analyst
-            from orchestrator import AgentOrchestrator
-            skills = analyst.load_skills()
-            model = analyst.setup_gemini()
-            screen_prompt = analyst.get_screening_prompt(sector, skills)
-            screen_resp = model.generate_content(screen_prompt)
-            
-            ext_prompt = f"Extract exactly 3 ticker symbols from this text as a comma-separated list. Text: {screen_resp.text}"
-            tickers = [t.strip() for t in model.generate_content(ext_prompt).text.split(',')][:3]
-            
-            callback(f"Top Picks identified: {tickers}")
-            
-            full_report = f"# Top Picks Report: {sector}\n\n"
-            orchestrator = AgentOrchestrator()
-            
-            for ticker in tickers:
-                callback(f"Analyzing {ticker}...")
-                memo = orchestrator.run_analysis_pipeline(ticker, progress_callback=lambda x: None)
-                full_report += f"\n## Analysis: {ticker}\n\n{memo}\n\n---\n\n"
-            
-            os.makedirs('reports', exist_ok=True)
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M')
-            filename = f"Full_Report_{sector.replace(' ', '_')}_{timestamp}.md"
-            file_path = os.path.join('reports', filename)
-            with open(file_path, 'w', encoding='utf-8') as f:
-                f.write(full_report)
-                
-            q.put({
-                "type": "complete", 
-                "report": full_report, 
-                "filename": filename, 
-                "tickers": tickers,
-                "created": datetime.now().strftime("%Y-%m-%d %H:%M")
-            })
-        except ImportError as e:
-            q.put({"type": "error", "message": f"{_HEAVY_UNAVAILABLE} ({e})"})
-        except Exception as e:
-            q.put({"type": "error", "message": str(e)})
-            
-    threading.Thread(target=run_pipeline, daemon=True).start()
-    return _sse_from_queue(q)
+    def work(q):
+        q.put({"type": "progress", "message": _editor_open(sector)})
+        def callback(msg):
+            q.put({"type": "progress", "message": msg})
+
+        callback("Starting Top Picks screener...")
+        import financial_analyst_cli as analyst
+        from orchestrator import AgentOrchestrator
+        skills = analyst.load_skills()
+        model = analyst.setup_gemini()
+        screen_prompt = analyst.get_screening_prompt(sector, skills)
+        screen_resp = model.generate_content(screen_prompt)
+        ext_prompt = (
+            "Extract exactly 3 ticker symbols from this text as a comma-separated list. "
+            f"Text: {screen_resp.text}"
+        )
+        take = 1 if constrained_host() else 3
+        tickers = [t.strip() for t in model.generate_content(ext_prompt).text.split(",")][:take]
+        callback(f"Top Picks identified: {tickers}")
+        full_report = f"# Top Picks Report: {sector}\n\n"
+        orchestrator = AgentOrchestrator()
+        for ticker in tickers:
+            callback(f"Analyzing {ticker}...")
+            memo = orchestrator.run_analysis_pipeline(ticker, progress_callback=lambda x: None)
+            full_report += f"\n## Analysis: {ticker}\n\n{memo}\n\n---\n\n"
+            release_memory()
+        os.makedirs("reports", exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+        filename = f"Full_Report_{sector.replace(' ', '_')}_{timestamp}.md"
+        with open(os.path.join("reports", filename), "w", encoding="utf-8") as f:
+            f.write(full_report)
+        q.put({
+            "type": "complete",
+            "report": full_report,
+            "filename": filename,
+            "tickers": tickers,
+            "created": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        })
+
+    return _sse_response(work, job_name=f"top picks {sector}")
 
 # ── Mount Frontend Assets ─────────────────────────────────────────────────────
 

@@ -17,6 +17,7 @@ import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from turso_db import get_db_smart
+from agents.host_limits import constrained_host, release_memory
 import io
 import logging
 from datetime import datetime, timedelta
@@ -163,8 +164,9 @@ class DataCollectorAgent:
             if df.empty or len(df) < 50:
                 return None
 
-            close = df["Close"].squeeze()
-            volume = df["Volume"].squeeze()
+            close = df["Close"].squeeze().copy()
+            volume = df["Volume"].squeeze().copy()
+            del df
 
             current_close = float(close.iloc[-1])
             current_volume = float(volume.iloc[-1])
@@ -194,12 +196,12 @@ class DataCollectorAgent:
             daily_returns = close.pct_change().dropna()
             vol_20d = float(daily_returns.tail(20).std() * np.sqrt(252)) if len(daily_returns) >= 20 else None
 
-            # Fundamentals
             info = {}
-            try:
-                info = yf.Ticker(sym).info
-            except Exception:
-                pass
+            if not constrained_host():
+                try:
+                    info = yf.Ticker(sym).info or {}
+                except Exception:
+                    info = {}
 
             pe = info.get("trailingPE")
             earnings_yield = (1.0 / pe) if pe and pe > 0 else None
@@ -248,6 +250,8 @@ class DataCollectorAgent:
             data = self.fetch_ticker(ticker)
             if data:
                 rows.append(data)
+                if i % 8 == 0:
+                    release_memory()
                 try:
                     cols = list(data.keys())
                     placeholders = ", ".join([f":{c}" for c in cols])
