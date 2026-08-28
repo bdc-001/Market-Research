@@ -1,0 +1,16 @@
+.git
+.venv
+venv
+__pycache__
+.pytest_cache
+tests
+reports
+cache
+logs
+*.db
+*.sqlite
+.streamlit
+frontend/node_modules
+frontend/dist
+.env
+*.md
