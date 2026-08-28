@@ -21,6 +21,98 @@
   z-index: 100;
   position: relative;
   animation: fade-up 0.5s ease both;
+  transition: width 0.28s cubic-bezier(0.22, 1, 0.36, 1), padding 0.28s ease;
+}
+
+.sidebar.collapsed {
+  width: 84px;
+  padding: 18px 12px;
+}
+
+.sidebar.collapsed .brand-text,
+.sidebar.collapsed .nav-label,
+.sidebar.collapsed .workspace-label,
+.sidebar.collapsed .status-card .status-title,
+.sidebar.collapsed .status-badge,
+.sidebar.collapsed .status-label span:not(.animate-pulse-dot) {
+  display: none;
+}
+
+.sidebar.collapsed .brand-section {
+  flex-direction: column;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  justify-content: center;
+}
+
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 12px 8px;
+  transform: none;
+}
+
+.sidebar.collapsed .status-row {
+  justify-content: center;
+}
+
+.nav-collapse-btn {
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  border-radius: 8px;
+  color: var(--ink-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.sidebar.collapsed .nav-collapse-btn {
+  margin-left: 0;
+}
+
+.nav-collapse-btn:hover {
+  color: var(--ink);
+  border-color: var(--brand-border);
+}
+
+.disc-pipe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.disc-step {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ink-secondary);
+}
+
+.disc-step.on {
+  background: linear-gradient(135deg, #5b4fe8, #7c3aed);
+  color: #fff;
+  border-color: transparent;
+}
+
+.disc-arrow {
+  color: var(--ink-subtle);
+  font-weight: 700;
+}
+
+.disc-metric {
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  margin-top: 8px;
 }
 
 .brand-section {
@@ -175,6 +267,7 @@
   padding-bottom: 16px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 24px;
+  gap: 16px;
 }
 
 .page-header h2 {
@@ -191,10 +284,19 @@
   margin-top: 4px;
 }
 
+.top-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
 .top-bar-actions {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .icon-btn {

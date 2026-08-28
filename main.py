@@ -4,7 +4,7 @@ import json
 import queue
 import threading
 import asyncio
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from io import BytesIO
 from fastapi import FastAPI, Response, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -24,7 +24,7 @@ def bootstrap_secrets():
                         k, v = line.split("=", 1)
                         k = k.strip()
                         v = v.strip().strip('"').strip("'")
-                        if k in ("TURSO_URL", "TURSO_TOKEN", "GEMINI_API_KEY"):
+                        if k in ("TURSO_URL", "TURSO_TOKEN", "GEMINI_API_KEY", "MODEL_API_KEY", "NVIDIA_API_KEY"):
                             os.environ[k] = v
         except Exception as e:
             print(f"Error loading secrets: {e}")
@@ -90,9 +90,84 @@ def convert_to_pdf(markdown_content):
 
 # ── API endpoints ─────────────────────────────────────────────────────────────
 
+def _jsonable(value):
+    if isinstance(value, list):
+        return [_jsonable(v) for v in value]
+    if isinstance(value, dict):
+        return {k: _jsonable(v) for k, v in value.items()}
+    if isinstance(value, (date, datetime)):
+        return value.isoformat()
+    return value
+
+
+def _horizon_due(ep, days=30):
+    raw = ep.get("entry_date") or (ep.get("created_at") or "")[:10]
+    try:
+        entry = date.fromisoformat(str(raw)[:10])
+    except (TypeError, ValueError):
+        return None
+    return (entry + timedelta(days=days)).isoformat()
+
+
 @app.get("/api/health")
 def health():
     return {"ok": True, "runtime": "slim"}
+
+
+@app.get("/api/discovery/episodes")
+def discovery_episodes():
+    try:
+        from agents.episode_store import list_discovery_council_episodes
+        rows = list_discovery_council_episodes()
+    except Exception as exc:
+        return JSONResponse(status_code=500, content={"error": str(exc)})
+    today = date.today()
+    types = {}
+    pending_30 = 0
+    out = []
+    for ep in rows:
+        et = ep.get("event_type") or "unclassified"
+        types[et] = types.get(et, 0) + 1
+        due = _horizon_due(ep, 30)
+        if due:
+            try:
+                if today < date.fromisoformat(due):
+                    pending_30 += 1
+            except ValueError:
+                pass
+        item = dict(ep)
+        item["due_30"] = due
+        out.append(item)
+    return {
+        "episodes": _jsonable(out),
+        "count": len(out),
+        "event_types": types,
+        "pending_30": pending_30,
+        "lessons": 0,
+    }
+
+
+@app.get("/api/discovery/episodes/{episode_id}")
+def discovery_episode_detail(episode_id: str):
+    try:
+        from agents.episode_store import (
+            fetch_agent_outcomes,
+            fetch_horizon_outcomes,
+            fetch_predictions,
+            list_discovery_council_episodes,
+        )
+        episodes = list_discovery_council_episodes()
+        ep = next((row for row in episodes if row.get("id") == episode_id), None)
+        if not ep:
+            return JSONResponse(status_code=404, content={"error": "Episode not found"})
+        return _jsonable({
+            "episode": {**ep, "due_30": _horizon_due(ep, 30)},
+            "predictions": fetch_predictions(episode_id),
+            "horizons": fetch_horizon_outcomes(episode_id),
+            "agent_outcomes": fetch_agent_outcomes(episode_id),
+        })
+    except Exception as exc:
+        return JSONResponse(status_code=500, content={"error": str(exc)})
 
 
 @app.get("/api/sectors")
