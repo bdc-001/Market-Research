@@ -31,18 +31,17 @@ def bootstrap_secrets():
 
 bootstrap_secrets()
 
-# Import local agent frameworks and modules
-from agents.research_agent import ResearchAgent
-from orchestrator import AgentOrchestrator
+# Keep the Vercel import graph light. Orchestrators, Gemini, pandas, and
+# xhtml2pdf are loaded inside the routes that need them so a slim
+# api/requirements.txt can stay under the 500 MB function limit.
 from report_store import load_report, save_report, picks_to_records
-import financial_analyst_cli as analyst
-from sector_orchestrator import SectorOrchestrator
-from quantum_orchestrator import QuantumEngineOrchestrator
-from global_markets_orchestrator import EmergingMarketsOrchestrator, DevelopedMarketsOrchestrator
-from news_tracker_orchestrator import NewsTrackerOrchestrator
 
-from markdown import markdown
-from xhtml2pdf import pisa
+_HEAVY_UNAVAILABLE = (
+    "This pipeline is not installed on the Vercel function "
+    "(dependencies were stripped to stay under the 500 MB limit). "
+    "Run it locally with Streamlit (`pip install -r requirements.txt`) "
+    "or on Streamlit Cloud."
+)
 
 app = FastAPI(title="QuanTum API Gateway", version="1.0.0")
 
@@ -57,6 +56,11 @@ app.add_middleware(
 
 # Helper: PDF Converter
 def convert_to_pdf(markdown_content):
+    try:
+        from markdown import markdown
+        from xhtml2pdf import pisa
+    except ImportError:
+        return None
     html_content = markdown(markdown_content, extensions=['tables'])
     styled_html = f"""
     <html>
@@ -85,6 +89,11 @@ def convert_to_pdf(markdown_content):
     return pdf_buffer.getvalue()
 
 # ── API endpoints ─────────────────────────────────────────────────────────────
+
+@app.get("/api/health")
+def health():
+    return {"ok": True, "runtime": "slim"}
+
 
 @app.get("/api/sectors")
 def get_sectors():
@@ -178,7 +187,10 @@ class PdfPayload(BaseModel):
 def generate_pdf(payload: PdfPayload):
     pdf_bytes = convert_to_pdf(payload.markdown)
     if not pdf_bytes:
-        return JSONResponse(status_code=500, content={"error": "PDF generation failed"})
+        return JSONResponse(
+            status_code=501,
+            content={"error": "PDF generation is not available on this deployment."},
+        )
     return Response(content=pdf_bytes, media_type="application/pdf")
 
 @app.get("/api/reports/pdf/{filename}")
@@ -191,7 +203,10 @@ def get_report_pdf(filename: str):
         content = f.read()
     pdf_bytes = convert_to_pdf(content)
     if not pdf_bytes:
-        return JSONResponse(status_code=500, content={"error": "PDF generation failed"})
+        return JSONResponse(
+            status_code=501,
+            content={"error": "PDF generation is not available on this deployment."},
+        )
     return Response(
         content=pdf_bytes, 
         media_type="application/pdf", 
@@ -207,6 +222,7 @@ def run_sector(sector: str = Query(...)):
     def run_pipeline():
         try:
             q.put({"type": "progress", "message": f"Starting Sector Analysis for: {sector}"})
+            from sector_orchestrator import SectorOrchestrator
             sector_council = SectorOrchestrator()
             
             def callback(msg):
@@ -227,6 +243,8 @@ def run_sector(sector: str = Query(...)):
                 "filename": filename,
                 "created": datetime.now().strftime("%Y-%m-%d %H:%M")
             })
+        except ImportError:
+            q.put({"type": "error", "message": _HEAVY_UNAVAILABLE})
         except Exception as e:
             q.put({"type": "error", "message": str(e)})
             
@@ -250,6 +268,7 @@ def run_stock(ticker: str = Query(...)):
     def run_pipeline():
         try:
             q.put({"type": "progress", "message": f"Convening Council for ticker: {ticker}"})
+            from orchestrator import AgentOrchestrator
             orchestrator = AgentOrchestrator()
             
             def callback(msg):
@@ -270,6 +289,8 @@ def run_stock(ticker: str = Query(...)):
                 "filename": filename,
                 "created": datetime.now().strftime("%Y-%m-%d %H:%M")
             })
+        except ImportError:
+            q.put({"type": "error", "message": _HEAVY_UNAVAILABLE})
         except Exception as e:
             q.put({"type": "error", "message": str(e)})
             
@@ -293,6 +314,7 @@ def run_quantum(mode: str = Query("fast")):
     def run_pipeline():
         try:
             q.put({"type": "progress", "message": f"Initiating QuanTum Algorithmic Screener (Mode: {mode})"})
+            from quantum_orchestrator import QuantumEngineOrchestrator
             engine = QuantumEngineOrchestrator()
             
             def callback(msg):
@@ -329,6 +351,8 @@ def run_quantum(mode: str = Query("fast")):
                     "fiveyear_picks": picks_data["fiveyear"],
                     "headlines": result.get("headlines", [])[:20]
                 })
+        except ImportError:
+            q.put({"type": "error", "message": _HEAVY_UNAVAILABLE})
         except Exception as e:
             q.put({"type": "error", "message": str(e)})
             
@@ -352,7 +376,10 @@ def run_global_markets(market_type: str = Query(...)):
     def run_pipeline():
         try:
             q.put({"type": "progress", "message": f"Loading Global Macro orchestrator for: {market_type}"})
-            
+            from global_markets_orchestrator import (
+                DevelopedMarketsOrchestrator,
+                EmergingMarketsOrchestrator,
+            )
             if market_type == "Emerging Markets":
                 orchestrator = EmergingMarketsOrchestrator()
             else:
@@ -376,6 +403,8 @@ def run_global_markets(market_type: str = Query(...)):
                 "filename": filename,
                 "created": datetime.now().strftime("%Y-%m-%d %H:%M")
             })
+        except ImportError:
+            q.put({"type": "error", "message": _HEAVY_UNAVAILABLE})
         except Exception as e:
             q.put({"type": "error", "message": str(e)})
             
@@ -399,6 +428,7 @@ def run_news(scope: str = Query("global")):
     def run_pipeline():
         try:
             q.put({"type": "progress", "message": f"Connecting news parser. Scope: {scope}"})
+            from news_tracker_orchestrator import NewsTrackerOrchestrator
             orchestrator = NewsTrackerOrchestrator()
             
             def callback(msg):
@@ -406,6 +436,8 @@ def run_news(scope: str = Query("global")):
                 
             news_data = orchestrator.run_analysis(scope=scope, progress_callback=callback)
             q.put({"type": "complete", "news": news_data})
+        except ImportError:
+            q.put({"type": "error", "message": _HEAVY_UNAVAILABLE})
         except Exception as e:
             q.put({"type": "error", "message": str(e)})
             
@@ -432,6 +464,8 @@ def run_top_picks(sector: str = Query(...)):
                 q.put({"type": "progress", "message": msg})
                 
             callback("Starting Top Picks screener...")
+            import financial_analyst_cli as analyst
+            from orchestrator import AgentOrchestrator
             skills = analyst.load_skills()
             model = analyst.setup_gemini()
             screen_prompt = analyst.get_screening_prompt(sector, skills)
@@ -464,6 +498,8 @@ def run_top_picks(sector: str = Query(...)):
                 "tickers": tickers,
                 "created": datetime.now().strftime("%Y-%m-%d %H:%M")
             })
+        except ImportError:
+            q.put({"type": "error", "message": _HEAVY_UNAVAILABLE})
         except Exception as e:
             q.put({"type": "error", "message": str(e)})
             

@@ -1,12 +1,7 @@
-pandas>=2.2
-numpy>=1.26
-yfinance>=0.2.50
-feedparser>=6.0
-google-generativeai>=0.8
-markdown>=3.6
-xhtml2pdf>=0.2.16
-requests>=2.32
-duckduckgo-search>=6.0
-pillow>=10.0
-python-telegram-bot>=21.0
+# Vercel serverless function only. Do not add Streamlit, pandas, numpy,
+# google-generativeai, pillow, or xhtml2pdf — they blow the 500 MB limit.
 fastapi>=0.110.0
+pydantic>=2.0
+requests>=2.32
+feedparser>=6.0
+pyyaml>=6.0

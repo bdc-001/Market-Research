@@ -1,3 +1,6 @@
+# Local Streamlit / Streamlit Cloud only.
+# Vercel uses api/requirements.txt — do not add Streamlit, pandas, numpy,
+# google-generativeai, pillow, or xhtml2pdf there (500 MB function cap).
 streamlit>=1.40
 pandas>=2.2
 numpy>=1.26

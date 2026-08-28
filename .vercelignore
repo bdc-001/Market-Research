@@ -1,14 +1,20 @@
-# Ignore frontend source and node_modules from the Python serverless function bundle
-frontend/node_modules/
-frontend/dist/
-frontend/src/
-frontend/public/
+# Files excluded from the Vercel upload. Do not ignore frontend/src —
+# the Vite build needs it. Do not ignore api/.
 
-# Ignore local database cache and reports
-*.db
-reports/
-__pycache__/
-*.pyc
-
-# Ignore git folder
 .git/
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+tests/
+reports/
+cache/
+logs/
+memory/
+*.db
+*.sqlite
+*.sqlite3
+.streamlit/
+
+# Reinstalled during build
+frontend/node_modules/
