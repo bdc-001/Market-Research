@@ -168,10 +168,12 @@ class QuantumSynthesizer:
         regime: str,
     ) -> str:
         lines = [
-            "## Actionable Now — Buy Decisions\n",
-            "*Only stocks with optimal entry timing (score >= 70) are listed here. "
-            "Signal is valid for all ranked stocks, but these have the right price, "
-            "volume, volatility, and RSI conditions to enter today.*\n",
+            "## Actionable Now — Ready to Enter\n",
+            "Investment **signal** and **entry timing** are separate. Ranked picks "
+            "can be valid without being enterable today. This list is only names "
+            "whose **entry timing score is >= 70** (Decision: ENTER).\n",
+            "*Conviction is factor agreement (how many active factors sit in the "
+            "top 20% of the universe) — not risk, volatility, or confidence.*\n",
         ]
 
         catalyst_map = {}
@@ -235,10 +237,16 @@ class QuantumSynthesizer:
                     if "compression" in str(vol_note).lower() or "tight" in str(vol_note).lower():
                         entry_reasons.append("volatility compressed (breakout setup)")
 
+                    lines.append(f"**{i}. {ticker}** ({sector})")
                     lines.append(
-                        f"**{i}. {ticker}** ({sector}) — "
-                        f"Signal {score:.0f}, Entry {entry_sc:.0f}, {conv}"
+                        f"   Investment Signal: {score:.0f}/100"
                     )
+                    lines.append(
+                        f"   Entry Timing: {entry_sc:.0f}/100"
+                    )
+                    lines.append("   Decision: ENTER")
+                    if conv:
+                        lines.append(f"   Conviction: {conv}")
                     lines.append(f"   Price: Rs.{close:,.0f}")
                     if reasons:
                         lines.append(f"   Signal: {'; '.join(reasons)}")
@@ -432,7 +440,13 @@ class QuantumSynthesizer:
             "- **Volatility Compression (25%):** 5d/30d vol ratio < 0.7 = breakout setup",
             "- **RSI Stability (15%):** Optimal zone RSI 50-65, avoid >75 or <40",
             "",
-            "*Entry allowed when composite score >= 70. WAIT stocks have valid signals but suboptimal entry timing.*",
+            "*Entry allowed when entry timing score >= 70. WAIT stocks still have a valid "
+            "investment signal; they should be entered on a better setup, not skipped.*",
+            "",
+            "**Conviction** is factor agreement, not risk or confidence: the share of "
+            "*active* factors (those with non-zero regime weight) that sit in the top 20% "
+            "of the scored universe. Very Low means the composite score is driven by few "
+            "confirming factors.",
         ])
 
         return "\n".join(lines)
@@ -481,7 +495,7 @@ class QuantumSynthesizer:
             if entry_status and not pd.isna(entry_sc):
                 entry_tag = f" | Entry: {entry_sc:.0f} ({entry_status})"
 
-            parts = [f"### {i}. {ticker} ({sector}) — Score {score:.1f}, {conv}{entry_tag}\n"]
+            parts = [f"### {i}. {ticker} ({sector}) — Score {score:.1f}, Conviction: {conv}{entry_tag}\n"]
 
             if catalyst:
                 prefix = f"**[{event_label}]** " if event_label else "**Catalyst:** "
@@ -553,8 +567,8 @@ class QuantumSynthesizer:
         lines = [
             f"## {title}\n",
             "### Top 10 Rankings\n",
-            "| # | Ticker | Sector | Score | Conv | Flow | EarnRev |",
-            "|---|--------|--------|-------|------|------|---------|",
+            "| # | Ticker | Sector | Score | Conviction | Flow | EarnRev |",
+            "|---|--------|--------|-------|------------|------|---------|",
         ]
 
         for i, (_, row) in enumerate(top.iterrows(), 1):
@@ -683,9 +697,14 @@ class QuantumSynthesizer:
     # ── Portfolio Section ─────────────────────────────────────────────────
 
     def _portfolio_section(self, portfolio: pd.DataFrame, title: str, regime: str) -> str:
+        from agents.quantum_portfolio import (
+            MAX_SECTOR_EXPOSURE, MAX_SINGLE_POSITION, audit_constraints,
+        )
         lines = [
             f"## {title}\n",
-            f"*Regime: {regime} — risk-adjusted position sizing with sector caps (30%), single-stock cap (20%)*\n",
+            f"*Regime: {regime} — risk-adjusted sizing. Hard caps: "
+            f"{MAX_SECTOR_EXPOSURE:.0%} per sector, {MAX_SINGLE_POSITION:.0%} per stock. "
+            f"Leftover that cannot be placed without breaking a cap stays as cash.*\n",
             "| Ticker | Sector | Score | Weight |",
             "|--------|--------|-------|--------|",
         ]
@@ -701,6 +720,28 @@ class QuantumSynthesizer:
             else:
                 lines.append(f"| {ticker} | {sector} | {score:.1f} | {weight:.1f}% |")
 
+        audit = audit_constraints(portfolio)
+        sector_bits = [
+            f"{sec} {pct:.1f}%"
+            for sec, pct in sorted(audit["sector_weights"].items(), key=lambda x: -x[1])
+        ]
+        if sector_bits:
+            lines.append(f"\n**Sector totals:** {', '.join(sector_bits)}")
+        lines.append(
+            f"**Cap check:** max stock {audit['max_position_pct']:.1f}% "
+            f"(cap {audit['stock_cap_pct']:.0f}%). "
+            f"Max sector {max(audit['sector_weights'].values(), default=0):.1f}% "
+            f"(cap {audit['sector_cap_pct']:.0f}%)."
+        )
+        if audit["violations"]:
+            desc = "; ".join(
+                f"{v['type']} {v.get('ticker') or v.get('sector')} {v['value']}%"
+                for v in audit["violations"]
+            )
+            lines.append(f"**Constraint violations:** {desc}")
+        else:
+            lines.append("*Caps held after allocation.*")
+
         return "\n".join(lines)
 
     # ── Alpha Decay Section ──────────────────────────────────────────────
@@ -714,8 +755,9 @@ class QuantumSynthesizer:
         ]
 
         if summary:
+            n_active = summary.get("active_positions", 0)
             lines.extend([
-                f"Active positions: **{summary.get('active_positions', 0)}**\n",
+                f"Active positions: **{n_active}**\n",
             ])
             if summary.get("total_exited", 0) > 0:
                 avg_pnl = summary.get("avg_pnl") or 0
@@ -754,8 +796,11 @@ class QuantumSynthesizer:
                 lines.append("")
 
             if actives:
+                shown = min(15, len(actives))
                 lines.extend([
                     "### Active Positions (Signal Decay)\n",
+                    f"*Showing {shown} of {len(actives)} active positions "
+                    f"(weakest remaining signal first).*\n",
                     "| Ticker | Days | P&L | Strength | Factor | Half-Life |",
                     "|--------|------|-----|----------|--------|-----------|",
                 ])

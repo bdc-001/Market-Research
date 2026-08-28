@@ -19,6 +19,7 @@ import pandas as pd
 import sqlite3
 from datetime import datetime
 import os
+import uuid
 
 from agents.quantum_regime import RegimeDetector
 from agents.quantum_news_scanner import NewsScanner
@@ -36,6 +37,11 @@ from agents.quantum_learning import (
 )
 from agents.quantum_critic import CriticAgent
 from agents import memory
+from agents.episode_store import (
+    attach_verified_signal_log_outcomes,
+    write_quantum_topn,
+)
+from agents.agent_trace import TraceLog, df_brief, news_brief
 
 # Long-horizon universe size when the caller asks for a fast run.
 FAST_UNIVERSE_SIZE = 30
@@ -65,6 +71,7 @@ class QuantumEngineOrchestrator:
         run_backtest: bool = False,
         progress_callback=None,
         fast: bool = False,
+        step_callback=None,
     ) -> dict:
         """
         Runs the full pipeline.
@@ -85,6 +92,12 @@ class QuantumEngineOrchestrator:
             else:
                 print(f"  {msg}")
 
+        trace = TraceLog(
+            "quantum",
+            f"QuanTum · {'Fast' if fast else 'Full'}",
+            on_event=step_callback,
+        )
+
         # -- Phase 0: Learning memory ----------------------------------------
         # Restore rules first: a fresh container has an empty rules file but the
         # database still holds everything learned so far.
@@ -94,29 +107,82 @@ class QuantumEngineOrchestrator:
             update(f"Restored {restored} learned rules from memory")
 
         update("Phase 0 -- Verifying past signals...")
+        trace.begin("verify")
         verification = self.verifier.run(progress_callback=update)
+        try:
+            attached = attach_verified_signal_log_outcomes()
+            if attached:
+                update(f"Copied {attached} existing signal outcomes onto episodes")
+        except Exception:
+            pass
+
+        trace.add(
+            step_id="verify",
+            name="Signal verifier",
+            kind="python",
+            receives_from=["signal_log"],
+            sends_to=["Weight learner (later)"],
+            received="Unverified rows in signal_log whose window has elapsed",
+            passed=str(verification),
+            note="Does not change scores. Copies existing outcomes onto matching episodes.",
+        )
 
         # -- Phase 1: Market Regime Detection --------------------------------
         update("Phase 1/10 -- Regime Detection...")
+        trace.begin("regime")
         regime_data = self.regime_detector.detect(progress_callback=update)
         regime = regime_data["regime"]
         update(f"Regime: {regime}")
+        trace.add(
+            step_id="regime",
+            name="Regime detector",
+            kind="python",
+            receives_from=["Nifty, VIX, breadth"],
+            sends_to=["Factor scorer", "Portfolio"],
+            received="Nifty 50, India VIX, large-cap breadth",
+            passed=str({
+                k: regime_data.get(k)
+                for k in ("regime", "nifty", "vix", "signals")
+            }),
+        )
 
         # -- Phase 2: News Discovery (deep impact) --------------------------
         update("Phase 2/10 -- News Scanner (deep impact scoring)...")
+        trace.begin("news")
         news_data, headlines = self.news_scanner.run(progress_callback=update)
         news_tickers = [item["symbol"] for item in news_data]
         update(f"Discovered {len(news_tickers)} tickers from {len(headlines)} headlines")
+        trace.add(
+            step_id="news",
+            name="News scanner",
+            kind="gemini",
+            receives_from=["RSS headlines"],
+            sends_to=["Data collector", "Factor scorer (week)"],
+            received=f"{len(headlines)} headlines from ET / Moneycontrol / Mint / BS / NDTV",
+            passed=news_brief(news_data),
+            note="Gemini extracts tickers; Python measures price reaction.",
+        )
 
         # -- Phase 3: Data Collection ----------------------------------------
         all_tickers = list(dict.fromkeys(news_tickers + tickers))
         update(f"Phase 3/10 -- Data Collector: {len(all_tickers)} stocks...")
+        trace.begin("prices")
         df = self.data_agent.run(tickers=all_tickers, progress_callback=None)
 
         if df.empty:
-            return {"error": "Failed to fetch market data."}
+            empty = TraceLog("quantum", "QuanTum (failed)").as_dict()
+            return {"error": "Failed to fetch market data.", "trace": empty}
 
         update(f"Data collected for {len(df)} stocks")
+        trace.add(
+            step_id="prices",
+            name="Data collector",
+            kind="python",
+            receives_from=["News tickers", "Nifty universe"],
+            sends_to=["Flow", "Earnings", "Factor scorer"],
+            received=f"{len(all_tickers)} symbols",
+            passed=df_brief(df, ["ticker", "close", "rsi", "pe_ratio", "roe"], n=10),
+        )
 
         weekly_set = set(news_tickers)
         df_weekly = df[df["ticker"].isin(weekly_set)].copy()
@@ -129,20 +195,41 @@ class QuantumEngineOrchestrator:
 
         # -- Phase 4: Institutional Flow (REAL delivery % from NSE) ----------
         update("Phase 4/10 -- Institutional Flow Tracking (NSE delivery %)...")
+        trace.begin("flow")
         flow_weekly = self.flow_tracker.compute_flow_scores(df_weekly, progress_callback=update)
         flow_longterm = self.flow_tracker.compute_flow_scores(df_longterm, progress_callback=update)
+        trace.add(
+            step_id="flow",
+            name="Flow tracker",
+            kind="python",
+            receives_from=["Data collector", "NSE bhavcopy"],
+            sends_to=["Factor scorer"],
+            received=f"weekly {len(df_weekly)} names, long-term {len(df_longterm)} names",
+            passed=df_brief(flow_weekly, n=8),
+        )
 
         # -- Phase 5: Earnings Revisions (multi-source) ---------------------
         update("Phase 5/10 -- Earnings Revision Factor (yfinance + news)...")
+        trace.begin("earnings")
         earnings_weekly = self.earnings_tracker.compute_scores(
             df_weekly, headlines=headlines, progress_callback=update
         )
         earnings_longterm = self.earnings_tracker.compute_scores(
             df_longterm, headlines=headlines, progress_callback=update
         )
+        trace.add(
+            step_id="earnings",
+            name="Earnings revisions",
+            kind="python",
+            receives_from=["yfinance", "headlines"],
+            sends_to=["Factor scorer"],
+            received=f"{len(headlines)} headlines + price/fundamental frame",
+            passed=df_brief(earnings_weekly, n=8),
+        )
 
         # -- Phase 6: Factor Scoring (sector-relative, regime-adjusted) ------
         update("Phase 6/10 -- Factor Scoring (sector-relative, regime-adjusted)...")
+        trace.begin("scores")
 
         week_weights = self.regime_detector.get_weights(regime, "week")
         year_weights = self.regime_detector.get_weights(regime, "year")
@@ -165,9 +252,23 @@ class QuantumEngineOrchestrator:
         )
 
         self._log_top(update, week_scored, year_scored, fiveyear_scored)
+        trace.add(
+            step_id="scores",
+            name="Factor scorer",
+            kind="python",
+            receives_from=["Prices", "News", "Flow", "Earnings", "Regime weights"],
+            sends_to=["Entry engine", "Portfolio"],
+            received=f"week weights {week_weights}\nyear weights {year_weights}",
+            passed=(
+                "WEEK\n" + df_brief(week_scored) +
+                "\n\nYEAR\n" + df_brief(year_scored) +
+                "\n\n5Y\n" + df_brief(fiveyear_scored)
+            ),
+        )
 
         # -- Phase 7: Entry Timing Engine (execution alpha) -----------------
         update("Phase 7/10 -- Entry Timing Engine (execution alpha)...")
+        trace.begin("entry")
         entry_week = self.entry_engine.evaluate_entries(
             week_scored, horizon="week", progress_callback=update
         )
@@ -182,15 +283,43 @@ class QuantumEngineOrchestrator:
         week_scored = self._merge_entry(week_scored, entry_week)
         year_scored = self._merge_entry(year_scored, entry_year)
         fiveyear_scored = self._merge_entry(fiveyear_scored, entry_fiveyear)
+        trace.add(
+            step_id="entry",
+            name="Entry engine",
+            kind="python",
+            receives_from=["Factor scorer"],
+            sends_to=["Portfolio", "Report"],
+            received="Scored names + OHLCV for pullback / volume / vol-compression / RSI",
+            passed=(
+                "WEEK\n" + df_brief(entry_week) +
+                "\n\nYEAR\n" + df_brief(entry_year)
+            ),
+            note="entry_allowed when entry_score >= 70. Signal and entry are separate.",
+        )
 
         # -- Phase 8: Portfolio Construction ----------------------------------
         update("Phase 8/10 -- Portfolio Construction...")
+        trace.begin("portfolio")
         week_portfolio = self.portfolio.construct(week_scored, regime, top_n=7)
         year_portfolio = self.portfolio.construct(year_scored, regime, top_n=10)
         fiveyear_portfolio = self.portfolio.construct(fiveyear_scored, regime, top_n=10)
+        trace.add(
+            step_id="portfolio",
+            name="Portfolio constructor",
+            kind="python",
+            receives_from=["Scored + entry", "Regime"],
+            sends_to=["Report", "Performance"],
+            received=f"regime={regime}; caps 20% stock / 30% sector",
+            passed=(
+                "WEEK\n" + df_brief(week_portfolio) +
+                "\n\nYEAR\n" + df_brief(year_portfolio) +
+                "\n\n5Y\n" + df_brief(fiveyear_portfolio)
+            ),
+        )
 
         # -- Phase 9: Alpha Management (decay + performance) -----------------
         update("Phase 9/10 -- Alpha Management (decay + exit + performance)...")
+        trace.begin("decay")
 
         self.decay_model.register_signals(week_scored, "week", top_n=7)
         self.decay_model.register_signals(year_scored, "year", top_n=10)
@@ -211,11 +340,31 @@ class QuantumEngineOrchestrator:
         if exit_count > 0:
             update(f"Exit signals triggered for {exit_count} positions")
         update(f"Active positions: {decay_summary['active_positions']}")
+        trace.add(
+            step_id="decay",
+            name="Alpha decay",
+            kind="python",
+            receives_from=["Prior active_positions", "Current scores"],
+            sends_to=["Report"],
+            received=str(decay_summary),
+            passed=str(decay_results[:8]) if decay_results else "(none)",
+        )
 
         # Log signals to signal_log for performance tracking and learning
         self._log_signals(week_scored, "week", regime)
         self._log_signals(year_scored, "year", regime)
         self._log_signals(fiveyear_scored, "5years", regime)
+
+        try:
+            run_id = str(uuid.uuid4())
+            news_by_symbol = {
+                item.get("symbol"): item for item in (news_data or []) if item.get("symbol")
+            }
+            write_quantum_topn(week_scored, "week", regime, run_id, news_by_symbol, week_portfolio)
+            write_quantum_topn(year_scored, "year", regime, run_id, {}, year_portfolio)
+            write_quantum_topn(fiveyear_scored, "5years", regime, run_id, {}, fiveyear_portfolio)
+        except Exception:
+            pass
 
         # Record portfolio snapshots for daily tracking
         self.performance.record_portfolio(week_portfolio, "week", progress_callback=update)
@@ -227,6 +376,7 @@ class QuantumEngineOrchestrator:
 
         # -- Phase 10: Report ------------------------------------------------
         update("Phase 10/10 -- Generating report...")
+        trace.begin("report")
 
         signal_accuracy = self._check_past_accuracy()
 
@@ -260,6 +410,15 @@ class QuantumEngineOrchestrator:
             f.write(report)
 
         update(f"Report saved: {report_path}")
+        trace.add(
+            step_id="report",
+            name="Synthesizer",
+            kind="python",
+            receives_from=["Scores", "Entry", "Portfolio", "Decay", "Regime"],
+            sends_to=["UI markdown / PDF"],
+            received="All prior stage outputs",
+            passed=report[:2500],
+        )
 
         # -- Phase 11: Learning ------------------------------------------------
         # Runs last so a failure here cannot cost the user their report.
@@ -274,9 +433,24 @@ class QuantumEngineOrchestrator:
             except Exception as exc:
                 update(f"Weight learning skipped for {horizon}: {exc}")
 
+        trace.begin("critic")
         critique = self.critic.run(
             week_picks=week_scored, verification=verification,
             regime=regime, progress_callback=update,
+        )
+        critic_text = ""
+        if isinstance(critique, dict):
+            critic_text = str(critique)
+        elif critique:
+            critic_text = str(critique)
+        trace.add(
+            step_id="critic",
+            name="Critic",
+            kind="gemini",
+            receives_from=["Picks", "Verified outcomes", "Existing rules"],
+            sends_to=["memory/learned_rules.md"],
+            received=f"regime={regime} verification={verification}",
+            passed=critic_text or "(no new rules)",
         )
 
         return {
@@ -299,6 +473,7 @@ class QuantumEngineOrchestrator:
             "decay_summary": decay_summary,
             "perf_metrics": perf_metrics,
             "df": week_scored,
+            "trace": trace.as_dict(),
         }
 
     def _merge_entry(self, scored: pd.DataFrame, entry: pd.DataFrame) -> pd.DataFrame:

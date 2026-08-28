@@ -1,63 +1,59 @@
-import yfinance as yf
-from .common import BaseAgent, setup_gemini
-import pandas as pd
+from .common import BaseAgent
+from .technical_compute import compute_technical_snapshot, snapshot_is_valid
+
 
 class TechnicalAgent(BaseAgent):
     """
-    The Chartist: Analyzes Price Action & Trends using YFinance.
+    The Chartist: interprets a Python-computed technical snapshot.
+    Never calculates indicators and never owns evidence IDs.
     """
+
     def __init__(self):
         super().__init__("Technical Analyst", "Chartist")
 
-    def run(self, ticker: str) -> str:
-        # Get last 1 year data
-        try:
-            # Add .NS suffix if not present (Assumption for Indian Markets)
-            search_ticker = f"{ticker}.NS" if not ticker.endswith(".NS") and not ticker.endswith(".BO") else ticker
-            
-            data = yf.download(search_ticker, period="1y", interval="1d", progress=False)
-            
-            if data.empty:
-                return f"⚠️ Unable to fetch market data for {ticker}. Analysis skipped."
-            
-            # Simple Technical Checks
-            current_price = data['Close'].iloc[-1]
-            sma_50 = data['Close'].rolling(window=50).mean().iloc[-1]
-            sma_200 = data['Close'].rolling(window=200).mean().iloc[-1]
-            
-            # RSI Calculation
-            delta = data['Close'].diff()
-            gain = delta.where(delta > 0, 0)
-            loss = -delta.where(delta < 0, 0)
-            avg_gain = gain.rolling(window=14).mean()
-            avg_loss = loss.rolling(window=14).mean()
-            rs = avg_gain / avg_loss
-            rsi = 100 - (100 / (1 + rs)).iloc[-1]
-            
-            # Trend Check
-            trend = "Uptrend" if current_price > sma_200 else "Downtrend"
-            cross = "Bullish Cross" if sma_50 > sma_200 else "Bearish"
-            
-            prompt = f"""
-            Analyze these technical indicators for {ticker}:
-            
-            **Current Price**: ₹{current_price:.2f}
-            **50-Day MA**: ₹{sma_50:.2f}
-            **200-Day MA**: ₹{sma_200:.2f}
-            **Trend**: {trend} ({cross})
-            **RSI (14)**: {rsi:.2f}
-            
-            **High (52w)**: ₹{data['High'].max():.2f}
-            **Low (52w)**: ₹{data['Low'].min():.2f}
-            
-            **Task**: Provide an Entry Strategy.
-            - Is it a Buy Zone, Hold/Breakout Candidate, or Sell Area?
-            - What are the key support levels to watch?
-            - Write concise, actionable advice for a long-term investor looking for entry.
-            """
-            
-            response = self.model.generate_content(prompt)
-            return response.text
-             
-        except Exception as e:
-            return f"Technical Analysis Failed: {str(e)}"
+    def run(self, ticker: str, snapshot: dict | None = None, id_map: dict | None = None) -> str:
+        snap = snapshot if snapshot is not None else compute_technical_snapshot(ticker)
+        self.last_snapshot = snap
+        if not snapshot_is_valid(snap):
+            return self.record_failure(
+                f"Technical snapshot invalid: {snap.get('error') or 'missing scalars'}"
+            )
+
+        labels = [
+            "price", "sma20", "sma50", "sma200", "rsi", "macd", "macd_signal",
+            "atr", "volume_vs_average", "high_52w", "low_52w",
+            "support", "resistance", "trend", "cross",
+        ]
+        id_map = id_map or {}
+        legend = "\n".join(
+            f"- {label} → {id_map[label]}" if label in id_map else f"- {label}"
+            for label in labels
+        )
+
+        prompt = f"""
+Interpret these already-computed technical scalars for {ticker}.
+Do not recalculate anything. Do not invent levels that are not listed.
+Do not emit evidence_ids. Return evidence_labels using the names below.
+Python maps those labels to IDs.
+
+Canonical latest_close (the only price): {snap['price']}
+SMA20: {snap['sma20']}
+SMA50: {snap['sma50']}
+SMA200: {snap.get('sma200')}
+RSI(14): {snap.get('rsi')}
+MACD: {snap.get('macd')}  signal: {snap.get('macd_signal')}
+ATR: {snap.get('atr')}
+Volume vs 20d average: {snap.get('volume_vs_average')}
+52w high / low: {snap.get('high_52w')} / {snap.get('low_52w')}
+Recent support / resistance: {snap.get('support')} / {snap.get('resistance')}
+Trend: {snap.get('trend')}  MA cross: {snap.get('cross')}
+Bars used: {snap.get('bars')}  as_of: {snap.get('as_of')}
+
+Allowed evidence_labels:
+{legend}
+
+Task: 30-day entry strategy from these scalars only.
+- Buy zone, hold/breakout, or sell area?
+- Which listed support/resistance levels matter?
+"""
+        return self.complete(prompt)

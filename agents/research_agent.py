@@ -1,79 +1,57 @@
-import json
-from .common import BaseAgent, setup_gemini
-from duckduckgo_search import DDGS
+"""
+The Historian: interprets filings / management / financial evidence.
+Does not search when an evidence package is provided.
+"""
+from .common import BaseAgent
+
+
+def _package_or_query(ticker: str, evidence_text: str) -> str:
+    text = (evidence_text or "").strip()
+    if text:
+        return text
+    try:
+        from agents.evidence_acquisition import _web_search
+        hits = _web_search(str(ticker))
+    except Exception:
+        hits = []
+    if not hits:
+        return f"No evidence package and no search hits for: {ticker}"
+    return f"Search results for {ticker} (legacy path, no IDs):\n{hits}"
+
 
 class ResearchAgent(BaseAgent):
-    """
-    The Historian: Digs into annual reports, con-calls, and historical data.
-    """
     def __init__(self):
         super().__init__("The Historian", "Fundamental Researcher")
 
-    def search(self, query):
-        try:
-            with DDGS() as ddgs:
-                results = list(ddgs.text(query, max_results=5))
-                return "\n".join([f"- {r['title']}: {r['body']}" for r in results])
-        except Exception as e:
-            return f"Search Error: {str(e)}"
-
-    def run(self, ticker: str) -> str:
-        concall_query = f"{ticker} earnings call transcript key highlights 2024"
-        capex_query = f"{ticker} annual report capex plans 2025"
-        
-        raw_concall = self.search(concall_query)
-        raw_capex = self.search(capex_query)
-        
+    def run(self, ticker: str, evidence_text: str = "") -> str:
+        package = _package_or_query(ticker, evidence_text)
         prompt = f"""
-        Analyze these search results for {ticker}:
-        
-        **Con-call Transcripts**:
-        {raw_concall}
-        
-        **Capex Plans**:
-        {raw_capex}
-        
-        **Task**: Summarize Management Guidance, Capex strategy, and any major operational shifts.
-        Focus on facts, numbers, and dates.
-        """
-        response = self.model.generate_content(prompt)
-        return response.text
+You are the Historian for {ticker}. Analyze ONLY the evidence package below.
+Every fact has an ID (E001, …). Cite those IDs. Never invent numbers.
+If a topic has no ID, say it is absent — do not say the whole package is empty
+when IDs are present.
+
+{package}
+
+Task: Summarize management guidance, capex, and operational shifts.
+Focus on facts, numbers, and dates. Cite evidence IDs in each bullet.
+"""
+        return self.complete(prompt)
+
 
 class MarketScout(BaseAgent):
-    """
-    The News Hound: Scans real-time news, sediment, and competitor moves.
-    """
     def __init__(self):
         super().__init__("Market Scout", "News Analyst")
 
-    def search(self, query):
-        try:
-            with DDGS() as ddgs:
-                # Search for news in last month? DDGS doesn't easily support time range in simple text, 
-                # but adding '2025' or 'latest news' helps.
-                results = list(ddgs.text(query, max_results=5))
-                return "\n".join([f"- {r['title']}: {r['body']}" for r in results])
-        except Exception as e:
-            return f"Search Error: {str(e)}"
-
-    def run(self, ticker: str) -> str:
-        news_query = f"{ticker} stock latest news major announcements 2025"
-        competitor_query = f"{ticker} main competitors market share changes india 2025"
-        
-        raw_news = self.search(news_query)
-        raw_comp = self.search(competitor_query)
-        
+    def run(self, ticker: str, evidence_text: str = "") -> str:
+        package = _package_or_query(ticker, evidence_text)
         prompt = f"""
-        Analyze these market updates for {ticker}:
-        
-        **Latest News**:
-        {raw_news}
-        
-        **Competitor Landscape**:
-        {raw_comp}
-        
-        **Task**: Identify key order wins, regulatory impacts, and competitive threats in the last 6-12 months.
-        Highlight any immediate red flags or catalysists.
-        """
-        response = self.model.generate_content(prompt)
-        return response.text
+You are Market Scout for {ticker}. Analyze ONLY the evidence package below.
+Cite evidence IDs. Do not claim "no headlines supplied" if news IDs exist.
+
+{package}
+
+Task: Identify order wins, regulatory impacts, competitive threats, and
+near-term catalysts from the supplied news / competitor / corporate-action items.
+"""
+        return self.complete(prompt)

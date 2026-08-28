@@ -31,6 +31,7 @@ class Skill:
         self.name = meta.get("name", key)
         self.description = meta.get("description", "")
         self.tools = meta.get("tools", [])
+        self.version = str(meta.get("version") or "1").strip()
 
     def body(self) -> str:
         """Reads the full instruction text (everything after the front matter)."""
@@ -93,6 +94,14 @@ def list_skills() -> dict:
         key = meta.get("name", entry)
         found[key] = Skill(key, path, meta)
     return found
+
+
+def skill_version_label(name: str) -> str:
+    """e.g. news_extractor-v1, or none when the skill file is missing."""
+    skill = get_skill(name)
+    if not skill:
+        return "none"
+    return f"{skill.key}-v{skill.version}"
 
 
 def get_skill(name: str) -> Skill | None:

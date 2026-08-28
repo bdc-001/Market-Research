@@ -2,6 +2,7 @@
 name: critic
 description: Compare past picks against realised returns and write durable rules that stop the mistake repeating
 tools: [gemini, signal_log, learned_rules]
+version: 1
 ---
 
 # Critic

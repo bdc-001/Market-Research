@@ -1,0 +1,162 @@
+# Discovery v1 — frozen product config.
+# Learning systems must not write this file.
+
+universe:
+  primary_tiers: [sme, microcap]
+  include_smallcap: false          # Tier C is optional and never mixed into primary scores
+  mcap_min_cr: 50
+  microcap_max_cr: 1000
+  smallcap_max_cr: 5000
+  min_adv_inr: 5000000             # ₹50 lakh — hard gate before any LLM call
+  indices:
+    - NIFTY MICROCAP 250
+  smallcap_index: NIFTY SMALLCAP 250
+  include_nse_sme: true
+  include_bse_sme: true
+  exclude_tickers: []
+
+radar:
+  announcement_lookback_days: 3
+  max_raw_announcements: 500
+  max_events_to_llm: 40
+  news_as_secondary: true
+  cache_ttl_minutes: 180
+
+liquidity:
+  hard_gate: true
+  unknown_is_exclude: true
+
+scarcity:
+  analyst_weight: 0.5
+  muted_reaction_weight: 0.5
+  muted_abs_return_pct: 5.0
+  min_volume_participation: 0.5    # below this is thin tape, not "market ignored it"
+
+opportunity_score:
+  frozen: true
+  weights:
+    catalyst: 0.25
+    scarcity: 0.20
+    quality: 0.20
+    inflection: 0.25
+    mispricing: 0.10
+
+catalyst_cards:
+  top_n: 15
+  horizon_days: 30
+  max_cards_per_ticker: 1
+
+materiality:
+  investigate_min: 2
+  candidate_min: 3
+  revenue_weak: 0.05
+  revenue_moderate: 0.20
+  revenue_major: 0.50
+
+event_keywords:
+  # First match wins. Keep order-win terms before promoter/management.
+  large_order_win:
+    - "purchase order"
+    - "work order"
+    - "letter of intent"
+    - "letter of award"
+    - "bagging"
+    - "received an order"
+    - "received order"
+    - "order win"
+    - "awarded a contract"
+    - "new contract"
+  export_order:
+    - "export order"
+    - "overseas order"
+  promoter_purchase:
+    - "regulation 7(2)"
+    - "sebi (pit)"
+    - "promotor"
+    - "promoter purchase"
+    - "promoter buying"
+    - "sast"
+  promoter_sale:
+    - "promoter sale"
+    - "promoter sold"
+  fund_raise:
+    - "non convertible"
+    - "ncd"
+    - "debenture"
+  preferential_issue:
+    - "preferential"
+    - "qip"
+    - "warrant"
+  capacity_expansion:
+    - "capacity"
+    - "expansion"
+    - "new plant"
+    - "brownfield"
+    - "greenfield"
+    - "manufacturing facility"
+    - "commissioning"
+  management_change:
+    - "appointment of"
+    - "cessation of"
+    - "key managerial"
+  acquisition:
+    - "acquisition"
+    - "acquire"
+    - "takeover"
+    - "joint venture"
+    - "jv "
+  divestiture:
+    - "divest"
+    - "slump sale"
+  partnership:
+    - "partnership"
+    - "collaboration"
+    - "memorandum of understanding"
+  regulatory_approval:
+    - "approval"
+    - "licence"
+    - "license"
+    - "drug approval"
+    - "anda"
+  new_customer:
+    - "new customer"
+  new_product:
+    - "product launch"
+    - "new product"
+    - "commercial production"
+  debt_reduction:
+    - "debt reduction"
+    - "prepay"
+    - "repaid"
+  financial_results:
+    - "financial results"
+    - "unaudited"
+    - "audited results"
+
+drop_keywords:
+  - "loss of share certificate"
+  - "issue of duplicate"
+  - "newspaper publication"
+  - "newspaper advertisement"
+  - "trading window"
+  - "closure of trading window"
+  - "reg. 39"
+  - "regulation 39"
+  - "reg 74"
+  - "record date for"
+  - "book closure"
+  - "compliance certificate"
+  - "secretarial compliance"
+  - "investor complaint"
+  - "statement of investor"
+  - "esop"
+  - "employee stock"
+  - "voting results"
+  - "scrutinizer"
+  - "postal ballot"
+  - "notice of agm"
+  - "notice of egm"
+  - "intimation of board meeting"
+  - "outcome of board meeting"
+  - "orders passed"
+  - "action(s) taken or orders passed"

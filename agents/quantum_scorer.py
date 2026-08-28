@@ -58,6 +58,8 @@ SECTOR_MAP = {
     "DLF": "RealEstate", "GODREJPROP": "RealEstate",
     "PRESTIGE": "RealEstate", "OBEROIRLTY": "RealEstate",
     "GMRAIRPORT": "Infra", "ADANIENT": "Infra", "ADANIPORTS": "Infra",
+    "SAIL": "Metals", "TIMEX": "Consumer", "CELLECOR": "Consumer",
+    "SOLARINDS": "Defence",
 }
 
 FINANCIAL_SECTORS = {"BFSI"}

@@ -2,6 +2,7 @@
 name: stock_screener
 description: Buffett-Dalio quality screen for Indian listed companies, producing a ranked shortlist with moat and management judgement
 tools: [gemini, yfinance, screening_config]
+version: 1
 ---
 
 # Stock Screener

@@ -29,6 +29,9 @@ screening_output.log
 # ── Generated reports (large, user-specific) ─────────────────────────────────
 reports/
 
+# ── Discovery radar cache (exchange JSON, rebuilt at runtime) ────────────────
+cache/
+
 # ── IDE / OS ──────────────────────────────────────────────────────────────────
 .vscode/
 .idea/

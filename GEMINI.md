@@ -26,6 +26,17 @@ be recomputed or second-guessed by you.
 6. If a headline names no listed Indian company, drop it. Do not stretch a
    sector story onto an unrelated ticker.
 7. Keep prose compact. Reports are read on a phone.
+8. If an evidence package with IDs (E001, E002, …) is in the prompt, those
+   items are supplied facts. Cite the IDs. Do not say "no disclosure was
+   supplied" when IDs exist.
+9. Bull and Bear always receive the same evidence set. Disagreement is
+   interpretation of the same IDs, not a claim that evidence is missing.
+10. Never invent evidence IDs. Cite only IDs (or labels) from YOUR slice.
+    Python drops out-of-scope IDs. Chartist IDs are assigned in Python.
+11. The 30-day signal (prediction_direction, horizon_days) is not the 1-3
+    year investment stance (final_decision). Do not merge them. Use the
+    canonical latest_close as the only as-of price.
+12. Confidence is stored only. Do not treat it as a probability used for ranking.
 
 ## Learned rules
 

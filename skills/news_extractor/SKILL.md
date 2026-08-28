@@ -2,6 +2,7 @@
 name: news_extractor
 description: Turn Indian market headlines into NSE tickers with catalyst, sentiment, surprise and event type
 tools: [gemini, rss]
+version: 1
 ---
 
 # News Extractor

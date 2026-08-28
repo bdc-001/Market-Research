@@ -9,7 +9,6 @@ import time
 import json
 import streamlit as st
 import pandas as pd
-import google.generativeai as genai
 from datetime import datetime
 from markdown import markdown
 from xhtml2pdf import pisa
@@ -17,13 +16,19 @@ from io import BytesIO
 
 # ── Bootstrap Turso credentials from Streamlit secrets → env vars ────────────
 # This allows turso_db.py (used by agents) to read them via os.environ
-for _key in ("TURSO_URL", "TURSO_TOKEN"):
+for _key in ("TURSO_URL", "TURSO_TOKEN", "MODEL_API_KEY", "META_API_KEY", "NVIDIA_API_KEY"):
     _val = st.secrets.get(_key, "")
     if _val:
         os.environ[_key] = _val
 
 # Import Agents
+import importlib
+import agents.agent_trace as agent_trace
+if not hasattr(agent_trace, "LivePipeline"):
+    agent_trace = importlib.reload(agent_trace)
+from agents.agent_trace import LivePipeline, render_agent_trace
 from agents.research_agent import ResearchAgent
+from discovery_ui import render_discovery_tab
 from orchestrator import AgentOrchestrator
 from report_store import load_report, save_report, picks_to_records
 import financial_analyst_cli as analyst # Keep old screening logic for now
@@ -355,21 +360,25 @@ def main():
     col_h1, col_h2 = st.columns([3, 1])
     with col_h1:
         st.markdown('<h1 class="main-header">💸 Financial Intelligence</h1>', unsafe_allow_html=True)
-        st.caption("7-Agent AI Council • Quant • Global Markets • News")
+        st.caption("Discovery Council • SME/microcap sample • 7-Agent Council • QuanTum")
     with col_h2:
         st.markdown("<div style='text-align:right;padding-top:10px'><span style='font-size:0.7rem;color:rgba(255,255,255,0.4)'>v3.0 • Indie-Quant</span></div>",
                     unsafe_allow_html=True)
 
     # Tabs
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+    tab0, tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+        "🔭 Discovery",
         "🏭 Sector Analysis",
         "🏢 Stock Analysis",
         "🏆 Top Picks",
         "🤖 QuanTum Picks",
         "🌍 Global Markets",
         "📰 Market News",
-        "📚 Report Library"
+        "📚 Report Library",
     ])
+
+    with tab0:
+        render_discovery_tab()
 
     # --- Tab 1: Sector Analysis ---
     with tab1:
@@ -426,20 +435,29 @@ def main():
         ticker_input = st.text_input("Enter Ticker Symbol (e.g., TATAMOTORS, RELIANCE)", placeholder="Type symbol...")
         
         if st.button("Run Council Analysis", type="primary") and ticker_input:
+            st.markdown("#### Live agent interaction")
+            live = LivePipeline("council", st.empty(), st.empty())
             orchestrator = AgentOrchestrator()
             report_container = st.empty()
-            
-            # Progress tracking
+
             with st.status("🚀 Convening the Council...", expanded=True) as status:
-                
+
                 def update_progress(msg):
                     st.write(msg)
-                
-                # Run the 7-Agent Pipeline
-                final_report = orchestrator.run_analysis_pipeline(ticker_input, progress_callback=update_progress)
+
+                final_report = orchestrator.run_analysis_pipeline(
+                    ticker_input,
+                    progress_callback=update_progress,
+                    step_callback=live.handle,
+                )
+                live.finish()
                 status.update(label="✅ Final Investment Memo Ready!", state="complete", expanded=False)
-            
+
             report_container.markdown(final_report)
+            render_agent_trace(
+                getattr(orchestrator, "last_trace", None),
+                heading="Full handoff log — tap a stage to read what it received and passed on",
+            )
             
             # Save Report
             os.makedirs('reports', exist_ok=True)
@@ -506,7 +524,7 @@ def main():
                 with col1:
                     report_type = st.selectbox(
                         "Filter by Type",
-                        ["All", "Sector Reports", "Stock Analysis", "Top Picks", "Other"],
+                        ["All", "Discovery", "Sector Reports", "Stock Analysis", "Top Picks", "Other"],
                         key="report_type_filter"
                     )
                 
@@ -519,11 +537,18 @@ def main():
                     # Type filtering
                     if report_type == "Sector Reports" and not f.startswith("Sector_"):
                         continue
+                    elif report_type == "Discovery" and not f.startswith("discovery_"):
+                        continue
                     elif report_type == "Stock Analysis" and not f.startswith("DeepDive_"):
                         continue
                     elif report_type == "Top Picks" and not f.startswith("Full_Report_"):
                         continue
-                    elif report_type == "Other" and (f.startswith("Sector_") or f.startswith("DeepDive_") or f.startswith("Full_Report_")):
+                    elif report_type == "Other" and (
+                        f.startswith("Sector_")
+                        or f.startswith("DeepDive_")
+                        or f.startswith("Full_Report_")
+                        or f.startswith("discovery_")
+                    ):
                         continue
                     
                     # Search filtering
@@ -548,7 +573,10 @@ def main():
                     mod_time = datetime.fromtimestamp(file_stats.st_mtime).strftime('%Y-%m-%d %H:%M')
                     
                     # Determine report type icon
-                    if filename.startswith("Sector_"):
+                    if filename.startswith("discovery_"):
+                        icon = "🔭"
+                        type_label = "Discovery"
+                    elif filename.startswith("Sector_"):
                         icon = "🏭"
                         type_label = "Sector"
                     elif filename.startswith("DeepDive_"):
@@ -813,6 +841,8 @@ def main():
             from quantum_orchestrator import QuantumEngineOrchestrator
 
             progress_log = []
+            st.markdown("#### Live agent interaction")
+            live = LivePipeline("quantum", st.empty(), st.empty())
 
             with st.status("🤖 QuanTum Engine Running...", expanded=True) as status:
                 log_container = st.empty()
@@ -824,7 +854,12 @@ def main():
                     ]))
 
                 engine = QuantumEngineOrchestrator()
-                result = engine.run(progress_callback=qt_progress, fast=(mode == "Fast"))
+                result = engine.run(
+                    progress_callback=qt_progress,
+                    fast=(mode == "Fast"),
+                    step_callback=live.handle,
+                )
+                live.finish()
 
                 if "error" in result:
                     status.update(label=f"❌ Error: {result['error']}", state="error")
@@ -908,6 +943,10 @@ def main():
                     )
 
                 st.success(f"💾 Report saved: `{result['report_path']}`")
+                render_agent_trace(
+                    result.get("trace"),
+                    heading="Full handoff log — tap a stage to read what it received and passed on",
+                )
 
 
 if __name__ == "__main__":
