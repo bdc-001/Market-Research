@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getApiUrl } from './api';
+import { SenseLoader } from './Loader';
 
 export default function ReportLibrary() {
   const [reports, setReports] = useState([]);
@@ -9,11 +10,15 @@ export default function ReportLibrary() {
   const [previewFilename, setPreviewFilename] = useState('');
   const [showModal, setShowModal] = useState(false);
 
+  const [loading, setLoading] = useState(true);
+
   const fetchReports = () => {
+    setLoading(true);
     fetch(getApiUrl(`/api/reports?report_type=${typeFilter}&search=${searchTerm}`))
-      .then(res => res.json())
-      .then(data => setReports(data))
-      .catch(err => console.error("Error loading report library", err));
+      .then((res) => res.json())
+      .then((data) => setReports(data))
+      .catch((err) => console.error('Error loading report library', err))
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -92,11 +97,13 @@ export default function ReportLibrary() {
         </div>
       </div>
 
+      {loading && <SenseLoader label="Loading archive…" />}
+
       <div style={{ fontSize: "0.78rem", color: "var(--ink-muted)", marginBottom: "12px" }}>
         Showing {reports.length} archived items
       </div>
 
-      {reports.length === 0 ? (
+      {!loading && reports.length === 0 ? (
         <div style={{ padding: "40px", backgroundColor: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: "var(--r-lg)", textAlign: "center", color: "var(--ink-muted)" }}>
           No archived memos found matching filters.
         </div>

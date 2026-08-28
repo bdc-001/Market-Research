@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import './CouncilChamber.css';
 
 export const CEO = {
@@ -108,8 +108,12 @@ export default function CouncilChamber({
   subject = '',
   report = '',
   decision = '',
+  loading = false,
 }) {
   const [scriptIndex, setScriptIndex] = useState(0);
+  const [pass, setPass] = useState(null);
+  const prevSpeakerRef = useRef(null);
+  const wasReporting = useRef(false);
 
   const scriptTurns = script && script.length ? script : null;
   const playingScript = Boolean(scriptTurns);
@@ -155,23 +159,49 @@ export default function CouncilChamber({
     ? `Council decision: ${String(decision).toUpperCase()}${subject ? ` on ${subject}` : ''}`
     : (report ? String(report).slice(0, 220) : '');
 
+  useEffect(() => {
+    const prev = prevSpeakerRef.current;
+    if (speakerId && prev && prev !== speakerId && live) {
+      setPass({ from: prev, to: speakerId, toCeo: false, key: `${prev}-${speakerId}` });
+    }
+    prevSpeakerRef.current = speakerId;
+  }, [speakerId, live]);
+
+  useEffect(() => {
+    if (reporting && !wasReporting.current) {
+      setPass({ from: 'editor', to: 'ceo', toCeo: true, key: `desk-${speakerId || 'editor'}` });
+    }
+    wasReporting.current = reporting;
+  }, [reporting, speakerId]);
+
+  const fromIdx = COUNCIL.findIndex((a) => a.id === pass?.from);
+  const toIdx = COUNCIL.findIndex((a) => a.id === pass?.to);
+
   return (
-    <section className={`chamber office ${live ? 'is-live' : ''} ${reporting ? 'is-briefing' : ''}`}>
+    <section className={`chamber office ${live ? 'is-live' : ''} ${reporting ? 'is-briefing' : ''} ${loading ? 'is-loading' : ''}`}>
+      {loading && (
+        <div className="chamber-loader" role="status">
+          <span className="sense-spinner" />
+          <span>Itachi is assembling the desk…</span>
+        </div>
+      )}
       <div className="chamber-head">
         <div>
           <p className="chamber-kicker">Quantum Corporation · Arsalaan’s Office</p>
           <h3>{live ? 'Desk in session' : reporting ? 'Memo on the CEO desk' : headline}</h3>
         </div>
-        <div className={`session-pill ${live ? 'live' : reporting ? 'brief' : ''}`}>
-          <span className="session-dot" />
-          {live ? 'LIVE' : reporting ? 'REPORTED' : 'STANDBY'}
-        </div>
+        {(live || reporting) && (
+          <div className={`session-pill ${live ? 'live' : 'brief'}`}>
+            {live && <span className="session-dot" />}
+            {live ? 'LIVE' : 'ON DESK'}
+          </div>
+        )}
       </div>
 
       <div className="ceo-desk">
         <div className={`ceo-card ${reporting ? 'receiving' : ''}`}>
           <div className="avatar-wrap ceo-avatar">
-            <Portrait agent={CEO} speaking={false} ceo />
+            <Portrait agent={CEO} speaking={reporting} ceo />
             {reporting && <div className="folder-fly" aria-hidden="true">📄</div>}
           </div>
           <div className="ceo-meta">
@@ -180,24 +210,32 @@ export default function CouncilChamber({
             <span className="agent-title">
               {reporting ? 'Receiving the committee memo' : live ? 'Listening to the desk' : 'Waiting for a briefing'}
             </span>
-            {reporting && briefLine && (
-              <p className="ceo-brief">{briefLine}</p>
-            )}
           </div>
         </div>
-        {reporting && (
-          <p className="handoff-line">
-            <em>Itachi</em> (Editor / Chief of Staff) reports to you.
-          </p>
+        {reporting && briefLine && (
+          <p className="handoff-line">{briefLine}</p>
         )}
       </div>
 
-      <p className="staff-label">Investment committee</p>
+      <p className="staff-label">Conference table</p>
+      <div className="office-table">
+        {pass && (
+          <div
+            key={pass.key}
+            className={`handoff-slip ${pass.toCeo ? 'to-ceo' : ''}`}
+            style={{ '--from': Math.max(fromIdx, 0), '--to': Math.max(toIdx, 0) }}
+            aria-hidden="true"
+          >
+            <em />
+          </div>
+        )}
       <div className="chamber-grid">
         {COUNCIL.map((agent, i) => {
           const speaking = speakerId === agent.id && live;
           const done = spokenIds.has(agent.id) && !speaking && !live;
           const waiting = live && !speaking && !spokenIds.has(agent.id);
+          const passing = pass && !pass.toCeo && pass.from === agent.id;
+          const catching = pass && !pass.toCeo && pass.to === agent.id;
           return (
             <article
               key={agent.id}
@@ -208,6 +246,8 @@ export default function CouncilChamber({
                 waiting ? 'waiting' : '',
                 spokenIds.has(agent.id) && live && !speaking ? 'listened' : '',
                 agent.id === 'editor' && reporting ? 'reporter' : '',
+                passing ? 'passing' : '',
+                catching ? 'catching' : '',
               ].join(' ')}
               style={{ animationDelay: `${i * 60}ms` }}
             >
@@ -225,12 +265,11 @@ export default function CouncilChamber({
               </div>
               <strong>{agent.name}</strong>
               <span className="agent-role">{agent.role}</span>
-              <span className="agent-title">
-                {speaking ? 'Speaking…' : agent.id === 'editor' && reporting ? 'Reported' : done ? 'Filed' : agent.title}
-              </span>
+              <span className="agent-title">{agent.title}</span>
             </article>
           );
         })}
+      </div>
       </div>
 
       <div className={`speech-dock ${live ? 'is-live' : reporting ? 'is-static' : ''}`}>
@@ -240,7 +279,7 @@ export default function CouncilChamber({
             <span className="dock-text" key={latest}>{latest}</span>
           </>
         ) : (
-          <span className="dock-text muted">Tap Replay briefing on an episode, or run an analysis to open the office.</span>
+          <span className="dock-text muted">Ask Itachi to convene a briefing, or replay a stored episode.</span>
         )}
       </div>
     </section>

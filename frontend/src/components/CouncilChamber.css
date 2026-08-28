@@ -29,6 +29,21 @@
   border-color: rgba(212, 175, 55, 0.45);
 }
 
+.chamber-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(4px);
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .chamber-head {
   position: relative;
   display: flex;
@@ -173,6 +188,112 @@
   text-transform: uppercase;
   color: #94a3b8;
   margin: 4px 0 8px;
+}
+
+.chamber.office {
+  overflow: visible;
+  background:
+    radial-gradient(720px 180px at 50% -10%, rgba(91, 79, 232, 0.07), transparent 60%),
+    linear-gradient(180deg, #fbfaf7 0%, #f4efe6 55%, #ebe3d4 100%);
+}
+
+.portrait.photo.is-ceo {
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 18px rgba(220, 38, 38, 0.5),
+    0 8px 16px rgba(15, 23, 42, 0.22);
+}
+
+.office-table {
+  position: relative;
+  background:
+    linear-gradient(180deg, #534c42 0%, #2f2a24 72%, #241f1b 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 10px 8px 6px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 16px 36px rgba(28, 24, 18, 0.22);
+}
+
+.office-table .chamber-grid {
+  margin: 0;
+  padding-top: 18px;
+}
+
+.handoff-slip {
+  position: absolute;
+  top: 18%;
+  width: 22px;
+  height: 28px;
+  z-index: 8;
+  pointer-events: none;
+  left: calc((var(--from) + 0.5) / 7 * 100%);
+  animation: slip-pass 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.handoff-slip em {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, #fffdf6, #f1e0a8);
+  border: 1px solid #d4af37;
+  border-radius: 3px 3px 3px 1px;
+  box-shadow: 0 8px 14px rgba(0, 0, 0, 0.28);
+}
+
+.handoff-slip.to-ceo {
+  animation: slip-to-ceo 0.9s ease both;
+}
+
+@keyframes slip-pass {
+  0% {
+    left: calc((var(--from) + 0.5) / 7 * 100%);
+    transform: translate(-50%, 10px) rotate(-14deg) scale(0.65);
+    opacity: 0;
+  }
+  18% {
+    opacity: 1;
+    transform: translate(-50%, -18px) rotate(0deg) scale(1.08);
+  }
+  100% {
+    left: calc((var(--to) + 0.5) / 7 * 100%);
+    transform: translate(-50%, 8px) rotate(12deg) scale(0.8);
+    opacity: 0;
+  }
+}
+
+@keyframes slip-to-ceo {
+  0% {
+    top: 12%;
+    left: calc(6.5 / 7 * 100%);
+    opacity: 1;
+    transform: translate(-50%, 0) rotate(8deg);
+  }
+  100% {
+    top: -88px;
+    left: 52px;
+    opacity: 0;
+    transform: translate(-50%, -12px) rotate(-6deg) scale(0.7);
+  }
+}
+
+.agent-seat.passing .portrait.photo {
+  animation: pass-give 0.75s ease;
+}
+
+.agent-seat.catching .portrait.photo {
+  animation: pass-take 0.75s ease;
+}
+
+@keyframes pass-give {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  40% { transform: translateX(12px) rotate(9deg); }
+}
+
+@keyframes pass-take {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  40% { transform: translateX(-10px) rotate(-7deg) scale(1.04); }
 }
 
 .chamber-grid {
@@ -320,7 +441,10 @@
   .chamber,
   .session-pill.live .session-dot,
   .speech-dock.is-live .dock-text,
-  .speech-bubble {
+  .speech-bubble,
+  .handoff-slip,
+  .agent-seat.passing .portrait.photo,
+  .agent-seat.catching .portrait.photo {
     animation: none;
   }
 }
@@ -484,7 +608,22 @@
   to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 899px) {
+  .handoff-slip {
+    animation: slip-pass-mobile 0.8s ease both;
+  }
+  .handoff-slip.to-ceo {
+    animation: slip-to-ceo-mobile 0.85s ease both;
+  }
+  @keyframes slip-pass-mobile {
+    0% { left: 18%; transform: translateY(8px) rotate(-10deg); opacity: 0; }
+    25% { opacity: 1; transform: translateY(-12px); }
+    100% { left: 78%; transform: translateY(8px) rotate(10deg); opacity: 0; }
+  }
+  @keyframes slip-to-ceo-mobile {
+    0% { top: 20%; left: 72%; opacity: 1; }
+    100% { top: -70px; left: 24px; opacity: 0; }
+  }
   .ceo-card { min-height: 88px; }
   .chamber-head { flex-wrap: wrap; }
 }

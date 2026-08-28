@@ -203,23 +203,39 @@ def _row_dicts(cursor) -> list[dict]:
     return [dict(zip(cols, r)) for r in cursor.fetchall()]
 
 
-def fetch_episode(episode_id: str) -> dict | None:
+DISCOVERY_INDEX_COLUMNS = (
+    "id, ticker, source, event_type, final_decision, "
+    "entry_price, entry_date, created_at, event_id"
+)
+PREDICTION_INDEX_COLUMNS = (
+    "id, agent_name, prediction_direction, recommendation, confidence"
+)
+HORIZON_INDEX_COLUMNS = (
+    "horizon_days, status, absolute_return, nifty_return, relative_return"
+)
+
+
+def fetch_episode(episode_id: str, *, slim: bool = False) -> dict | None:
     ensure_episode_tables()
     conn = _db()
+    cols = DISCOVERY_INDEX_COLUMNS if slim else "*"
     try:
         return _row_dict(conn.execute(
-            "SELECT * FROM episodes WHERE id = ?", (episode_id,),
+            f"SELECT {cols} FROM episodes WHERE id = ?", (episode_id,),
         ))
     finally:
         conn.close()
 
 
-def fetch_episode_by_ticker(ticker: str, source: str = "discovery_council") -> dict | None:
+def fetch_episode_by_ticker(
+    ticker: str, source: str = "discovery_council", *, slim: bool = False,
+) -> dict | None:
     ensure_episode_tables()
     conn = _db()
+    cols = DISCOVERY_INDEX_COLUMNS if slim else "*"
     try:
         return _row_dict(conn.execute(
-            """SELECT * FROM episodes
+            f"""SELECT {cols} FROM episodes
                WHERE ticker = ? AND source = ?
                ORDER BY created_at ASC""",
             (ticker.upper().strip(), source),
@@ -240,12 +256,13 @@ def fetch_council_event_ids() -> set[str]:
         conn.close()
 
 
-def fetch_predictions(episode_id: str) -> list[dict]:
+def fetch_predictions(episode_id: str, *, slim: bool = False) -> list[dict]:
     ensure_episode_tables()
     conn = _db()
+    cols = PREDICTION_INDEX_COLUMNS if slim else "*"
     try:
         return _row_dicts(conn.execute(
-            """SELECT * FROM agent_predictions
+            f"""SELECT {cols} FROM agent_predictions
                WHERE episode_id = ?
                ORDER BY created_at ASC""",
             (episode_id,),
@@ -254,12 +271,13 @@ def fetch_predictions(episode_id: str) -> list[dict]:
         conn.close()
 
 
-def list_discovery_council_episodes() -> list[dict]:
+def list_discovery_council_episodes(*, slim: bool = False) -> list[dict]:
     ensure_episode_tables()
     conn = _db()
+    cols = DISCOVERY_INDEX_COLUMNS if slim else "*"
     try:
         return _row_dicts(conn.execute(
-            """SELECT * FROM episodes
+            f"""SELECT {cols} FROM episodes
                WHERE source = 'discovery_council'
                ORDER BY created_at ASC"""
         ))
@@ -267,12 +285,13 @@ def list_discovery_council_episodes() -> list[dict]:
         conn.close()
 
 
-def fetch_horizon_outcomes(episode_id: str) -> list[dict]:
+def fetch_horizon_outcomes(episode_id: str, *, slim: bool = False) -> list[dict]:
     ensure_episode_tables()
     conn = _db()
+    cols = HORIZON_INDEX_COLUMNS if slim else "*"
     try:
         return _row_dicts(conn.execute(
-            """SELECT * FROM episode_horizon_outcomes
+            f"""SELECT {cols} FROM episode_horizon_outcomes
                WHERE episode_id = ?
                ORDER BY horizon_days ASC""",
             (episode_id,),

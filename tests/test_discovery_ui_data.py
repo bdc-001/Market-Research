@@ -12,6 +12,14 @@ def test_council_episodes_include_chavda_and_sample():
     assert "promoter_purchase" in types or "preferential_issue" in types
 
 
+def test_slim_list_omits_blobs():
+    rows = list_discovery_council_episodes(slim=True)
+    assert rows
+    assert "ticker" in rows[0]
+    assert "data_snapshot_json" not in rows[0]
+    assert "signals_json" not in rows[0]
+
+
 def test_badges_and_pending_pct():
     assert "WATCH" in _badge("watch")
     assert "BUY" in _badge("buy")

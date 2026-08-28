@@ -588,6 +588,63 @@
   transform: scale(0.985);
 }
 
+.btn:disabled:hover,
+.btn-primary:disabled:hover {
+  transform: none;
+}
+
+.sense-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e2e8f0;
+  border-top-color: #5b4fe8;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+.sense-spinner.light {
+  border-color: rgba(255,255,255,0.35);
+  border-top-color: #fff;
+}
+
+.sense-loader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #64748b;
+  font-size: 13px;
+  padding: 18px 4px 8px;
+}
+
+.sense-skeleton-card {
+  min-height: 108px;
+  border-radius: 16px;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  background: linear-gradient(90deg, #f1f5f9 0%, #ffffff 50%, #f1f5f9 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s linear infinite;
+}
+
+.chamber.is-loading {
+  pointer-events: none;
+}
+
+.chamber-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(4px);
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .btn-primary {
   background: linear-gradient(180deg, var(--brand-hover) 0%, var(--brand) 100%);
   color: #fff;

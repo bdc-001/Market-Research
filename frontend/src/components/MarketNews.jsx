@@ -1,52 +1,34 @@
 import React, { useState } from 'react';
 import LogViewer from './LogViewer';
 import CouncilChamber from './CouncilChamber';
-import { getApiUrl } from './api';
+import { ConveneButton } from './Loader';
+import { useCouncilRun } from './useCouncilRun';
 
 export default function MarketNews() {
   const [scope, setScope] = useState('Global (India + World)');
-  const [isRunning, setIsRunning] = useState(false);
-  const [logs, setLogs] = useState([]);
   const [highImpact, setHighImpact] = useState([]);
   const [mediumImpact, setMediumImpact] = useState([]);
   const [fetched, setFetched] = useState(false);
+  const run = useCouncilRun();
+  const isRunning = run.isRunning;
+  const logs = run.logs;
 
   const handleFetchNews = () => {
-    setIsRunning(true);
-    setLogs([]);
+    const apiScope = scope.includes('Global') ? 'global' : 'india';
     setHighImpact([]);
     setMediumImpact([]);
     setFetched(false);
-
-    const apiScope = scope.includes("Global") ? "global" : "india";
-    const eventSource = new EventSource(getApiUrl(`/api/run/news?scope=${apiScope}`));
-
-    eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'progress') {
-        setLogs(prev => [...prev, data.message]);
-      } else if (data.type === 'complete') {
-        setLogs(prev => [...prev, "Complete! News stream parsed & analyzed."]);
+    run.start({
+      url: `/api/run/news?scope=${apiScope}`,
+      subject: `news desk (${apiScope})`,
+      onComplete: (data) => {
         if (data.news) {
           setHighImpact(data.news.high_impact || []);
           setMediumImpact(data.news.medium_impact || []);
         }
         setFetched(true);
-        setIsRunning(false);
-        eventSource.close();
-      } else if (data.type === 'error') {
-        setLogs(prev => [...prev, `Error: ${data.message}`]);
-        setIsRunning(false);
-        eventSource.close();
-      }
-    };
-
-    eventSource.onerror = (err) => {
-      console.error("SSE Error:", err);
-      setLogs(prev => [...prev, "Connection error. Terminating engine."]);
-      setIsRunning(false);
-      eventSource.close();
-    };
+      },
+    });
   };
 
   const getSentimentStyle = (sentiment) => {
@@ -62,6 +44,7 @@ export default function MarketNews() {
 
   return (
     <div className="report-section">
+      <p className="sense-note">Ask Itachi to convene the news desk. Kakashi files headlines, then Itachi puts the brief on your desk.</p>
       <div className="action-panel">
         <div className="control-group">
           <label className="control-label">News Feed Scope</label>
@@ -75,18 +58,10 @@ export default function MarketNews() {
             <option>India Only</option>
           </select>
         </div>
-        <button 
-          className="btn btn-primary" 
-          onClick={handleFetchNews} 
-          disabled={isRunning}
-          style={{ alignSelf: "flex-end", height: "42px" }}
-        >
-          <span className="material-symbols-rounded">sync</span>
-          Fetch Latest News
-        </button>
+        <ConveneButton running={isRunning} onClick={handleFetchNews} />
       </div>
 
-      <CouncilChamber logs={logs} isRunning={isRunning} headline="Arsalaan’s Office" />
+      <CouncilChamber logs={logs} isRunning={isRunning} headline="Arsalaan’s Office" loading={isRunning && logs.length < 2} />
       <LogViewer logs={logs} isRunning={isRunning} />
 
       {fetched && (

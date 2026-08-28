@@ -34,7 +34,7 @@ export default function App() {
   ];
 
   const sectionMeta = {
-    "Discovery": { title: "Arsalaan’s Office", desc: "Quantum Corporation committee: agents brief, Editor reports to the CEO" },
+    "Discovery": { title: "Arsalaan’s Office", desc: "Ask Itachi to convene. Evidence pack → Council → memo on the CEO desk" },
     "Sector Analysis": { title: "Sector Intelligence", desc: "Multi-Agent Deep Dive: Trends, Valuation & Institutional Positioning" },
     "Stock Analysis": { title: "Stock Analysis", desc: "Deep-dive 7-Agent research memorandum on Indian equities" },
     "Top Picks": { title: "Top Picks", desc: "Automated screening for best risk-reward opportunities across industries" },

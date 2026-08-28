@@ -4,6 +4,7 @@ import json
 import queue
 import threading
 import asyncio
+import time
 from datetime import date, datetime, timedelta
 from io import BytesIO
 from fastapi import FastAPI, Response, Query
@@ -37,10 +38,9 @@ bootstrap_secrets()
 from report_store import load_report, save_report, picks_to_records
 
 _HEAVY_UNAVAILABLE = (
-    "This pipeline is not installed on the Vercel function "
-    "(dependencies were stripped to stay under the 500 MB limit). "
-    "Run it locally with Streamlit (`pip install -r requirements.txt`) "
-    "or on Streamlit Cloud."
+    "This host is missing the analysis stack. "
+    "The Docker image must install requirements-local.txt "
+    "(not the slim Vercel requirements.txt)."
 )
 
 app = FastAPI(title="QuanTum API Gateway", version="1.0.0")
@@ -115,12 +115,79 @@ def health():
     return {"ok": True, "runtime": "slim", "turso": is_configured()}
 
 
+def _editor_open(subject: str) -> str:
+    label = f" on {subject}" if subject else ""
+    return (
+        f"Itachi (Editor): Sir, I will convene the committee{label}. "
+        "Agents brief in order. I will place the memo on your desk."
+    )
+
+
+def _sse_response(work):
+    q = queue.Queue()
+
+    def run_pipeline():
+        try:
+            work(q)
+        except ImportError as e:
+            q.put({"type": "error", "message": f"{_HEAVY_UNAVAILABLE} ({e})"})
+        except Exception as e:
+            q.put({"type": "error", "message": str(e)})
+
+    threading.Thread(target=run_pipeline, daemon=True).start()
+
+    async def sse_generator():
+        loop = asyncio.get_event_loop()
+        while True:
+            item = await loop.run_in_executor(None, q.get)
+            yield f"data: {json.dumps(item)}\n\n"
+            if item["type"] in ("complete", "error"):
+                break
+
+    return StreamingResponse(sse_generator(), media_type="text/event-stream")
+
+
+def _brief_stored_episode(q, ticker: str, ep: dict, preds: list):
+    q.put({"type": "progress", "message": _editor_open(ticker)})
+    time.sleep(0.45)
+    lines = {
+        "research": "Historian: briefing from the stored evidence file...",
+        "financial": "Quant: reading the stored valuation call...",
+        "bull": "Bull: filing the upside case...",
+        "bear": "Bear: filing the risk case...",
+        "technical": "Chartist: filing the tape snapshot...",
+        "editor": "Editor: synthesizing the stored council decision...",
+        "scout": "Scout: filing the news desk note...",
+    }
+    for pred in preds:
+        agent = pred.get("agent_name") or ""
+        q.put({"type": "progress", "message": lines.get(agent, f"{agent}: filing...")})
+        time.sleep(0.5)
+    decision = (ep.get("final_decision") or "watch").upper()
+    q.put({
+        "type": "progress",
+        "message": (
+            f"Itachi (Editor): Sir, {ticker} is already on file. "
+            f"Council decision: {decision}. Memo on your desk."
+        ),
+    })
+    q.put({
+        "type": "complete",
+        "episode_id": ep.get("id"),
+        "ticker": ticker,
+        "decision": ep.get("final_decision"),
+        "stored": True,
+        "report": None,
+        "filename": None,
+    })
+
+
 @app.get("/api/discovery/episodes")
 def discovery_episodes():
     try:
         from agents.episode_store import list_discovery_council_episodes
         from turso_db import is_configured
-        rows = list_discovery_council_episodes()
+        rows = list_discovery_council_episodes(slim=True)
         turso = is_configured()
     except Exception as exc:
         return JSONResponse(status_code=500, content={"error": str(exc)})
@@ -165,13 +232,11 @@ def discovery_episodes():
 def discovery_episode_detail(episode_id: str):
     try:
         from agents.episode_store import (
-            fetch_agent_outcomes,
+            fetch_episode,
             fetch_horizon_outcomes,
             fetch_predictions,
-            list_discovery_council_episodes,
         )
-        episodes = list_discovery_council_episodes()
-        ep = next((row for row in episodes if row.get("id") == episode_id), None)
+        ep = fetch_episode(episode_id, slim=True)
         if not ep:
             return JSONResponse(status_code=404, content={"error": "Episode not found"})
         ep_out = {
@@ -182,20 +247,10 @@ def discovery_episode_detail(episode_id: str):
             )
         }
         ep_out["due_30"] = _horizon_due(ep, 30)
-        preds = []
-        for pred in fetch_predictions(episode_id):
-            preds.append({
-                "id": pred.get("id"),
-                "agent_name": pred.get("agent_name"),
-                "prediction_direction": pred.get("prediction_direction"),
-                "recommendation": pred.get("recommendation"),
-                "confidence": pred.get("confidence"),
-            })
         return _jsonable({
             "episode": ep_out,
-            "predictions": preds,
-            "horizons": fetch_horizon_outcomes(episode_id),
-            "agent_outcomes": fetch_agent_outcomes(episode_id),
+            "predictions": fetch_predictions(episode_id, slim=True),
+            "horizons": fetch_horizon_outcomes(episode_id, slim=True),
         })
     except Exception as exc:
         return JSONResponse(status_code=500, content={"error": str(exc)})
@@ -321,12 +376,53 @@ def get_report_pdf(filename: str):
 
 # ── SSE Background runner endpoints ───────────────────────────────────────────
 
+@app.get("/api/run/discovery")
+def run_discovery(ticker: str = Query(...), fresh: int = Query(0)):
+    symbol = ticker.upper().strip()
+
+    def work(q):
+        from agents.episode_store import fetch_episode_by_ticker, fetch_predictions
+        existing = fetch_episode_by_ticker(symbol, slim=True)
+        if existing and not fresh:
+            preds = fetch_predictions(existing["id"], slim=True)
+            _brief_stored_episode(q, symbol, existing, preds)
+            return
+        q.put({"type": "progress", "message": _editor_open(symbol)})
+        q.put({"type": "progress", "message": "Editor: loading evidence pack (no new radar scan)..."})
+        from discovery_council import DiscoveryCouncil
+        try:
+            result = DiscoveryCouncil().run(ticker=symbol, progress_callback=lambda m: q.put({
+                "type": "progress", "message": m,
+            }))
+        except FileNotFoundError:
+            q.put({
+                "type": "error",
+                "message": (
+                    f"Itachi (Editor): Sir, there is no evidence pack for {symbol}. "
+                    "Expand a filing first, then I can convene the committee."
+                ),
+            })
+            return
+        q.put({
+            "type": "complete",
+            "episode_id": result.get("episode_id"),
+            "ticker": symbol,
+            "decision": result.get("decision"),
+            "stored": False,
+            "report": None,
+            "filename": result.get("memo_path"),
+        })
+
+    return _sse_response(work)
+
+
 @app.get("/api/run/sector")
 def run_sector(sector: str = Query(...)):
     q = queue.Queue()
     
     def run_pipeline():
         try:
+            q.put({"type": "progress", "message": _editor_open(sector)})
             q.put({"type": "progress", "message": f"Starting Sector Analysis for: {sector}"})
             from sector_orchestrator import SectorOrchestrator
             sector_council = SectorOrchestrator()
@@ -349,8 +445,8 @@ def run_sector(sector: str = Query(...)):
                 "filename": filename,
                 "created": datetime.now().strftime("%Y-%m-%d %H:%M")
             })
-        except ImportError:
-            q.put({"type": "error", "message": _HEAVY_UNAVAILABLE})
+        except ImportError as e:
+            q.put({"type": "error", "message": f"{_HEAVY_UNAVAILABLE} ({e})"})
         except Exception as e:
             q.put({"type": "error", "message": str(e)})
             
@@ -373,6 +469,7 @@ def run_stock(ticker: str = Query(...)):
     
     def run_pipeline():
         try:
+            q.put({"type": "progress", "message": _editor_open(ticker)})
             q.put({"type": "progress", "message": f"Convening Council for ticker: {ticker}"})
             from orchestrator import AgentOrchestrator
             orchestrator = AgentOrchestrator()
@@ -395,8 +492,8 @@ def run_stock(ticker: str = Query(...)):
                 "filename": filename,
                 "created": datetime.now().strftime("%Y-%m-%d %H:%M")
             })
-        except ImportError:
-            q.put({"type": "error", "message": _HEAVY_UNAVAILABLE})
+        except ImportError as e:
+            q.put({"type": "error", "message": f"{_HEAVY_UNAVAILABLE} ({e})"})
         except Exception as e:
             q.put({"type": "error", "message": str(e)})
             
@@ -419,6 +516,7 @@ def run_quantum(mode: str = Query("fast")):
     
     def run_pipeline():
         try:
+            q.put({"type": "progress", "message": _editor_open(f"QuanTum {mode}")})
             q.put({"type": "progress", "message": f"Initiating QuanTum Algorithmic Screener (Mode: {mode})"})
             from quantum_orchestrator import QuantumEngineOrchestrator
             engine = QuantumEngineOrchestrator()
@@ -457,8 +555,8 @@ def run_quantum(mode: str = Query("fast")):
                     "fiveyear_picks": picks_data["fiveyear"],
                     "headlines": result.get("headlines", [])[:20]
                 })
-        except ImportError:
-            q.put({"type": "error", "message": _HEAVY_UNAVAILABLE})
+        except ImportError as e:
+            q.put({"type": "error", "message": f"{_HEAVY_UNAVAILABLE} ({e})"})
         except Exception as e:
             q.put({"type": "error", "message": str(e)})
             
@@ -481,6 +579,7 @@ def run_global_markets(market_type: str = Query(...)):
     
     def run_pipeline():
         try:
+            q.put({"type": "progress", "message": _editor_open(market_type)})
             q.put({"type": "progress", "message": f"Loading Global Macro orchestrator for: {market_type}"})
             from global_markets_orchestrator import (
                 DevelopedMarketsOrchestrator,
@@ -509,8 +608,8 @@ def run_global_markets(market_type: str = Query(...)):
                 "filename": filename,
                 "created": datetime.now().strftime("%Y-%m-%d %H:%M")
             })
-        except ImportError:
-            q.put({"type": "error", "message": _HEAVY_UNAVAILABLE})
+        except ImportError as e:
+            q.put({"type": "error", "message": f"{_HEAVY_UNAVAILABLE} ({e})"})
         except Exception as e:
             q.put({"type": "error", "message": str(e)})
             
@@ -533,6 +632,7 @@ def run_news(scope: str = Query("global")):
     
     def run_pipeline():
         try:
+            q.put({"type": "progress", "message": _editor_open(f"news desk ({scope})")})
             q.put({"type": "progress", "message": f"Connecting news parser. Scope: {scope}"})
             from news_tracker_orchestrator import NewsTrackerOrchestrator
             orchestrator = NewsTrackerOrchestrator()
@@ -542,8 +642,8 @@ def run_news(scope: str = Query("global")):
                 
             news_data = orchestrator.run_analysis(scope=scope, progress_callback=callback)
             q.put({"type": "complete", "news": news_data})
-        except ImportError:
-            q.put({"type": "error", "message": _HEAVY_UNAVAILABLE})
+        except ImportError as e:
+            q.put({"type": "error", "message": f"{_HEAVY_UNAVAILABLE} ({e})"})
         except Exception as e:
             q.put({"type": "error", "message": str(e)})
             
@@ -566,6 +666,7 @@ def run_top_picks(sector: str = Query(...)):
     
     def run_pipeline():
         try:
+            q.put({"type": "progress", "message": _editor_open(sector)})
             def callback(msg):
                 q.put({"type": "progress", "message": msg})
                 
@@ -604,8 +705,8 @@ def run_top_picks(sector: str = Query(...)):
                 "tickers": tickers,
                 "created": datetime.now().strftime("%Y-%m-%d %H:%M")
             })
-        except ImportError:
-            q.put({"type": "error", "message": _HEAVY_UNAVAILABLE})
+        except ImportError as e:
+            q.put({"type": "error", "message": f"{_HEAVY_UNAVAILABLE} ({e})"})
         except Exception as e:
             q.put({"type": "error", "message": str(e)})
             

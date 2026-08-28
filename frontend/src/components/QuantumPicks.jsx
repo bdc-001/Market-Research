@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import LogViewer from './LogViewer';
 import CouncilChamber from './CouncilChamber';
+import { ConveneButton } from './Loader';
+import { useCouncilRun } from './useCouncilRun';
 import { getApiUrl } from './api';
 
 export default function QuantumPicks() {
   const [mode, setMode] = useState('fast');
-  const [isRunning, setIsRunning] = useState(false);
-  const [logs, setLogs] = useState([]);
   const [activeTab, setActiveTab] = useState('week'); // 'week', 'year', 'fiveyear'
-  
-  // Results states
   const [weekPicks, setWeekPicks] = useState([]);
   const [yearPicks, setYearPicks] = useState([]);
   const [fiveyearPicks, setFiveyearPicks] = useState([]);
@@ -18,6 +16,9 @@ export default function QuantumPicks() {
   const [filename, setFilename] = useState('');
   const [createdTime, setCreatedTime] = useState('');
   const [pdfGenerating, setPdfGenerating] = useState(false);
+  const run = useCouncilRun();
+  const isRunning = run.isRunning;
+  const logs = run.logs;
 
   useEffect(() => {
     // Load initial cached results immediately
@@ -36,43 +37,23 @@ export default function QuantumPicks() {
           setFiveyearPicks(data.picks.fiveyear || []);
         }
       })
-      .catch(err => console.log("Init cache empty", err));
+      .catch((err) => console.log('Init cache empty', err));
   }, []);
 
   const handleRunEngine = () => {
-    setIsRunning(true);
-    setLogs([]);
-    
-    const eventSource = new EventSource(getApiUrl(`/api/run/quantum?mode=${mode}`));
-
-    eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === 'progress') {
-        setLogs(prev => [...prev, data.message]);
-      } else if (data.type === 'complete') {
-        setLogs(prev => [...prev, "Complete! Algorithmic multi-factor rankings generated."]);
-        setReport(data.report);
+    run.start({
+      url: `/api/run/quantum?mode=${mode}`,
+      subject: `QuanTum ${mode}`,
+      onComplete: (data) => {
+        setReport(data.report || '');
         setFilename(data.report_path ? data.report_path.replace(/^reports\//, '') : '');
         setWeekPicks(data.week_picks || []);
         setYearPicks(data.year_picks || []);
         setFiveyearPicks(data.fiveyear_picks || []);
         setHeadlines(data.headlines || []);
         setCreatedTime(new Date().toISOString().replace('T', ' ').substring(0, 16));
-        setIsRunning(false);
-        eventSource.close();
-      } else if (data.type === 'error') {
-        setLogs(prev => [...prev, `Error: ${data.message}`]);
-        setIsRunning(false);
-        eventSource.close();
-      }
-    };
-
-    eventSource.onerror = (err) => {
-      console.error("SSE Error:", err);
-      setLogs(prev => [...prev, "Connection error. Terminating engine."]);
-      setIsRunning(false);
-      eventSource.close();
-    };
+      },
+    });
   };
 
   const handleDownloadPdf = () => {
@@ -155,6 +136,7 @@ export default function QuantumPicks() {
         <strong>Scoring Architecture weights:</strong> Technical Setup (35%), RSS News Sentiment (35%), Moat Fundamentals (15%), Price Momentum (15%).
       </div>
 
+      <p className="sense-note">Ask Itachi to convene the QuanTum desk. He opens the engine, then the committee ranks the tape.</p>
       <div className="action-panel">
         <div className="control-group" style={{ minWidth: "150px" }}>
           <label className="control-label">Execution Mode</label>
@@ -169,15 +151,7 @@ export default function QuantumPicks() {
             </label>
           </div>
         </div>
-        <button 
-          className="btn btn-primary" 
-          onClick={handleRunEngine} 
-          disabled={isRunning}
-          style={{ alignSelf: "flex-end", height: "42px" }}
-        >
-          <span className="material-symbols-rounded">speed</span>
-          Run Quant Engine
-        </button>
+        <ConveneButton running={isRunning} onClick={handleRunEngine} label="Ask Itachi to convene" />
       </div>
 
       <div className="card-grid">
@@ -248,7 +222,7 @@ export default function QuantumPicks() {
         </div>
       )}
 
-      <CouncilChamber logs={logs} isRunning={isRunning} report={report} headline="Arsalaan’s Office" />
+      <CouncilChamber logs={logs} isRunning={isRunning} report={report} headline="Arsalaan’s Office" loading={isRunning && logs.length < 2} />
       <LogViewer logs={logs} isRunning={isRunning} />
 
       <div style={{ marginTop: "24px" }}>

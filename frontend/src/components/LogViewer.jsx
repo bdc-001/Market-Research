@@ -38,12 +38,10 @@ export default function LogViewer({ logs = [], isRunning = false }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           {isRunning ? (
             <>
-              <span className="animate-pulse-dot" style={{ backgroundColor: 'var(--brand)' }} />
-              <span style={{ fontSize: '0.68rem', color: 'var(--brand)', fontWeight: 700 }}>AGENTS SPEAKING</span>
+              <span className="sense-spinner" />
+              <span style={{ fontSize: '0.68rem', color: 'var(--brand)', fontWeight: 700 }}>In session</span>
             </>
-          ) : (
-            <span style={{ fontSize: '0.68rem', color: 'var(--ink-muted)' }}>IDLE</span>
-          )}
+          ) : null}
         </div>
       </div>
 
