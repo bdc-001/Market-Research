@@ -1,5 +1,6 @@
 # Vercel serverless function only. Do not add Streamlit, pandas, numpy,
 # google-generativeai, pillow, or xhtml2pdf — they blow the 500 MB limit.
+# Match the root requirements.txt.
 fastapi>=0.110.0
 pydantic>=2.0
 requests>=2.32

@@ -4,8 +4,8 @@ An Indian-market equity research app you trigger from your phone. News decides
 which stocks are in play, technicals and fundamentals confirm them, and the
 system learns from whether its past picks actually beat the Nifty.
 
-Runs as a Streamlit web app. Hosted in the cloud, so your laptop does not need
-to be open.
+Runs as a React UI plus a FastAPI backend. Hosted in the cloud, so your laptop
+does not need to be open.
 
 ## What it does
 
@@ -22,9 +22,13 @@ to be open.
 ## Quick start (local)
 
 ```bash
-pip install -r requirements.txt
-streamlit run app.py
+pip install -r requirements-local.txt
+cd frontend && npm ci && npm run build && cd ..
+uvicorn main:app --reload --port 8000
 ```
+
+`requirements.txt` is the slim Vercel set (no Streamlit, pandas, or Gemini SDK).
+Use `requirements-local.txt` on your machine for Council, QuanTum, and PDF.
 
 Secrets go in `.streamlit/secrets.toml` (never committed):
 
@@ -40,32 +44,29 @@ where learned weights, learned rules and cached reports live.
 
 ## Deploy so it runs without your laptop
 
-Hugging Face's free plan only hosts **Static** Spaces (HTML/JS). Gradio and
-Docker, which would run this Python app, require PRO. Do not use a Static
-Space — it cannot execute Streamlit.
+The React UI can stay on **Vercel** (static files are tiny). The Python API
+cannot: Vercel Hobby caps a serverless function at 500 MB unzipped, which
+pandas + Gemini gRPC exceed.
 
-Use **Streamlit Community Cloud** instead. It is free, made for this stack,
-and runs `app.py` from GitHub.
+Use a **container** host for the API instead — there is no 500 MB bundle cap:
 
-1. Push this folder to GitHub (`bdc-001/Market-Research`).
-2. Open https://share.streamlit.io and sign in with GitHub.
-3. Click **New app** / **Deploy an app**.
-4. Repository: `bdc-001/Market-Research`, branch `main`, main file `app.py`.
-5. **Advanced settings → Secrets**, paste:
+1. **Render** (closest to Vercel): New → Web Service → this repo.
+   Start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`.
+   Free plan is 512 MB RAM and sleeps after 15 minutes. No persistent disk;
+   keep Turso for cache and episodes.
+2. **Fly.io**: Docker, ~256 MB RAM, **3 GB free volume** if you need files
+   on disk. Also sleeps when idle.
+3. **Google Cloud Run**: container, scales to zero, billed on requests.
+   No zip-size cap. Needs a GCP account.
 
-   ```toml
-   GEMINI_API_KEY = "..."
-   TURSO_URL = "libsql://your-db.turso.io"
-   TURSO_TOKEN = "..."
-   ```
+None of these give unlimited free disk. Turso already covers the database.
+Do not use Netlify or Cloudflare Workers for this API — their function
+size limits are smaller than Vercel's.
 
-6. Deploy. The URL looks like `https://<name>.streamlit.app`.
-7. Open that URL on your phone and use **Add to Home Screen**.
-
-The app sleeps after a long idle period and wakes when you open it. First load
-after a gap can take 30–60 seconds. Free apps have about 1 GB of RAM, so use
-**Fast** mode from your phone. Enable Turso so learned rules and cached reports
-survive restarts.
+Set `TURSO_URL`, `TURSO_TOKEN`, `MODEL_API_KEY`, `GEMINI_API_KEY`, and
+`NVIDIA_API_KEY` as environment variables on the host. Secrets still live
+locally in `.streamlit/secrets.toml` (filename only — Streamlit is not
+installed).
 
 ### Run modes
 
