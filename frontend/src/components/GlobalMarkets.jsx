@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import LogViewer from './LogViewer';
+import CouncilChamber from './CouncilChamber';
 import { getApiUrl } from './api';
 
 export default function GlobalMarkets() {
@@ -99,6 +100,7 @@ export default function GlobalMarkets() {
         )}
       </div>
 
+      <CouncilChamber logs={logs} isRunning={isRunning} headline="Macro committee" />
       <LogViewer logs={logs} isRunning={isRunning} />
 
       {report && (

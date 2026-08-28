@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import LogViewer from './LogViewer';
+import CouncilChamber from './CouncilChamber';
 import { getApiUrl } from './api';
 
 export default function MarketNews() {
@@ -85,6 +86,7 @@ export default function MarketNews() {
         </button>
       </div>
 
+      <CouncilChamber logs={logs} isRunning={isRunning} headline="News desk" />
       <LogViewer logs={logs} isRunning={isRunning} />
 
       {fetched && (

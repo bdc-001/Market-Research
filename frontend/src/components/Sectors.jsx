@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import LogViewer from './LogViewer';
+import CouncilChamber from './CouncilChamber';
 import { getApiUrl } from './api';
 
 export default function Sectors() {
@@ -141,6 +142,7 @@ export default function Sectors() {
         </div>
       </div>
 
+      <CouncilChamber logs={logs} isRunning={isRunning} headline="Sector desk" />
       <LogViewer logs={logs} isRunning={isRunning} />
 
       {report && (

@@ -11,64 +11,57 @@ export default function LogViewer({ logs = [], isRunning = false }) {
 
   return (
     <div className="terminal-container" style={{
-      backgroundColor: "#0d1117",
-      border: "1px solid var(--border-strong)",
-      borderRadius: "var(--r-md)",
-      padding: "16px",
+      background: 'linear-gradient(180deg, #ffffff 0%, #f6f7fc 100%)',
+      border: '1px solid var(--border)',
+      borderRadius: '16px',
+      padding: '16px',
       fontFamily: "'JetBrains Mono', monospace",
-      fontSize: "0.85rem",
-      color: "#8892b0",
-      boxShadow: "inset 0 4px 10px rgba(0,0,0,0.5)",
-      height: "220px",
-      overflowY: "auto",
-      display: "flex",
-      flexDirection: "column",
-      gap: "6px"
+      fontSize: '0.8rem',
+      color: 'var(--ink-secondary)',
+      height: '200px',
+      overflowY: 'auto',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '6px',
+      boxShadow: 'var(--shadow-apple)',
     }}>
       <div style={{
-        display: "flex",
-        justifyContent: "space-between",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
-        paddingBottom: "8px",
-        marginBottom: "8px",
-        color: "var(--ink)"
+        display: 'flex',
+        justifyContent: 'space-between',
+        borderBottom: '1px solid var(--border)',
+        paddingBottom: '8px',
+        marginBottom: '8px',
       }}>
-        <span style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: "bold" }}>
-          Council Pipeline Logs
+        <span style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 800, color: 'var(--ink)' }}>
+          Desk transcript
         </span>
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           {isRunning ? (
             <>
-              <span className="spinner-dot" style={{
-                width: "8px",
-                height: "8px",
-                backgroundColor: "var(--brand)",
-                borderRadius: "50%",
-                display: "inline-block",
-                animation: "pulse 1s infinite alternate"
-              }}></span>
-              <span style={{ fontSize: "0.7rem", color: "var(--brand)" }}>EXECUTING</span>
+              <span className="animate-pulse-dot" style={{ backgroundColor: 'var(--brand)' }} />
+              <span style={{ fontSize: '0.68rem', color: 'var(--brand)', fontWeight: 700 }}>AGENTS SPEAKING</span>
             </>
           ) : (
-            <span style={{ fontSize: "0.7rem", color: "var(--ink-muted)" }}>IDLE</span>
+            <span style={{ fontSize: '0.68rem', color: 'var(--ink-muted)' }}>IDLE</span>
           )}
         </div>
       </div>
-      
-      <div className="logs-body" style={{ flexGrow: 1, display: "flex", flexDirection: "column", gap: "4px" }}>
+
+      <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
         {logs.length === 0 ? (
-          <div style={{ color: "var(--ink-subtle)", fontStyle: "italic", textAlign: "center", padding: "20px 0" }}>
-            No logs generated yet. Trigger a fresh run.
+          <div style={{ color: 'var(--ink-subtle)', textAlign: 'center', padding: '24px 0' }}>
+            Run a briefing to hear the committee.
           </div>
         ) : (
           logs.map((log, index) => (
             <div key={index} style={{
-              lineHeight: "1.4",
-              display: "flex",
-              gap: "8px",
-              color: log.includes("Error") ? "#f43f5e" : log.includes("Complete") || log.includes("Ready") ? "var(--green)" : "#8892b0"
+              lineHeight: 1.45,
+              display: 'flex',
+              gap: '8px',
+              animation: 'fade-up 0.25s ease both',
+              color: log.includes('Error') ? 'var(--red)' : log.includes('Complete') || log.includes('Ready') ? 'var(--green)' : 'var(--ink-secondary)',
             }}>
-              <span style={{ color: "var(--brand)", userSelect: "none" }}>&gt;</span>
+              <span style={{ color: 'var(--brand)', userSelect: 'none' }}>▸</span>
               <span>{log}</span>
             </div>
           ))

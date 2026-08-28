@@ -22,7 +22,7 @@ export default function TradingViewChart({ symbol = "NIFTY" }) {
       "symbol": formattedSymbol,
       "interval": "D",
       "timezone": "Asia/Kolkata",
-      "theme": "dark",
+      "theme": "light",
       "style": "1",
       "locale": "en",
       "enable_publishing": false,

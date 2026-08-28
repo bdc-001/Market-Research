@@ -10,17 +10,11 @@ import ReportLibrary from './components/ReportLibrary';
 
 export default function App() {
   const [selectedSection, setSelectedSection] = useState('Sector Analysis');
-  const [isLightTheme, setIsLightTheme] = useState(false);
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
 
-  // Sync theme class on HTML element
   useEffect(() => {
-    const root = document.documentElement;
-    if (isLightTheme) {
-      root.classList.add('light-theme');
-    } else {
-      root.classList.remove('light-theme');
-    }
-  }, [isLightTheme]);
+    document.documentElement.classList.toggle('dark-theme', isDarkTheme);
+  }, [isDarkTheme]);
 
   const navOptions = [
     { name: "Sector Analysis", icon: "analytics" },
@@ -121,13 +115,13 @@ export default function App() {
             <p>{sectionMeta[selectedSection].desc}</p>
           </div>
           <div className="top-bar-actions">
-            <button 
-              className="icon-btn" 
-              onClick={() => setIsLightTheme(!isLightTheme)}
+            <button
+              className="icon-btn"
+              onClick={() => setIsDarkTheme(!isDarkTheme)}
               title="Toggle Theme"
             >
               <span className="material-symbols-rounded">
-                {isLightTheme ? 'dark_mode' : 'light_mode'}
+                {isDarkTheme ? 'light_mode' : 'dark_mode'}
               </span>
             </button>
             <button className="icon-btn" title="Notifications">
@@ -138,7 +132,7 @@ export default function App() {
         </header>
 
         {/* Render Workspace Area */}
-        <div style={{ flexGrow: 1 }}>
+        <div className="page-enter" key={selectedSection} style={{ flexGrow: 1 }}>
           {renderActiveSection()}
         </div>
       </main>

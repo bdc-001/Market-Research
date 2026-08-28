@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import LogViewer from './LogViewer';
+import CouncilChamber from './CouncilChamber';
 import { getApiUrl } from './api';
 
 export default function QuantumPicks() {
@@ -247,6 +248,7 @@ export default function QuantumPicks() {
         </div>
       )}
 
+      <CouncilChamber logs={logs} isRunning={isRunning} headline="QuanTum factor desk" />
       <LogViewer logs={logs} isRunning={isRunning} />
 
       <div style={{ marginTop: "24px" }}>

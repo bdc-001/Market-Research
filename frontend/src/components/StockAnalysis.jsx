@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import TradingViewChart from './TradingViewChart';
 import LogViewer from './LogViewer';
+import CouncilChamber from './CouncilChamber';
 import { getApiUrl } from './api';
 
 export default function StockAnalysis() {
@@ -161,6 +162,7 @@ export default function StockAnalysis() {
         <TradingViewChart symbol={activeChartSymbol} />
       </div>
 
+      <CouncilChamber logs={logs} isRunning={isRunning} headline="7-agent equity council" />
       <LogViewer logs={logs} isRunning={isRunning} />
 
       {report && (
