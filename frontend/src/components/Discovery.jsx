@@ -4,12 +4,12 @@ import CouncilChamber, { turnsFromPredictions } from './CouncilChamber';
 
 const AGENT_ORDER = ['research', 'financial', 'bull', 'bear', 'technical', 'editor'];
 const AGENT_LABELS = {
-  research: 'Historian',
-  financial: 'Quant',
-  bull: 'Bull',
-  bear: 'Bear',
-  technical: 'Chartist',
-  editor: 'Editor',
+  research: 'Hashirama · Historian',
+  financial: 'Sasuke · Quant',
+  bull: 'Naruto · Bull',
+  bear: 'Madara · Bear',
+  technical: 'Minato · Chartist',
+  editor: 'Itachi · Editor',
 };
 
 function decisionClass(decision) {
@@ -113,35 +113,28 @@ export default function Discovery() {
         <span className="disc-step">Outcomes (pending)</span>
       </div>
 
-      <div className="alert-box alert-info">
+      <p className="sense-note">
         SME / microcap filings → evidence pack → Council → stored predictions → wait for tape.
         Agents are not taught. Lessons stay empty. CHAVDA is episode #1, not a rule.
         Keep <b>prediction</b>, <b>recommendation</b>, and <b>council decision</b> separate.
-      </div>
+      </p>
 
       {error && <div className="alert-box alert-error">{error}</div>}
 
-      <div className="card-grid">
-        <div className="dashboard-card">
-          <div className="metric-label">DATABASE</div>
-          <div className="disc-metric" style={{ fontSize: '1.05rem' }}>{summary?.turso ? 'Turso' : 'Local empty'}</div>
-        </div>
-        <div className="dashboard-card">
-          <div className="metric-label">COUNCIL EPISODES</div>
-          <div className="disc-metric">{summary?.count ?? '—'}</div>
-        </div>
-        <div className="dashboard-card">
-          <div className="metric-label">EVENT TYPES</div>
-          <div className="disc-metric">{types.length || '—'}</div>
-        </div>
-        <div className="dashboard-card">
-          <div className="metric-label">30D STILL PENDING</div>
-          <div className="disc-metric">{summary?.pending_30 ?? '—'}</div>
-        </div>
-        <div className="dashboard-card">
-          <div className="metric-label">LESSONS WRITTEN</div>
-          <div className="disc-metric">0</div>
-        </div>
+      <div className="sense-metric-grid">
+        {[
+          { label: 'Database', value: summary?.turso ? 'Turso' : 'Local empty', hint: 'Cloud ledger' },
+          { label: 'Council episodes', value: summary?.count ?? '—', hint: 'Filed memos' },
+          { label: 'Event types', value: types.length || '—', hint: 'Filing classes' },
+          { label: '30D still pending', value: summary?.pending_30 ?? '—', hint: 'Awaiting tape' },
+          { label: 'Lessons written', value: 0, hint: 'Learning off' },
+        ].map((card, i) => (
+          <article key={card.label} className="sense-metric-card" style={{ animationDelay: `${i * 70}ms` }}>
+            <div className="metric-label">{card.label}</div>
+            <div className="disc-metric">{card.value}</div>
+            <p className="sense-metric-hint">{card.hint}</p>
+          </article>
+        ))}
       </div>
 
       <div className="action-panel">

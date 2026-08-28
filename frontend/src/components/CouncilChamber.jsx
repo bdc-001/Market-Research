@@ -6,6 +6,7 @@ export const CEO = {
   name: 'Arsalaan Mohammed',
   role: 'CEO',
   title: 'Quantum Corporation',
+  photo: '/council/ceo.jpg',
   skin: '#d4a574',
   hair: '#1a120c',
   suit: '#111827',
@@ -13,13 +14,13 @@ export const CEO = {
 };
 
 export const COUNCIL = [
-  { id: 'historian', name: 'Priya Mehta', role: 'Historian', title: 'Research', match: /historian|research|business|filings|verif/i, skin: '#e8b89a', hair: '#2c1810', suit: '#1e3a5f', hairStyle: 'bob', store: 'research' },
-  { id: 'scout', name: 'Arjun Shah', role: 'Scout', title: 'News desk', match: /scout|news|catalyst|headline|rss|ingest/i, skin: '#c68642', hair: '#1a120c', suit: '#0f766e', hairStyle: 'short', store: 'scout' },
-  { id: 'quant', name: 'Neha Kapoor', role: 'Quant', title: 'Valuation', match: /quant|valuat|factor|score|pe\b|roe|number|financial/i, skin: '#f1c27d', hair: '#3b2218', suit: '#4338ca', hairStyle: 'long', store: 'financial' },
-  { id: 'bull', name: 'Rohan Iyer', role: 'Bull', title: 'Upside', match: /bull|upside|conviction|buy|opportun/i, skin: '#d8a07a', hair: '#4a2c1a', suit: '#047857', hairStyle: 'short', store: 'bull' },
-  { id: 'bear', name: 'Meera Das', role: 'Bear', title: 'Risk', match: /bear|risk|downside|caution|reject|npa|debt/i, skin: '#edc4a3', hair: '#111827', suit: '#9f1239', hairStyle: 'bob', store: 'bear' },
-  { id: 'chartist', name: 'Vikram Rao', role: 'Chartist', title: 'Technicals', match: /chart|technic|rsi|macd|sma|price action/i, skin: '#c58c5c', hair: '#0b0b0b', suit: '#1d4ed8', hairStyle: 'short', store: 'technical' },
-  { id: 'editor', name: 'Ananya Krishnan', role: 'Editor', title: 'Chief of Staff', match: /editor|memo|synthes|complet|recommend|final|council/i, skin: '#e0ac86', hair: '#5c3317', suit: '#4c1d95', hairStyle: 'long', store: 'editor' },
+  { id: 'historian', name: 'Hashirama', role: 'Historian', title: 'Research', match: /historian|research|business|filings|verif/i, photo: '/council/hashirama.jpg', store: 'research' },
+  { id: 'scout', name: 'Kakashi', role: 'Scout', title: 'News desk', match: /scout|news|catalyst|headline|rss|ingest/i, photo: '/council/kakashi.jpg', store: 'scout' },
+  { id: 'quant', name: 'Sasuke', role: 'Quant', title: 'Valuation', match: /quant|valuat|factor|score|pe\b|roe|number|financial/i, photo: '/council/sasuke.jpg', store: 'financial' },
+  { id: 'bull', name: 'Naruto', role: 'Bull', title: 'Upside', match: /bull|upside|conviction|buy|opportun/i, photo: '/council/naruto.jpg', store: 'bull' },
+  { id: 'bear', name: 'Madara', role: 'Bear', title: 'Risk', match: /bear|risk|downside|caution|reject|npa|debt/i, photo: '/council/madara.jpg', store: 'bear' },
+  { id: 'chartist', name: 'Minato', role: 'Chartist', title: 'Technicals', match: /chart|technic|rsi|macd|sma|price action/i, photo: '/council/minato.jpg', store: 'technical' },
+  { id: 'editor', name: 'Itachi', role: 'Editor', title: 'Chief of Staff', match: /editor|memo|synthes|complet|recommend|final|council/i, photo: '/council/itachi.jpg', store: 'editor' },
 ];
 
 export const STORE_TO_AGENT = Object.fromEntries(COUNCIL.map((a) => [a.store, a.id]));
@@ -45,7 +46,7 @@ export function turnsFromPredictions(predictions = [], episode = {}) {
     const rec = pred.recommendation || 'watch';
     return {
       agentId: agent.id,
-      text: `${agent.role} on ${ticker}: tape call ${dir}, desk view ${rec}.`,
+      text: `${agent.name} (${agent.role}) on ${ticker}: tape call ${dir}, desk view ${rec}.`,
     };
   });
   const decision = (episode.final_decision || 'watch').toUpperCase();
@@ -58,6 +59,13 @@ export function turnsFromPredictions(predictions = [], episode = {}) {
 }
 
 function Portrait({ agent, speaking, ceo }) {
+  if (agent.photo) {
+    return (
+      <div className={`portrait photo ${speaking ? 'is-talking' : ''} ${ceo ? 'is-ceo' : ''}`}>
+        <img src={agent.photo} alt="" />
+      </div>
+    );
+  }
   const { skin, hair, suit, hairStyle } = agent;
   return (
     <svg viewBox="0 0 88 108" className={`portrait ${speaking ? 'is-talking' : ''} ${ceo ? 'is-ceo' : ''}`} aria-hidden="true">
@@ -101,11 +109,12 @@ export default function CouncilChamber({
   report = '',
   decision = '',
 }) {
-  const [tick, setTick] = useState(0);
   const [scriptIndex, setScriptIndex] = useState(0);
 
   const scriptTurns = script && script.length ? script : null;
   const playingScript = Boolean(scriptTurns);
+  const lastIndex = playingScript ? scriptTurns.length - 1 : 0;
+  const live = isRunning || (playingScript && scriptIndex < lastIndex);
 
   useEffect(() => {
     setScriptIndex(0);
@@ -113,19 +122,13 @@ export default function CouncilChamber({
 
   useEffect(() => {
     if (!playingScript) return undefined;
-    if (scriptIndex >= scriptTurns.length - 1) return undefined;
+    if (scriptIndex >= lastIndex) return undefined;
     const id = setTimeout(() => setScriptIndex((n) => n + 1), 2400);
     return () => clearTimeout(id);
-  }, [playingScript, scriptIndex, scriptTurns]);
-
-  useEffect(() => {
-    if (!isRunning && !playingScript) return undefined;
-    const id = setInterval(() => setTick((n) => n + 1), 400);
-    return () => clearInterval(id);
-  }, [isRunning, playingScript]);
+  }, [playingScript, scriptIndex, lastIndex]);
 
   const inferred = useMemo(() => speakerFromLogs(logs), [logs]);
-  const scriptTurn = playingScript ? scriptTurns[Math.min(scriptIndex, scriptTurns.length - 1)] : null;
+  const scriptTurn = playingScript ? scriptTurns[Math.min(scriptIndex, lastIndex)] : null;
   const speakerId = playingScript
     ? scriptTurn?.agentId
     : (isRunning ? inferred : (report ? 'editor' : null));
@@ -148,7 +151,6 @@ export default function CouncilChamber({
   const reporting = Boolean(
     (scriptTurn && scriptTurn.reportToCeo) || (!isRunning && report)
   );
-  const live = isRunning || (playingScript && scriptIndex < (scriptTurns?.length || 1) - 1);
   const briefLine = decision
     ? `Council decision: ${String(decision).toUpperCase()}${subject ? ` on ${subject}` : ''}`
     : (report ? String(report).slice(0, 220) : '');
@@ -185,7 +187,7 @@ export default function CouncilChamber({
         </div>
         {reporting && (
           <p className="handoff-line">
-            <em>Ananya Krishnan</em> (Editor / Chief of Staff) reports to you.
+            <em>Itachi</em> (Editor / Chief of Staff) reports to you.
           </p>
         )}
       </div>
@@ -193,7 +195,7 @@ export default function CouncilChamber({
       <p className="staff-label">Investment committee</p>
       <div className="chamber-grid">
         {COUNCIL.map((agent, i) => {
-          const speaking = speakerId === agent.id;
+          const speaking = speakerId === agent.id && live;
           const done = spokenIds.has(agent.id) && !speaking && !live;
           const waiting = live && !speaking && !spokenIds.has(agent.id);
           return (
@@ -207,12 +209,10 @@ export default function CouncilChamber({
                 spokenIds.has(agent.id) && live && !speaking ? 'listened' : '',
                 agent.id === 'editor' && reporting ? 'reporter' : '',
               ].join(' ')}
-              style={{ animationDelay: `${i * 50}ms` }}
+              style={{ animationDelay: `${i * 60}ms` }}
             >
               {speaking && latest && (
-                <div className="speech-bubble" key={`${latest}-${tick}`}>
-                  {latest}
-                </div>
+                <div className="speech-bubble">{latest}</div>
               )}
               <div className="avatar-wrap">
                 <span className="ring" />
@@ -226,18 +226,18 @@ export default function CouncilChamber({
               <strong>{agent.name}</strong>
               <span className="agent-role">{agent.role}</span>
               <span className="agent-title">
-                {speaking ? 'Speaking…' : agent.id === 'editor' && reporting ? 'Reporting to CEO' : done ? 'Filed' : agent.title}
+                {speaking ? 'Speaking…' : agent.id === 'editor' && reporting ? 'Reported' : done ? 'Filed' : agent.title}
               </span>
             </article>
           );
         })}
       </div>
 
-      <div className="speech-dock" aria-live="polite">
+      <div className={`speech-dock ${live ? 'is-live' : reporting ? 'is-static' : ''}`}>
         {latest ? (
           <>
-            <span className="dock-who">{speaker ? speaker.role : 'Desk'}</span>
-            <span className="dock-text">{latest}</span>
+            <span className="dock-who">{speaker ? `${speaker.name} · ${speaker.role}` : 'Desk'}</span>
+            <span className="dock-text" key={latest}>{latest}</span>
           </>
         ) : (
           <span className="dock-text muted">Tap Replay briefing on an episode, or run an analysis to open the office.</span>
