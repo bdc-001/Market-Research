@@ -248,7 +248,7 @@ export default function QuantumPicks() {
         </div>
       )}
 
-      <CouncilChamber logs={logs} isRunning={isRunning} headline="QuanTum factor desk" />
+      <CouncilChamber logs={logs} isRunning={isRunning} report={report} headline="Arsalaan’s Office" />
       <LogViewer logs={logs} isRunning={isRunning} />
 
       <div style={{ marginTop: "24px" }}>

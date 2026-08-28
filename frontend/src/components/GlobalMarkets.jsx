@@ -100,7 +100,7 @@ export default function GlobalMarkets() {
         )}
       </div>
 
-      <CouncilChamber logs={logs} isRunning={isRunning} headline="Macro committee" />
+      <CouncilChamber logs={logs} isRunning={isRunning} subject={marketType} report={report} headline="Arsalaan’s Office" />
       <LogViewer logs={logs} isRunning={isRunning} />
 
       {report && (

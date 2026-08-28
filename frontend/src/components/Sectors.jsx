@@ -92,7 +92,7 @@ export default function Sectors() {
         </button>
       </div>
 
-      <CouncilChamber logs={logs} isRunning={isRunning} headline="Sector desk" />
+      <CouncilChamber logs={logs} isRunning={isRunning} subject={selectedSector} report={report} headline="Arsalaan’s Office" />
       <LogViewer logs={logs} isRunning={isRunning} />
 
       {report && (

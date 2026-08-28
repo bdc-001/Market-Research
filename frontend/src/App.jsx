@@ -34,7 +34,7 @@ export default function App() {
   ];
 
   const sectionMeta = {
-    "Discovery": { title: "Discovery Council", desc: "SME / microcap sample: event → evidence → Council → predictions → pending outcomes" },
+    "Discovery": { title: "Arsalaan’s Office", desc: "Quantum Corporation committee: agents brief, Editor reports to the CEO" },
     "Sector Analysis": { title: "Sector Intelligence", desc: "Multi-Agent Deep Dive: Trends, Valuation & Institutional Positioning" },
     "Stock Analysis": { title: "Stock Analysis", desc: "Deep-dive 7-Agent research memorandum on Indian equities" },
     "Top Picks": { title: "Top Picks", desc: "Automated screening for best risk-reward opportunities across industries" },
@@ -65,8 +65,8 @@ export default function App() {
           <div className="brand-section">
             <div className="brand-logo">Q</div>
             <div className="brand-text">
-              <h1>QuanTum</h1>
-              <p>Financial Intelligence</p>
+              <h1>Quantum Corp</h1>
+              <p>Arsalaan’s Office</p>
             </div>
             <button
               className="nav-collapse-btn"

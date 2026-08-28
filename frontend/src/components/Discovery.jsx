@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { getApiUrl } from './api';
+import CouncilChamber, { turnsFromPredictions } from './CouncilChamber';
 
 const AGENT_ORDER = ['research', 'financial', 'bull', 'bear', 'technical', 'editor'];
 const AGENT_LABELS = {
@@ -86,6 +87,8 @@ export default function Discovery() {
       .finally(() => setLoadingDetail(false));
   }, [selectedId]);
 
+  const [replayKey, setReplayKey] = useState(0);
+
   const types = Object.keys(summary?.event_types || {}).sort();
   const ep = detail?.episode;
   const predictions = [...(detail?.predictions || [])].sort((a, b) => {
@@ -93,6 +96,10 @@ export default function Discovery() {
     const ib = AGENT_ORDER.indexOf(b.agent_name);
     return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
   });
+  const officeScript = useMemo(
+    () => (detail?.episode ? turnsFromPredictions(detail.predictions || [], detail.episode) : []),
+    [detail, replayKey],
+  );
 
   return (
     <div className="report-section">
@@ -175,6 +182,21 @@ export default function Discovery() {
       )}
 
       {ep && (
+        <>
+        <CouncilChamber
+          key={`${ep.id}-${replayKey}`}
+          script={officeScript}
+          subject={ep.ticker}
+          decision={ep.final_decision}
+          headline="Arsalaan’s Office"
+        />
+        <button
+          className="btn"
+          style={{ marginBottom: 16, alignSelf: 'flex-start' }}
+          onClick={() => setReplayKey((n) => n + 1)}
+        >
+          Replay briefing
+        </button>
         <div className="report-card">
           <div className="card-header" style={{ marginBottom: 16 }}>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>
@@ -267,6 +289,7 @@ export default function Discovery() {
             </table>
           </div>
         </div>
+        </>
       )}
     </div>
   );

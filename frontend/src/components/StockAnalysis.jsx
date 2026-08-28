@@ -97,7 +97,7 @@ export default function StockAnalysis() {
       </div>
       )}
 
-      <CouncilChamber logs={logs} isRunning={isRunning} headline="7-agent equity council" />
+      <CouncilChamber logs={logs} isRunning={isRunning} subject={ticker} report={report} headline="Arsalaan’s Office" />
       <LogViewer logs={logs} isRunning={isRunning} />
 
       {report && (

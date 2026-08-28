@@ -86,7 +86,7 @@ export default function MarketNews() {
         </button>
       </div>
 
-      <CouncilChamber logs={logs} isRunning={isRunning} headline="News desk" />
+      <CouncilChamber logs={logs} isRunning={isRunning} headline="Arsalaan’s Office" />
       <LogViewer logs={logs} isRunning={isRunning} />
 
       {fetched && (
